@@ -33,3 +33,5 @@ The CI gate (`TP >= 40`, `FP <= 5`) catches known regressions. It is not a produ
 `live-results.json` records an actual preflight failure: **authentication**. Zero of the 100 full Agent cases completed; full Agent accuracy/precision/recall are unavailable. Offline tests exercise mocked valid/malformed model responses, failure handling, review transactions and SSE handling; they are not live model evaluations.
 
 To finish validation, configure a valid server-side `OPENAI_API_KEY`, rerun `npm run eval:live` and inspect completion coverage separately from completed-case detection metrics. A 200 response or a rules-only partial report must never be counted as successful AI evaluation. Even after 100 cases complete, add independently authored unseen cases and multiple runs before claiming reliability.
+
+Production smoke verification (`production-smoke.json`): both synthetic requests completed at the HTTP/API level, but remained degraded because production has no model key configured. A clean rule result is shown as inconclusive, and a positive rule result is preserved with an incomplete-coverage warning. These two checks are excluded from model detection metrics.

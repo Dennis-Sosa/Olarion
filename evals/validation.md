@@ -9,3 +9,5 @@
 - Local browser checks: setup quick-fill and context form, run a synthetic example with provider credentials disabled, visible partial coverage with per-stage failures, per-finding feedback save, feedback retained after refresh. Refresh uses the completed report and does not start another audit.
 
 Offline model-dependent tests use mocked responses. They validate software behavior, not model reasoning quality. Browser validation used local synthetic demo data only.
+
+Production validation at code commit `0c441a13b0a60bbb0e2831aba11dddec832168a8`: GitHub CI and both Vercel deployments succeeded. `https://olarion.vercel.app/api/health` returned HTTP 200 with `audit-2.0.0` and `model_configured=false`. Two synthetic API smoke cases returned HTTP 200: the empty rule result was explicitly inconclusive; the preprocessing leak retained its rule finding with degraded coverage. See `production-smoke.json`. The new setup page and context controls were also verified in the browser. This proves deployment and failure presentation, not live model quality.

@@ -13,4 +13,4 @@
 - Use explicit ESM import extensions and compile/load the API under Node in CI to catch runtime-only module failures.
 - Extend type-checking to the backend and add offline tests and CI.
 
-Known limitation: live model preflight failed authentication in the evaluation environment. No completed live Agent benchmark is claimed. The live Vercel environment requires separate verification after GitHub publication.
+Known limitation: live model preflight failed authentication in the evaluation environment. No completed live Agent benchmark is claimed. The deployed Vercel API and new UI are verified; production has no model key configured and correctly returns partial coverage. Configure a valid server-side key to enable full AI audits.

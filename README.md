@@ -73,7 +73,7 @@ Model requests have a 15-second timeout and no implicit retries; the audit deadl
 
 The existing Vercel entry point is `api/index.ts`; `vercel.json` builds the frontend and routes API requests. Set `OPENAI_API_KEY` in Vercel's environment settings and redeploy. Never put secrets in `VITE_*` variables. Confirm `/api/health` identifies `audit-2.0.0`, then run both a clean and leaky example and inspect coverage.
 
-A GitHub merge does not prove the live deployment is updated or that the deployed model credentials work. The live URL above depends on the existing owner's Vercel project/integration.
+Production was verified after this refactor: the new setup page loads, `/api/health` returns `audit-2.0.0`, and the audit API returns explicit partial reports. **The deployed project currently has no `OPENAI_API_KEY` configured.** Add a valid key in Vercel's Production environment and redeploy to enable the LLM checks. Local live preflight separately failed authentication. [Production smoke evidence](evals/production-smoke.json) records two synthetic API checks, not model performance.
 
 ## Demo data
 
