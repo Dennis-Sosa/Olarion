@@ -24,7 +24,19 @@ function readHistory(): AuditRecord[] {
 
   try {
     const raw = window.localStorage.getItem(AUDIT_HISTORY_KEY);
-    return raw ? (JSON.parse(raw) as AuditRecord[]) : [];
+    const values: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(values)
+      ? values.filter(
+          (v) =>
+            v &&
+            typeof v.id === "string" &&
+            typeof v.createdAt === "string" &&
+            typeof v.title === "string" &&
+            v.request &&
+            v.report &&
+            Array.isArray(v.report.findings),
+        )
+      : [];
   } catch {
     return [];
   }
@@ -85,8 +97,17 @@ export function buildAuditRecord(input: {
   report: AuditReport;
 }): AuditRecord {
   return {
-    id: `audit-${Date.now()}`,
+    id: `audit-${crypto.randomUUID()}`,
     createdAt: new Date().toISOString(),
     ...input,
   };
+}
+
+export function clearLocalRecords() {
+  for (const key of [
+    AUDIT_HISTORY_KEY,
+    CURRENT_AUDIT_KEY,
+    "olarion.finding-feedback.v1",
+  ])
+    window.localStorage.removeItem(key);
 }

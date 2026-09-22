@@ -11,7 +11,10 @@ export function dedupeFindings(findings: AuditFinding[]): AuditFinding[] {
   const byId = new Map<string, AuditFinding>();
   for (const f of findings) {
     const existing = byId.get(f.id);
-    if (!existing || (severityRank[f.severity] ?? 0) > (severityRank[existing.severity] ?? 0)) {
+    if (
+      !existing ||
+      (severityRank[f.severity] ?? 0) > (severityRank[existing.severity] ?? 0)
+    ) {
       byId.set(f.id, f);
     }
   }
@@ -39,7 +42,9 @@ export function extractSnippet(
   contextLines = 2,
 ): string {
   const lines = code.split("\n");
-  const idx = lines.findIndex((l) => l.toLowerCase().includes(keyword.toLowerCase()));
+  const idx = lines.findIndex((l) =>
+    l.toLowerCase().includes(keyword.toLowerCase()),
+  );
   if (idx === -1) return keyword;
   const start = Math.max(0, idx - contextLines);
   const end = Math.min(lines.length, idx + contextLines + 1);
@@ -55,7 +60,8 @@ export function resolveLineLocation(
   keyword: string,
 ): string {
   const line = findLineNumber(code, keyword);
-  if (line) return `${filename} line ${line}: ${code.split("\n")[line - 1]?.trim() ?? keyword}`;
+  if (line)
+    return `${filename} line ${line}: ${code.split("\n")[line - 1]?.trim() ?? keyword}`;
   return `${filename}: ${keyword}`;
 }
 
@@ -73,7 +79,9 @@ export function validateFeatureNames(
     }
   }
   if (hallucinated.length > 0) {
-    console.warn(`[validateFeatureNames] Discarded hallucinated columns: ${hallucinated.join(", ")}`);
+    console.warn(
+      `[validateFeatureNames] Discarded hallucinated columns: ${hallucinated.join(", ")}`,
+    );
   }
   return { valid, hallucinated };
 }
@@ -81,6 +89,7 @@ export function validateFeatureNames(
 export function computeOverallRisk(findings: AuditFinding[]): Severity {
   if (findings.some((f) => f.severity === "critical")) return "critical";
   if (findings.some((f) => f.severity === "high")) return "high";
-  if (findings.filter((f) => f.severity === "medium").length >= 2) return "medium";
+  if (findings.filter((f) => f.severity === "medium").length >= 1)
+    return "medium";
   return "low";
 }

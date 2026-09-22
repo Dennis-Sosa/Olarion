@@ -13,8 +13,12 @@ function buildMarkdown(report: AuditReport): string {
 
   lines.push("# Olarion Audit Report");
   lines.push("");
-  lines.push(`**Overall Risk:** ${report.overall_risk.toUpperCase()}`);
-  const critical = report.findings.filter((f) => f.severity === "critical").length;
+  lines.push(
+    `**Overall Risk:** ${report.quality?.assessment === "inconclusive" || !report.quality ? "INCONCLUSIVE" : report.overall_risk.toUpperCase()}`,
+  );
+  const critical = report.findings.filter(
+    (f) => f.severity === "critical",
+  ).length;
   const high = report.findings.filter((f) => f.severity === "high").length;
   lines.push(
     `**Critical Findings:** ${critical}  |  **High Findings:** ${high}  |  **Total Flagged:** ${report.findings.length}`,
@@ -24,6 +28,10 @@ function buildMarkdown(report: AuditReport): string {
 
   lines.push("---");
   lines.push("");
+  lines.push(report.summary);
+  lines.push(
+    `Coverage: ${report.quality?.status ?? "unverified legacy report"}`,
+  );
   lines.push("## Detailed Findings");
   lines.push("");
 
@@ -47,13 +55,14 @@ function buildMarkdown(report: AuditReport): string {
     lines.push("");
     lines.push("**Evidence:**");
     for (const e of f.evidence) {
-      const claim = e.claim || e.text || '';
+      const claim = e.claim || e.text || "";
       if (!claim) continue;
       lines.push(`- ${claim}`);
-      const fname = e.source?.filename || e.citation_label?.split(' (')[0] || '';
-      const loc = e.source?.location || e.citation_label || '';
+      const fname =
+        e.source?.filename || e.citation_label?.split(" (")[0] || "";
+      const loc = e.source?.location || e.citation_label || "";
       if (fname) {
-        lines.push(`  _Source: ${fname}${loc ? ` (${loc})` : ''}_`);
+        lines.push(`  _Source: ${fname}${loc ? ` (${loc})` : ""}_`);
       }
     }
     lines.push("");
@@ -121,7 +130,11 @@ function buildPdf(report: AuditReport): ArrayBuffer {
     y += size * 0.5 + 2;
   }
 
-  function addText(text: string, size = 10, style: "normal" | "bold" = "normal") {
+  function addText(
+    text: string,
+    size = 10,
+    style: "normal" | "bold" = "normal",
+  ) {
     doc.setFontSize(size);
     doc.setFont("helvetica", style);
     const lines = doc.splitTextToSize(text, contentWidth);
@@ -139,9 +152,15 @@ function buildPdf(report: AuditReport): ArrayBuffer {
   addTitle("Olarion Audit Report", 20);
   addGap(4);
 
-  const critical = report.findings.filter((f) => f.severity === "critical").length;
+  const critical = report.findings.filter(
+    (f) => f.severity === "critical",
+  ).length;
   const high = report.findings.filter((f) => f.severity === "high").length;
-  addText(`Overall Risk: ${report.overall_risk.toUpperCase()}`, 12, "bold");
+  addText(
+    `Overall Risk: ${report.quality?.assessment === "inconclusive" || !report.quality ? "INCONCLUSIVE" : report.overall_risk.toUpperCase()}`,
+    12,
+    "bold",
+  );
   addText(
     `Critical: ${critical}  |  High: ${high}  |  Total: ${report.findings.length}`,
     10,
@@ -149,6 +168,9 @@ function buildPdf(report: AuditReport): ArrayBuffer {
   addText(`Generated: ${new Date().toLocaleString()}`, 9);
   addGap(6);
 
+  addText(report.summary, 10);
+  addText(`Coverage: ${report.quality?.status ?? "not recorded (legacy)"}`, 10);
+  addGap(4);
   addTitle("Detailed Findings", 14);
   addGap(2);
 
@@ -163,13 +185,14 @@ function buildPdf(report: AuditReport): ArrayBuffer {
     addGap(1);
     addText(`Why it matters: ${f.why_it_matters}`, 9);
     for (const e of f.evidence) {
-      const claim = e.claim || e.text || '';
+      const claim = e.claim || e.text || "";
       if (!claim) continue;
       addText(`  • ${claim}`, 9);
-      const fname = e.source?.filename || e.citation_label?.split(' (')[0] || '';
-      const loc = e.source?.location || e.citation_label || '';
+      const fname =
+        e.source?.filename || e.citation_label?.split(" (")[0] || "";
+      const loc = e.source?.location || e.citation_label || "";
       if (fname) {
-        addText(`    Source: ${fname}${loc ? ` (${loc})` : ''}`, 8);
+        addText(`    Source: ${fname}${loc ? ` (${loc})` : ""}`, 8);
       }
     }
     addText(`Recommendation: ${f.fix_recommendation.join(" ")}`, 9);

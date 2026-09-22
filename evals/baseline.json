@@ -1,0 +1,792 @@
+[
+  {
+    "case_id": "001_commerce_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "002_commerce_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "003_commerce_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "004_commerce_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "005_commerce_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "006_commerce_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "007_commerce_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "008_commerce_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "009_commerce_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "010_commerce_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  },
+  {
+    "case_id": "011_subscription_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "012_subscription_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "013_subscription_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "014_subscription_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "015_subscription_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "016_subscription_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "017_subscription_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "018_subscription_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "019_subscription_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "020_subscription_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  },
+  {
+    "case_id": "021_rental_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "022_rental_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "023_rental_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "024_rental_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "025_rental_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "026_rental_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "027_rental_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "028_rental_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "029_rental_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "030_rental_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  },
+  {
+    "case_id": "031_credit_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "032_credit_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "033_credit_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "034_credit_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "035_credit_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "036_credit_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "037_credit_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "038_credit_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "039_credit_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "040_credit_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  },
+  {
+    "case_id": "041_equipment_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "042_equipment_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "043_equipment_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "044_equipment_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "045_equipment_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "046_equipment_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "047_equipment_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "048_equipment_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "049_equipment_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "050_equipment_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  },
+  {
+    "case_id": "051_delivery_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "052_delivery_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "053_delivery_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "054_delivery_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "055_delivery_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "056_delivery_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "057_delivery_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "058_delivery_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "059_delivery_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "060_delivery_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  },
+  {
+    "case_id": "061_retail_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "062_retail_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "063_retail_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "064_retail_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "065_retail_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "066_retail_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "067_retail_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "068_retail_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "069_retail_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "070_retail_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  },
+  {
+    "case_id": "071_support_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "072_support_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "073_support_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "074_support_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "075_support_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "076_support_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "077_support_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "078_support_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "079_support_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "080_support_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  },
+  {
+    "case_id": "081_education_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "082_education_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "083_education_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "084_education_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "085_education_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "086_education_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "087_education_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "088_education_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "089_education_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "090_education_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  },
+  {
+    "case_id": "091_content_temporal_clean",
+    "family": "temporal",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "092_content_temporal_leaky",
+    "family": "temporal",
+    "expected_leakage": true,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "093_content_target_proxy_clean",
+    "family": "target_proxy",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "094_content_target_proxy_leaky",
+    "family": "target_proxy",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "metadata-suspicious-outcome"
+    ]
+  },
+  {
+    "case_id": "095_content_preprocessing_clean",
+    "family": "preprocessing",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "096_content_preprocessing_leaky",
+    "family": "preprocessing",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-global-preprocessing"
+    ]
+  },
+  {
+    "case_id": "097_content_entity_split_clean",
+    "family": "entity_split",
+    "expected_leakage": false,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "098_content_entity_split_leaky",
+    "family": "entity_split",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-random-split-entity"
+    ]
+  },
+  {
+    "case_id": "099_content_target_aggregation_clean",
+    "family": "target_aggregation",
+    "expected_leakage": false,
+    "predicted_leakage": false,
+    "leakage_finding_ids": []
+  },
+  {
+    "case_id": "100_content_target_aggregation_leaky",
+    "family": "target_aggregation",
+    "expected_leakage": true,
+    "predicted_leakage": true,
+    "leakage_finding_ids": [
+      "pipeline-lookahead-groupby-mean"
+    ]
+  }
+]

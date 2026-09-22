@@ -1,0 +1,1874 @@
+{
+  "mode": "rules",
+  "provenance": {
+    "git_base": "908ffc384e7c079275a692797d61374bd4431b88",
+    "source_sha256": "809c8c5a6a78b62a2ec8323f7d1c3656c2e8a85f3781e4eb7de1db368d27008b",
+    "cases_sha256": "03d86ffdcd73fcadf689dca9a25ec391d2007d81f13700154ca08cb9530af742",
+    "model": "gpt-4o",
+    "prompt_version": "audit-2.0.0",
+    "rules_version": "2.0.0",
+    "executed_at": "2026-09-22T22:27:43.181Z"
+  },
+  "scope": "Source-informed synthetic paired regression: 10 domains, 5 pattern families, 50 pairs. Labels frozen before refactor. Not an independent benchmark or real-user dataset.",
+  "baseline": {
+    "n": 100,
+    "tp": 35,
+    "fp": 10,
+    "tn": 40,
+    "fn": 15,
+    "accuracy": 0.75,
+    "precision": 0.7777777777777778,
+    "recall": 0.7,
+    "false_positive_rate": 0.2
+  },
+  "current": {
+    "n": 100,
+    "tp": 40,
+    "fp": 0,
+    "tn": 50,
+    "fn": 10,
+    "accuracy": 0.9,
+    "precision": 1,
+    "recall": 0.8,
+    "false_positive_rate": 0
+  },
+  "families": {
+    "temporal": {
+      "n": 20,
+      "tp": 0,
+      "fp": 0,
+      "tn": 10,
+      "fn": 10,
+      "accuracy": 0.5,
+      "precision": null,
+      "recall": 0,
+      "false_positive_rate": 0
+    },
+    "target_proxy": {
+      "n": 20,
+      "tp": 10,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "false_positive_rate": 0
+    },
+    "preprocessing": {
+      "n": 20,
+      "tp": 10,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "false_positive_rate": 0
+    },
+    "entity_split": {
+      "n": 20,
+      "tp": 10,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "false_positive_rate": 0
+    },
+    "target_aggregation": {
+      "n": 20,
+      "tp": 10,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "false_positive_rate": 0
+    }
+  },
+  "rows": [
+    {
+      "case_id": "001_commerce_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "002_commerce_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "003_commerce_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "004_commerce_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-commerce_resolution_code",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "commerce_resolution_code",
+          "evidence": [
+            {
+              "claim": "The selected input commerce_resolution_code is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['commerce_resolution_code'] = df['purchase_next_week'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-commerce_resolution_code",
+          "why_it_matters": "The selected input commerce_resolution_code is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "005_commerce_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "006_commerce_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "007_commerce_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "008_commerce_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "commerce_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "009_commerce_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "010_commerce_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "011_subscription_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "012_subscription_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "013_subscription_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "014_subscription_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-outcome",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "outcome",
+          "evidence": [
+            {
+              "claim": "The selected input outcome is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['outcome'] = df['churn_next_month'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-outcome",
+          "why_it_matters": "The selected input outcome is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "015_subscription_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "016_subscription_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "017_subscription_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "018_subscription_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "subscription_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "019_subscription_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "020_subscription_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('subscription_segment')['churn_next_month'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "021_rental_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "022_rental_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "023_rental_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "024_rental_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-rental_resolution_code",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "rental_resolution_code",
+          "evidence": [
+            {
+              "claim": "The selected input rental_resolution_code is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['rental_resolution_code'] = df['rented_next_week'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-rental_resolution_code",
+          "why_it_matters": "The selected input rental_resolution_code is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "025_rental_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "026_rental_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "027_rental_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "028_rental_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "rental_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "029_rental_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "030_rental_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('rental_segment')['rented_next_week'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "031_credit_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "032_credit_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "033_credit_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "034_credit_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-outcome",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "outcome",
+          "evidence": [
+            {
+              "claim": "The selected input outcome is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['outcome'] = df['default_next_year'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-outcome",
+          "why_it_matters": "The selected input outcome is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "035_credit_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "036_credit_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "037_credit_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "038_credit_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "credit_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "039_credit_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "040_credit_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('credit_segment')['default_next_year'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "041_equipment_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "042_equipment_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "043_equipment_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "044_equipment_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-equipment_resolution_code",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "equipment_resolution_code",
+          "evidence": [
+            {
+              "claim": "The selected input equipment_resolution_code is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['equipment_resolution_code'] = df['failure_next_day'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-equipment_resolution_code",
+          "why_it_matters": "The selected input equipment_resolution_code is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "045_equipment_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "046_equipment_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "047_equipment_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "048_equipment_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "equipment_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "049_equipment_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "050_equipment_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('equipment_segment')['failure_next_day'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "051_delivery_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "052_delivery_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "053_delivery_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "054_delivery_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-outcome",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "outcome",
+          "evidence": [
+            {
+              "claim": "The selected input outcome is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['outcome'] = df['delayed_at_delivery'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-outcome",
+          "why_it_matters": "The selected input outcome is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "055_delivery_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "056_delivery_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "057_delivery_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "058_delivery_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "delivery_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "059_delivery_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "060_delivery_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('delivery_segment')['delayed_at_delivery'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "061_retail_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "062_retail_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "063_retail_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "064_retail_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-retail_resolution_code",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "retail_resolution_code",
+          "evidence": [
+            {
+              "claim": "The selected input retail_resolution_code is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['retail_resolution_code'] = df['stockout_next_week'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-retail_resolution_code",
+          "why_it_matters": "The selected input retail_resolution_code is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "065_retail_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "066_retail_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "067_retail_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "068_retail_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "retail_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "069_retail_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "070_retail_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('retail_segment')['stockout_next_week'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "071_support_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "072_support_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "073_support_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "074_support_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-outcome",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "outcome",
+          "evidence": [
+            {
+              "claim": "The selected input outcome is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['outcome'] = df['escalated_next_day'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-outcome",
+          "why_it_matters": "The selected input outcome is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "075_support_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "076_support_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "077_support_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "078_support_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "support_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "079_support_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "080_support_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('support_segment')['escalated_next_day'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "081_education_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "082_education_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "083_education_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "084_education_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-education_resolution_code",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "education_resolution_code",
+          "evidence": [
+            {
+              "claim": "The selected input education_resolution_code is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['education_resolution_code'] = df['completed_next_month'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-education_resolution_code",
+          "why_it_matters": "The selected input education_resolution_code is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "085_education_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "086_education_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "087_education_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "088_education_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "education_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "089_education_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "090_education_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('education_segment')['completed_next_month'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "091_content_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "092_content_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "093_content_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "094_content_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "metadata-target-copy-outcome",
+          "title": "Target or direct target copy may reach the model",
+          "macro_bucket": "Feature / proxy leakage",
+          "fine_grained_type": "proxy",
+          "severity": "critical",
+          "confidence": "medium",
+          "flagged_object": "outcome",
+          "evidence": [
+            {
+              "claim": "The selected input outcome is the target or a direct copy of it.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['outcome'] = df['engaged_next_day'].astype(int)"
+              }
+            }
+          ],
+          "rule_cited": "metadata-target-copy-outcome",
+          "why_it_matters": "The selected input outcome is the target or a direct copy of it.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Keep only inputs available at prediction time; verify the feature lineage."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "095_content_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "096_content_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-global-preprocessing",
+          "title": "A learned transform may see holdout rows",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "evaluation",
+          "severity": "medium",
+          "confidence": "low",
+          "flagged_object": "preprocessor",
+          "evidence": [
+            {
+              "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 9",
+                "snippet": "X = preprocessor.fit_transform(X)"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-global-preprocessing",
+          "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "097_content_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "098_content_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "structural-entity-leakage",
+          "title": "Random split may overlap repeated entities",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "join_entity",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "content_entity_id",
+          "evidence": [
+            {
+              "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 8",
+                "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+              }
+            }
+          ],
+          "rule_cited": "structural-entity-leakage",
+          "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Verify entity overlap; use a group split when evaluating unseen entities."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    },
+    {
+      "case_id": "099_content_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "predicted_leakage": false,
+      "findings": []
+    },
+    {
+      "case_id": "100_content_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "predicted_leakage": true,
+      "findings": [
+        {
+          "id": "pipeline-lookahead-groupby-mean",
+          "title": "Full-data aggregate before splitting",
+          "macro_bucket": "Structure / pipeline leakage",
+          "fine_grained_type": "aggregation_lookahead",
+          "severity": "high",
+          "confidence": "medium",
+          "flagged_object": "group aggregate",
+          "evidence": [
+            {
+              "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+              "source": {
+                "filename": "preprocessing_code.py",
+                "location": "line 6",
+                "snippet": "df['segment_rate'] = df.groupby('content_segment')['engaged_next_day'].transform('mean')"
+              }
+            }
+          ],
+          "rule_cited": "pipeline-lookahead-groupby-mean",
+          "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+          "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+          "fix_recommendation": [
+            "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+          ],
+          "needs_human_review": true
+        }
+      ]
+    }
+  ]
+}

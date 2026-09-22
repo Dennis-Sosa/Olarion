@@ -2,7 +2,7 @@ import type { AuditReport, AuditRequest } from "../types";
 
 export interface ThinkingStep {
   id: string;
-  status: "running" | "done" | "skipped";
+  status: "running" | "done" | "skipped" | "failed";
   title: string;
   detail?: string;
   timestamp: number;
@@ -18,10 +18,15 @@ export async function auditWithLLM(
   });
 
   const text = await response.text();
-  const payload = text.length > 0 ? (JSON.parse(text) as { report?: AuditReport; error?: string }) : {};
+  const payload =
+    text.length > 0
+      ? (JSON.parse(text) as { report?: AuditReport; error?: string })
+      : {};
 
   if (!response.ok) {
-    throw new Error(payload.error ?? `Audit request failed: ${response.status}`);
+    throw new Error(
+      payload.error ?? `Audit request failed: ${response.status}`,
+    );
   }
 
   const { report } = payload;
@@ -35,56 +40,60 @@ export async function auditWithLLM(
 export async function auditWithStream(
   request: AuditRequest,
   onStep: (step: ThinkingStep) => void,
+  signal?: AbortSignal,
 ): Promise<AuditReport> {
   const response = await fetch("/api/audit-stream", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ request }),
+    signal,
   });
-
   if (!response.ok) {
-    throw new Error(`Audit request failed: ${response.status}`);
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(
+      payload.error ?? `Audit request failed: ${response.status}`,
+    );
   }
-
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response body");
-
   const decoder = new TextDecoder();
-  let buffer = "";
-  let report: AuditReport | null = null;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
-      try {
-        const event = JSON.parse(line.slice(6));
-        if (event.type === "step") {
-          onStep({
-            id: event.id,
-            status: event.status,
-            title: event.title,
-            detail: event.detail,
-            timestamp: Date.now(),
-          });
-        } else if (event.type === "complete") {
-          report = event.report;
-        } else if (event.type === "error") {
-          throw new Error(event.message ?? "Audit failed");
-        }
-      } catch (e) {
-        if (e instanceof Error && e.message !== "Audit failed") continue;
-        throw e;
+  let buffer = "",
+    report: AuditReport | null = null;
+  const consume = (line: string) => {
+    if (!line.startsWith("data:")) return;
+    let event;
+    try {
+      event = JSON.parse(line.slice(5).trim());
+    } catch {
+      throw new Error("Invalid audit stream event.");
+    }
+    if (event.type === "error")
+      throw new Error(event.message ?? "Audit failed");
+    if (event.type === "step") onStep({ ...event, timestamp: Date.now() });
+    if (event.type === "complete") {
+      if (!event.report || !Array.isArray(event.report.findings))
+        throw new Error("Invalid audit report.");
+      report = event.report;
+    }
+  };
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      buffer += done
+        ? decoder.decode()
+        : decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) consume(line.trimEnd());
+      if (done) {
+        if (buffer.trim()) consume(buffer.trimEnd());
+        break;
       }
     }
+  } finally {
+    await reader.cancel().catch(() => {});
+    reader.releaseLock();
   }
-
   if (!report) throw new Error("Audit stream ended without a report.");
   return report;
 }
@@ -102,7 +111,10 @@ export async function chatWithLLM(
   });
 
   const text = await response.text();
-  const payload = text.length > 0 ? (JSON.parse(text) as { answer?: string; error?: string }) : {};
+  const payload =
+    text.length > 0
+      ? (JSON.parse(text) as { answer?: string; error?: string })
+      : {};
 
   if (!response.ok) {
     throw new Error(payload.error ?? `Chat request failed: ${response.status}`);

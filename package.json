@@ -1,17 +1,19 @@
 {
-  "name": "clarion",
+  "name": "olarion",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "predev": "npm install --no-audit --no-fund",
     "dev": "vite",
     "server": "node --import tsx server/index.ts",
     "server:watch": "node --import tsx --watch server/index.ts",
-    "dev:full": "npm install --no-audit --no-fund && concurrently \"vite\" \"npm run server:watch\"",
+    "dev:full": "concurrently \"vite\" \"npm run server:watch\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval:rules": "tsx evals/run.ts",
+    "eval:check": "tsx evals/run.ts --check",
+    "eval:live": "tsx evals/run.ts --live"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -32,12 +34,18 @@
     "@types/express": "^5.0.1",
     "@types/react": "^18.3.14",
     "@types/react-dom": "^18.3.5",
-    "@vitejs/plugin-react": "^4.4.1",
+    "@vitejs/plugin-react": "^5.2.0",
     "concurrently": "^9.1.2",
     "tailwindcss": "^4.1.12",
-    "tsx": "^4.19.3",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.3",
-    "vite": "^5.4.19",
-    "vitest": "^2.1.9"
+    "vite": "^7.3.6",
+    "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

@@ -3,3 +3,6 @@ dist/
 .DS_Store
 .env
 empirehacks.zip
+
+.env.*
+!.env.example

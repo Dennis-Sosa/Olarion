@@ -1,214 +1,79 @@
-# Olarion — ML Pipeline Data Leakage Auditor Agent
+# Olarion — AI-assisted ML leakage auditor
 
-An audit agent that detects data leakage in machine learning pipelines before models go to production. Built for EmpireHacks 2026 (Track 2: The Auditor).
+Olarion helps practitioners review whether an ML pipeline uses information unavailable at prediction time or contaminates evaluation splits. It combines deterministic rules, focused LLM checks, evidence validation and a review pass that can retract findings.
 
-**Teammates:** Youzhu Jin, Dennis Wang, Michael Meng, Weicong Hong
+Originally built for EmpireHacks 2026, Track 2: The Auditor. Original teammates: Youzhu Jin, Dennis Wang, Michael Meng, Weicong Hong. This repository preserves the original history and adds the v0.2 quality and feedback refactor.
 
-## Quick start — try Olarion without your own data
+[Live app](https://olarion.vercel.app/) · [产品说明与能力边界](docs/product.md) · [Evaluation](evals/README.md) · [Release notes](CHANGELOG.md)
 
-If you don’t have a CSV + pipeline yet, use the bundled **`test dataset/`** on GitHub (same layout as in a local clone).
+> This is a code/context audit prototype. It does not execute submitted Python, inspect CSV rows, measure feature correlations, retrain models or quantify business impact. Check the coverage banner on every report. A partial audit is not a clean bill of health.
 
-**Set your repo base** (forks: replace owner/name):
+## What changed in v0.2
 
-`https://github.com/skjdsk/Olarion`
+- **Feature scope:** distinguishes explicit model inputs from unused raw columns. Optional prediction boundary, feature availability and entity context help resolve ambiguity.
+- **Evidence-based review:** each initial finding receives a keep/update/retract decision. Source quotes must exist in the supplied input; retracted findings remain in the report for traceability.
+- **Honest failure handling:** missing credentials, model errors, timeouts and malformed outputs produce degraded coverage. Service failures are not counted as leakage findings. Narrative text is rendered from validated findings.
+- **Feedback workflow:** record a decision and evidence for each finding locally, then export a regression candidate with the input, report and versions. Human approval of labels is required before adding candidates to tests; no automatic training occurs.
+- **Reproducible evaluation:** 100 frozen synthetic paired cases, source hashes, previous rule baseline, current results, adversarial boundary tests, API/SSE failure tests and CI.
 
-| What you need | Link |
-|---------------|------|
-| **Whole project + all demos** | [Download `main` as ZIP](https://github.com/skjdsk/Olarion/archive/refs/heads/main.zip) — after unzipping, open `test dataset/<folder>/`. |
-| **Single demo bundle** | Use the row for that folder in the table below: ZIP downloads; each `.txt` opens in the browser — **select all → copy** into the app. |
+## Evaluation snapshot
 
-### Demo bundles (ZIP + text to paste)
+| Rule-only metric | Original baseline | v0.2 |
+|---|---:|---:|
+| Case accuracy | 75/100 (75%) | 90/100 (90%) |
+| Precision | 35/45 (77.8%) | 40/40 (100%) |
+| Recall | 35/50 (70%) | 40/50 (80%) |
+| False-positive rate | 10/50 (20%) | 0/50 (0%) |
 
-Click **ZIP** to download. Click **Task** / **Target** to open the raw text file, then copy into **Prediction task description** and **Target column name** on the setup page.
+These are **source-informed synthetic regression results**, not real-world accuracy. The remaining 10 misses are temporal cases expressed in natural language. No live Agent accuracy is claimed: the current environment's model connection failed authentication during preflight. See [raw results and methodology](evals/README.md).
 
-| Folder | ZIP | Task (`Prediction task description.txt`) | Target (`Target column name.txt`) |
-|--------|-----|------------------------------------------|-----------------------------------|
-| `clean-demo` | [download](https://github.com/skjdsk/Olarion/raw/main/test%20dataset/clean-demo/clean-demo.zip) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/clean-demo/Prediction%20task%20description.txt) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/clean-demo/Target%20column%20name.txt) |
-| `finance-clean` | [download](https://github.com/skjdsk/Olarion/raw/main/test%20dataset/finance-clean/finance-clean.zip) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/finance-clean/Prediction%20task%20description.txt) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/finance-clean/Target%20column%20name.txt) |
-| `finance-leaky` | [download](https://github.com/skjdsk/Olarion/raw/main/test%20dataset/finance-leaky/finance-leaky.zip) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/finance-leaky/Prediction%20task%20description.txt) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/finance-leaky/Target%20column%20name.txt) |
-| `health-clean` | [download](https://github.com/skjdsk/Olarion/raw/main/test%20dataset/health-clean/health-clean.zip) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/health-clean/Prediction%20task%20description.txt) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/health-clean/Target%20column%20name.txt) |
-| `health-leaky` | [download](https://github.com/skjdsk/Olarion/raw/main/test%20dataset/health-leaky/health-leaky.zip) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/health-leaky/Prediction%20task%20description.txt) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/health-leaky/Target%20column%20name.txt) |
-| `leaky-demo` | [download](https://github.com/skjdsk/Olarion/raw/main/test%20dataset/leaky-demo/leaky-demo.zip) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/leaky-demo/Prediction%20task%20description.txt) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/leaky-demo/Target%20column%20name.txt) |
-| `legal-clean` | [download](https://github.com/skjdsk/Olarion/raw/main/test%20dataset/legal-clean/legal-clean.zip) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/legal-clean/Prediction%20task%20description.txt) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/legal-clean/Target%20column%20name.txt) |
-| `legal-leaky` | [download](https://github.com/skjdsk/Olarion/raw/main/test%20dataset/legal-leaky/legal-leaky.zip) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/legal-leaky/Prediction%20task%20description.txt) | [open](https://raw.githubusercontent.com/skjdsk/Olarion/main/test%20dataset/legal-leaky/Target%20column%20name.txt) |
+## Run locally
 
-### Run the audit in the app
-
-1. Follow **[Getting Started](#getting-started)** (`npm install`, `.env`, `npm run dev:full`).
-2. Open the app (default **`http://localhost:5173`** — use the URL Vite prints if the port differs).
-3. Go to **`/setup`** (New audit / setup).
-4. **Upload ZIP** — use the demo `.zip` you downloaded (contains `dataset.csv` + Python; the UI extracts them).
-5. Paste **Prediction task description** and **Target column name** from the two text links for that same folder.
-6. Submit and wait for results on **`/results`**.
-
-For what each folder is meant to show (leaky vs clean), see **[Demo Cases (`test dataset/`)](#demo-cases-test-dataset)** below.
-
----
-
-## The Problem
-
-Data leakage occurs when information from outside the prediction boundary—future data, downstream proxies, or repeated entities—flows into training features. The result is models that look strong offline and collapse in production. The Epic Sepsis Model, deployed at hundreds of US hospitals with a claimed AUC of 0.76–0.83, was externally validated at 0.63 (Wong et al., JAMA Internal Medicine, 2021). One contributing factor: antibiotic orders, a feature that leaked the outcome. Olarion is the tool that would have caught this before deployment.
-
----
-
-## What Olarion Detects
-
-| Type | Example |
-|------|---------|
-| **Target Proxy Leakage** | Using `days_on_market` to predict whether a listing rents in 7 days — the feature is causally downstream of the label. |
-| **Temporal Look-ahead** | Computing neighborhood average rent with full-year data when predicting January listings — future information leaks in. |
-| **Structural / Group Leakage** | Random split placing the same `building_id` or `patient_id` in both train and test — entity-level leakage. |
-
----
-
-## How It Works
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  Phase 1 (Fixed Pipeline)                                               │
-│  ───────────────────────                                                │
-│  Rule-based: pipeline scan, metadata check, structural check            │
-│  LLM-powered: proxy detector, temporal detector, code auditor           │
-│  Optional: model training code auditor (if user provides training code) │
-└─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│  Phase 2 (Review Agent)                                                  │
-│  ─────────────────────                                                  │
-│  OpenAI Function Calling: cross_check_feature, deep_dive_feature,       │
-│  check_feature_interaction, finalize_review. Max 3 rounds.               │
-│  If Review Agent fails → Phase 1 results still returned (fail-safe).    │
-└─────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│  Phase 3                                                                 │
-│  ───────                                                                │
-│  Aggregate findings, compute risk level, generate executive summary     │
-│  + full narrative report via LLM                                        │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## User Input / Output
-
-**Input (required):** prediction task description, CSV dataset (header read for column names), preprocessing code (.py or .ipynb).  
-**Input (optional):** model training code.
-
-**Output:**
-- Overall risk badge (CRITICAL / HIGH / MEDIUM / LOW)
-- Executive summary (3–5 bullet points)
-- Full narrative audit report (expandable)
-- Structured findings with evidence citations — each citation traces to source (code line numbers, CSV columns, or LLM reasoning). Citations are clickable and expand to show the original code snippet or column list.
-- Interactive chat panel for follow-up questions about the audit
-
----
-
-## Tech Stack
-
-- **Frontend:** React, Vite, Tailwind CSS
-- **Backend:** Express (TypeScript)
-- **LLM:** OpenAI GPT-4o
-- **Storage:** None — stateless API
-
----
-
-## Getting Started
+Requires Node.js 22 and npm.
 
 ```bash
-git clone https://github.com/skjdsk/Olarion.git
-cd Olarion   # or EmpHackX if you cloned under that folder name
-npm install
-```
-
-Create `.env` in the project root:
-
-```
-OPENAI_API_KEY=sk-your-key-here
-PORT=3001
-```
-
-Start both frontend and backend:
-
-```bash
+git clone https://github.com/MichaelM7X/Olarion.git
+cd Olarion
+npm ci
+cp .env.example .env
+# Set OPENAI_API_KEY in .env; never commit it.
 npm run dev:full
 ```
 
-Then open the frontend URL printed in the terminal — by default **`http://localhost:5173`** (set in `vite.config.ts`). If that port is already in use, Vite may pick the next free port; use whatever URL the dev server logs.
+Open `http://localhost:5173/setup`. Use a Quick Fill example or provide a CSV, prediction goal, target column and preprocessing code. Inspect the selected code before running. Training code and structured context are optional. Without a valid key, rule checks still run and the result is visibly partial.
 
-Or run them separately:
-- `npm run dev` — frontend (Vite; default port **5173** in this repo)
-- `npm run server` — backend (Express, port 3001)
+`OPENAI_MODEL` defaults to `gpt-4o`. A replacement must support Chat Completions JSON mode and the configured sampling parameters. Model compatibility and quality must be retested before changing the default.
 
----
+```bash
+npm test                 # Offline tests; no provider calls
+npm run build            # Type-check frontend AND backend; build frontend
+npm run eval:rules       # Run frozen 100-case regression; write raw results
+npm run eval:check       # CI regression gate; does not overwrite evidence
+npm run eval:live        # Actual model calls; requires a valid key and incurs API usage
+```
 
-## Demo Cases (`test dataset/`)
+## Data flow and API
 
-Each folder under **`test dataset/`** is a self-contained audit bundle:
+The browser reads CSV headers. Headers, submitted code and declared context go to the Express API and OpenAI. CSV rows are not submitted. Follow-up questions include the report and a bounded chat history. Audit history and feedback are stored in browser local storage (up to 12 reports); clear them in Past Audits. The application has no server database. Hosting/provider logs and retention are governed by the deployment and provider settings.
 
-| Files | Purpose |
-|--------|---------|
-| **`*.zip`** | `dataset.csv` + `preprocessing_code.py` — upload/extract for the app |
-| **`Prediction task description.txt`** | Paste into the prediction-task field |
-| **`Target column name.txt`** | Single line: binary target column name |
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/health` | Version and configuration presence; **not** a live model health check |
+| `POST /api/audit` | Full structured report; inspect `quality.status` |
+| `POST /api/audit-stream` | SSE progress, complete report or explicit error |
+| `POST /api/chat` | Questions about a report |
+| `POST /api/classify-code` | Suggest roles for uploaded Python files; uncertain results return an error |
 
-Below matches what those zips actually contain (synthetic data for demos only).
+Input: `{ "request": { "prediction_goal": "…", "target_column": "y", "csv_columns": ["a", "y"], "preprocessing_code": "…", "context": { "prediction_time": "At signup", "used_features": ["a"], "entity_repetition": "unique", "feature_availability": { "a": "before" } } }`.
 
-### `finance-leaky` / `finance-clean`
+Model requests have a 15-second timeout and no implicit retries; the audit deadline is 48 seconds. A per-process 10-second cooldown limits repeated endpoint requests. This is not a distributed production quota or authentication system. See [deployment notes and remaining work](docs/product.md).
 
-- **Task:** Predict loan default from financial profile and credit history.  
-- **Target:** `loan_defaulted`
+## Deploy
 
-| Variant | CSV / pipeline highlights |
-|--------|---------------------------|
-| **finance-leaky** | Adds post-origination-style fields (`collection_recovery_fee`, `last_payment_amount`, `total_late_fees`), `avg_applicant_default_rate` from `groupby(applicant_id)` on the label, **StandardScaler fit on full data before split**, random `train_test_split` (same applicant can straddle train/test). |
-| **finance-clean** | Features limited to pre-origination-style inputs (e.g. income, credit score, loan amount, DTI, accounts, savings, expenses). **GroupKFold** on `applicant_id`, scaler **fit on train folds only**. |
+The existing Vercel entry point is `api/index.ts`; `vercel.json` builds the frontend and routes API requests. Set `OPENAI_API_KEY` in Vercel's environment settings and redeploy. Never put secrets in `VITE_*` variables. Confirm `/api/health` identifies `audit-2.0.0`, then run both a clean and leaky example and inspect coverage.
 
-### `legal-leaky` / `legal-clean`
+A GitHub merge does not prove the live deployment is updated or that the deployed model credentials work. The live URL above depends on the existing owner's Vercel project/integration.
 
-- **Task:** Predict whether a defendant is found guilty in a criminal case.  
-- **Target:** `found_guilty`
+## Demo data
 
-| Variant | CSV / pipeline highlights |
-|--------|---------------------------|
-| **legal-leaky** | Includes outcome-adjacent fields (`sentence_length_months`, `appeal_filed`, `judge_leniency_score`), `avg_defendant_guilt_rate` from a label-based `groupby` transform, global scaling before split, random split (no grouping by `case_id`). |
-| **legal-clean** | Pretrial-style features only (`evidence_strength_score`, `pretrial_detention_days`, etc.). **GroupKFold** on `case_id`, scaler fit on training data only. |
-
-### `health-leaky` / `health-clean`
-
-- **Task:** Predict `sepsis_within_24h` from early ED-era information only (as stated in the task txt).  
-- **Target:** `sepsis_within_24h`
-
-| Variant | CSV / pipeline highlights |
-|--------|---------------------------|
-| **health-leaky** | Adds stay-wide / operational proxies: `lactate_peak_encounter`, `broad_spectrum_abx_within_6h`, `icu_transfer_24h`, `sepsis_icd_documented_discharge`, plus `avg_ward_sepsis_rate` from `groupby(ward_id)` on the label; global scaler + random split (patient can repeat across train/test). |
-| **health-clean** | Only early vitals and first-window labs (`map_triage`, RR/HR/temp, `wbc_first_4h`, `lactate_first_4h`). **GroupShuffleSplit** grouped by `patient_mrn`, scaler fit on train then transform test. |
-
-### `leaky-demo` / `clean-demo`
-
-- **leaky-demo — hospital readmission:** Target `readmitted_30d`. Includes `post_discharge_er_visit`, `readmission_flag`, `total_charges`, `avg_patient_readmit_rate` (label leakage via `groupby(patient_id)`), global scaler, random split ignoring `patient_id`.  
-- **clean-demo — student exam pass:** Target `passed_final_exam`. Tabular student features only. **GroupKFold** on `student_id`, scaler fit on train only.
-
-> **Landing-page presets** may still use shorter NYC rental / sepsis narrative examples; use the folders above when you want demos that line up **exactly** with the committed zip + txt artifacts.
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/audit` | Runs full audit pipeline, returns AuditReport JSON |
-| POST | `/api/chat` | Multi-turn conversation about audit results |
-
----
-
-## Team
-Youzhu Jin, Dennis Wang, Weicong Wang, Michael Meng
-
----
-
-## Built For
-
-**EmpireHacks 2026** — Track 2: The Auditor (Regulated Agents for Trust)
+The original synthetic demo bundles remain under [`test dataset/`](test%20dataset/). Use their task and target text with the corresponding ZIP. Labels in demos describe intended examples; they are not independent evidence of model performance.

@@ -1,7 +1,8 @@
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
-import { useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { useState } from "react";
 import {
   CheckCircle,
+  AlertTriangle,
   Loader2,
   SkipForward,
   ChevronDown,
@@ -11,33 +12,40 @@ import {
   FileSearch,
   Bot,
   FileText,
-} from 'lucide-react';
-import type { ThinkingStep } from '../../lib/llmEngine';
-import { OlarionLogo } from './OlarionLogo';
+} from "lucide-react";
+import type { ThinkingStep } from "../../lib/llmEngine";
+import { OlarionLogo } from "./OlarionLogo";
 
 const OlarionIconSmall = ({ className }: { className?: string }) => (
   <OlarionLogo size={16} animate={false} className={className} />
 );
 
-const STEP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  'pipeline-scan': Search,
-  'proxy-detector': OlarionIconSmall,
-  'temporal-detector': FileSearch,
-  'code-auditor': Code,
-  'model-auditor': Code,
-  'structural-check': Search,
-  'review-agent': Bot,
-  'report-gen': FileText,
+const STEP_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  "pipeline-scan": Search,
+  "proxy-detector": OlarionIconSmall,
+  "temporal-detector": FileSearch,
+  "code-auditor": Code,
+  "model-auditor": Code,
+  "structural-check": Search,
+  "review-agent": Bot,
+  "report-gen": FileText,
 };
 
 function StepIcon({ stepId, status }: { stepId: string; status: string }) {
-  if (status === 'running') {
-    return <Loader2 className="w-4 h-4 text-[var(--accent-primary)] animate-spin" />;
+  if (status === "running") {
+    return (
+      <Loader2 className="w-4 h-4 text-[var(--accent-primary)] animate-spin" />
+    );
   }
-  if (status === 'done') {
+  if (status === "done") {
     return <CheckCircle className="w-4 h-4 text-emerald-500" />;
   }
-  if (status === 'skipped') {
+  if (status === "failed")
+    return <AlertTriangle className="w-4 h-4 text-amber-600" />;
+  if (status === "skipped") {
     return <SkipForward className="w-4 h-4 text-[var(--muted-foreground)]" />;
   }
   const Icon = STEP_ICONS[stepId] ?? Search;
@@ -45,7 +53,7 @@ function StepIcon({ stepId, status }: { stepId: string; status: string }) {
 }
 
 function StatusDot({ status }: { status: string }) {
-  if (status === 'running') {
+  if (status === "running") {
     return (
       <span className="relative flex h-2.5 w-2.5">
         <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--accent-primary)] opacity-75 animate-ping" />
@@ -53,7 +61,7 @@ function StatusDot({ status }: { status: string }) {
       </span>
     );
   }
-  if (status === 'done') {
+  if (status === "done") {
     return <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />;
   }
   return <span className="h-2.5 w-2.5 rounded-full bg-gray-300" />;
@@ -68,9 +76,9 @@ function ThinkingOrb({ active }: { active: boolean }) {
         className="absolute inset-0 rounded-[32%] opacity-90 blur-[1px]"
         style={{
           background:
-            'radial-gradient(circle at 30% 28%, rgba(255,255,255,0.98) 0%, rgba(206,233,255,0.95) 24%, rgba(189,210,255,0.9) 50%, rgba(215,188,255,0.82) 72%, rgba(255,173,228,0.68) 100%)',
+            "radial-gradient(circle at 30% 28%, rgba(255,255,255,0.98) 0%, rgba(206,233,255,0.95) 24%, rgba(189,210,255,0.9) 50%, rgba(215,188,255,0.82) 72%, rgba(255,173,228,0.68) 100%)",
           boxShadow:
-            '0 0 0 1px rgba(255,255,255,0.75) inset, 0 0 36px rgba(139, 92, 246, 0.18), 0 0 56px rgba(96, 165, 250, 0.22)',
+            "0 0 0 1px rgba(255,255,255,0.75) inset, 0 0 36px rgba(139, 92, 246, 0.18), 0 0 56px rgba(96, 165, 250, 0.22)",
         }}
         animate={
           reduceMotion
@@ -79,17 +87,22 @@ function ThinkingOrb({ active }: { active: boolean }) {
                 rotate: active ? [0, 10, -6, 0] : 0,
                 scale: active ? [1, 1.04, 0.98, 1] : 1,
                 borderRadius: active
-                  ? ['32% 37% 34% 39%', '40% 32% 42% 30%', '35% 44% 31% 41%', '32% 37% 34% 39%']
-                  : '34% 36% 38% 35%',
+                  ? [
+                      "32% 37% 34% 39%",
+                      "40% 32% 42% 30%",
+                      "35% 44% 31% 41%",
+                      "32% 37% 34% 39%",
+                    ]
+                  : "34% 36% 38% 35%",
               }
         }
-        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
         className="absolute -inset-2 rounded-[38%] blur-xl"
         style={{
           background:
-            'conic-gradient(from 180deg, rgba(255,255,255,0.72), rgba(125,211,252,0.48), rgba(244,114,182,0.4), rgba(196,181,253,0.46), rgba(255,255,255,0.72))',
+            "conic-gradient(from 180deg, rgba(255,255,255,0.72), rgba(125,211,252,0.48), rgba(244,114,182,0.4), rgba(196,181,253,0.46), rgba(255,255,255,0.72))",
         }}
         animate={
           reduceMotion
@@ -101,16 +114,16 @@ function ThinkingOrb({ active }: { active: boolean }) {
               }
         }
         transition={{
-          rotate: { duration: 12, repeat: Infinity, ease: 'linear' },
-          scale: { duration: 4.8, repeat: Infinity, ease: 'easeInOut' },
-          opacity: { duration: 3.6, repeat: Infinity, ease: 'easeInOut' },
+          rotate: { duration: 12, repeat: Infinity, ease: "linear" },
+          scale: { duration: 4.8, repeat: Infinity, ease: "easeInOut" },
+          opacity: { duration: 3.6, repeat: Infinity, ease: "easeInOut" },
         }}
       />
       <motion.div
         className="absolute inset-2 rounded-[42%] blur-md"
         style={{
           background:
-            'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.95) 0%, rgba(219,234,254,0.78) 42%, rgba(196,181,253,0.4) 72%, rgba(255,255,255,0) 100%)',
+            "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.95) 0%, rgba(219,234,254,0.78) 42%, rgba(196,181,253,0.4) 72%, rgba(255,255,255,0) 100%)",
         }}
         animate={
           reduceMotion
@@ -120,7 +133,7 @@ function ThinkingOrb({ active }: { active: boolean }) {
                 opacity: active ? [0.35, 0.78, 0.42] : 0.3,
               }
         }
-        transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
       />
       <div className="relative z-10 flex items-center justify-center">
         <OlarionLogo size={28} animate={false} />
@@ -132,12 +145,6 @@ function ThinkingOrb({ active }: { active: boolean }) {
 export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
   const [expanded, setExpanded] = useState(true);
   const reduceMotion = useReducedMotion();
-  const activeCount = steps.filter((s) => s.status === 'running').length;
-  const doneCount = steps.filter((s) => s.status === 'done').length;
-  const totalSteps = steps.length;
-  const currentStep = [...steps].reverse().find((s) => s.status === 'running');
-  const latestDone = [...steps].reverse().find((s) => s.status === 'done');
-
   const uniqueSteps = steps.reduce<ThinkingStep[]>((acc, step) => {
     const idx = acc.findIndex((s) => s.id === step.id);
     if (idx >= 0) {
@@ -147,6 +154,15 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
     }
     return acc;
   }, []);
+
+  const activeCount = uniqueSteps.filter((s) => s.status === "running").length;
+  const doneCount = uniqueSteps.filter((s) => s.status !== "running").length;
+  const failedCount = uniqueSteps.filter((s) => s.status === "failed").length;
+  const totalSteps = uniqueSteps.length;
+  const currentStep = uniqueSteps.find((s) => s.status === "running");
+  const latestDone = [...uniqueSteps]
+    .reverse()
+    .find((s) => s.status !== "running");
 
   return (
     <motion.div
@@ -165,26 +181,33 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
             className="absolute inset-0 opacity-95"
             style={{
               background:
-                'radial-gradient(circle at 20% 18%, rgba(255,255,255,0.98), rgba(255,255,255,0.78) 18%, rgba(214,234,255,0.82) 34%, rgba(226,232,255,0.72) 52%, rgba(241,222,255,0.82) 72%, rgba(255,255,255,0.92) 100%)',
+                "radial-gradient(circle at 20% 18%, rgba(255,255,255,0.98), rgba(255,255,255,0.78) 18%, rgba(214,234,255,0.82) 34%, rgba(226,232,255,0.72) 52%, rgba(241,222,255,0.82) 72%, rgba(255,255,255,0.92) 100%)",
             }}
             animate={
               reduceMotion
                 ? undefined
                 : {
-                    backgroundPosition: activeCount > 0 ? ['0% 50%', '100% 50%', '0% 50%'] : '50% 50%',
+                    backgroundPosition:
+                      activeCount > 0
+                        ? ["0% 50%", "100% 50%", "0% 50%"]
+                        : "50% 50%",
                     opacity: activeCount > 0 ? [0.92, 1, 0.94] : 0.96,
                   }
             }
             transition={{
-              backgroundPosition: { duration: 10, repeat: Infinity, ease: 'easeInOut' },
-              opacity: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+              backgroundPosition: {
+                duration: 10,
+                repeat: Infinity,
+                ease: "easeInOut",
+              },
+              opacity: { duration: 4, repeat: Infinity, ease: "easeInOut" },
             }}
           />
           <motion.div
             className="absolute inset-x-[-10%] top-[-35%] h-[140%] rounded-full blur-3xl"
             style={{
               background:
-                'conic-gradient(from 180deg, rgba(125,211,252,0.18), rgba(255,255,255,0.06), rgba(244,114,182,0.16), rgba(196,181,253,0.20), rgba(125,211,252,0.18))',
+                "conic-gradient(from 180deg, rgba(125,211,252,0.18), rgba(255,255,255,0.06), rgba(244,114,182,0.16), rgba(196,181,253,0.20), rgba(125,211,252,0.18))",
             }}
             animate={
               reduceMotion
@@ -195,8 +218,8 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
                   }
             }
             transition={{
-              rotate: { duration: 14, repeat: Infinity, ease: 'linear' },
-              scale: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
+              rotate: { duration: 14, repeat: Infinity, ease: "linear" },
+              scale: { duration: 6, repeat: Infinity, ease: "easeInOut" },
             }}
           />
           <div className="relative z-10 flex items-center justify-between gap-4">
@@ -205,7 +228,11 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
               <div className="min-w-0 text-left">
                 <div className="mb-1 flex items-center gap-2">
                   <p className="text-sm font-medium text-[var(--foreground)] sm:text-base">
-                    {activeCount > 0 ? 'Olarion is auditing…' : 'Processing complete'}
+                    {activeCount > 0
+                      ? "Olarion is auditing…"
+                      : failedCount
+                        ? "Partial results available"
+                        : "Preparing report…"}
                   </p>
                   {activeCount > 0 && (
                     <span className="inline-flex items-center rounded-full border border-sky-200/80 bg-white/70 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-600 backdrop-blur-sm">
@@ -214,18 +241,20 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
                   )}
                 </div>
                 <p className="text-xs text-[var(--muted-foreground)] sm:text-sm">
-                  {currentStep?.title ?? latestDone?.title ?? 'Initializing…'}
+                  {currentStep?.title ?? latestDone?.title ?? "Initializing…"}
                 </p>
                 <p className="mt-1 text-[11px] text-slate-500 sm:text-xs">
                   {activeCount > 0
-                    ? 'Scanning signals, reasoning over patterns, and assembling the report.'
-                    : 'All analysis passes finished successfully.'}
+                    ? "Scanning signals, reasoning over patterns, and assembling the report."
+                    : failedCount
+                      ? "Some checks were unavailable; the report will show incomplete coverage."
+                      : "Assembling validated results."}
                 </p>
               </div>
             </div>
             <div className="flex flex-shrink-0 items-center gap-3 self-start pt-1">
               <span className="rounded-full border border-white/80 bg-white/65 px-2.5 py-1 text-xs text-[var(--muted-foreground)] tabular-nums backdrop-blur-sm">
-                {doneCount}/{totalSteps > 0 ? totalSteps : '?'}
+                {doneCount}/{totalSteps > 0 ? totalSteps : "?"}
               </span>
               {expanded ? (
                 <ChevronUp className="w-4 h-4 text-[var(--muted-foreground)]" />
@@ -242,20 +271,31 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
             className="relative h-full overflow-hidden"
             style={{
               background:
-                'linear-gradient(90deg, rgba(186,230,253,0.9) 0%, rgba(191,219,254,0.95) 28%, rgba(216,180,254,0.95) 58%, rgba(244,114,182,0.85) 100%)',
+                "linear-gradient(90deg, rgba(186,230,253,0.9) 0%, rgba(191,219,254,0.95) 28%, rgba(216,180,254,0.95) 58%, rgba(244,114,182,0.85) 100%)",
             }}
-            initial={{ width: '0%' }}
-            animate={{ width: totalSteps > 0 ? `${(doneCount / totalSteps) * 100}%` : '5%' }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
+            initial={{ width: "0%" }}
+            animate={{
+              width:
+                totalSteps > 0 ? `${(doneCount / totalSteps) * 100}%` : "5%",
+            }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <motion.span
               className="absolute inset-y-0 right-0 w-16"
               style={{
                 background:
-                  'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.78) 45%, rgba(255,255,255,0) 100%)',
+                  "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.78) 45%, rgba(255,255,255,0) 100%)",
               }}
-              animate={reduceMotion ? undefined : { x: activeCount > 0 ? [-50, 30, -50] : 0 }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              animate={
+                reduceMotion
+                  ? undefined
+                  : { x: activeCount > 0 ? [-50, 30, -50] : 0 }
+              }
+              transition={{
+                duration: 1.8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
           </motion.div>
         </div>
@@ -265,7 +305,7 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
           {expanded && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
+              animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
@@ -286,11 +326,11 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
                       <div className="flex items-center gap-2">
                         <p
                           className={`text-sm ${
-                            step.status === 'running'
-                              ? 'text-[var(--foreground)] font-medium'
-                              : step.status === 'skipped'
-                                ? 'text-[var(--muted-foreground)] line-through'
-                                : 'text-[var(--foreground)]'
+                            step.status === "running"
+                              ? "text-[var(--foreground)] font-medium"
+                              : step.status === "skipped"
+                                ? "text-[var(--muted-foreground)] line-through"
+                                : "text-[var(--foreground)]"
                           }`}
                         >
                           {step.title}
@@ -302,9 +342,9 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           className={`text-xs mt-0.5 ${
-                            step.status === 'running'
-                              ? 'text-[var(--accent-primary)]'
-                              : 'text-[var(--muted-foreground)]'
+                            step.status === "running"
+                              ? "text-[var(--accent-primary)]"
+                              : "text-[var(--muted-foreground)]"
                           }`}
                         >
                           {step.detail}
@@ -321,9 +361,18 @@ export function AuditThinking({ steps }: { steps: ThinkingStep[] }) {
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     <div className="flex gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span
+                        className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      />
+                      <span
+                        className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <span
+                        className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      />
                     </div>
                     <span className="text-xs text-[var(--muted-foreground)]">
                       Working on it…

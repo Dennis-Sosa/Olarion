@@ -1,0 +1,2342 @@
+[
+  {
+    "id": "001_commerce_temporal_clean",
+    "pair_id": "commerce_temporal",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. commerce_activity_before_t0 is an event count over [t0-7 days,t0); commerce_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week",
+        "commerce_activity_before_t0",
+        "commerce_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_before_t0']].copy()\ny = df['purchase_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "002_commerce_temporal_leaky",
+    "pair_id": "commerce_temporal",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. commerce_activity_before_t0 is an event count over [t0-7 days,t0); commerce_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week",
+        "commerce_activity_before_t0",
+        "commerce_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_after_t0']].copy()\ny = df['purchase_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "003_commerce_target_proxy_clean",
+    "pair_id": "commerce_target_proxy",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. commerce_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week",
+        "commerce_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['commerce_resolution_code'] = df['purchase_next_week'].astype(int)\nX = df[['visits_prior_week', 'spend_prior_month']].copy()\ny = df['purchase_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "004_commerce_target_proxy_leaky",
+    "pair_id": "commerce_target_proxy",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. commerce_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week",
+        "commerce_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['commerce_resolution_code'] = df['purchase_next_week'].astype(int)\nX = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()\ny = df['purchase_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "005_commerce_preprocessing_clean",
+    "pair_id": "commerce_preprocessing",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "preprocessing",
+    "variant": "train_only_StandardScaler",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "统计量仅在训练集拟合，再应用于测试集。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['visits_prior_week', 'spend_prior_month']].copy()\ny = df['purchase_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\npreprocessor = StandardScaler()\nX_train = preprocessor.fit_transform(X_train)\nX_test = preprocessor.transform(X_test)\n"
+    }
+  },
+  {
+    "id": "006_commerce_preprocessing_leaky",
+    "pair_id": "commerce_preprocessing",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "preprocessing",
+    "variant": "global_StandardScaler",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['visits_prior_week', 'spend_prior_month']].copy()\ny = df['purchase_next_week']\npreprocessor = StandardScaler()\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "007_commerce_entity_split_clean",
+    "pair_id": "commerce_entity_split",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "entity_split",
+    "variant": "repeated_entities_group_split",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "按实体分组切分，训练与测试不共享实体。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each commerce_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week",
+        "commerce_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['visits_prior_week', 'spend_prior_month']].copy()\ny = df['purchase_next_week']\nsplitter = GroupKFold(n_splits=5)\ntrain_idx, test_idx = next(splitter.split(X, y, groups=df['commerce_entity_id']))\nX_train, X_test = X.iloc[train_idx], X.iloc[test_idx]\ny_train, y_test = y.iloc[train_idx], y.iloc[test_idx]\n"
+    }
+  },
+  {
+    "id": "008_commerce_entity_split_leaky",
+    "pair_id": "commerce_entity_split",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each commerce_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week",
+        "commerce_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['visits_prior_week', 'spend_prior_month']].copy()\ny = df['purchase_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "009_commerce_target_aggregation_clean",
+    "pair_id": "commerce_target_aggregation",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. commerce_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week",
+        "commerce_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['visits_prior_week', 'spend_prior_month', 'commerce_segment']].copy()\ny = df['purchase_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['commerce_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['commerce_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['commerce_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['commerce_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['commerce_segment'])\nX_test = X_test.drop(columns=['commerce_segment'])\n"
+    }
+  },
+  {
+    "id": "010_commerce_target_aggregation_leaky",
+    "pair_id": "commerce_target_aggregation",
+    "domain": "commerce",
+    "topic": "网站访客购买",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. commerce_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "purchase_next_week",
+      "csv_columns": [
+        "visits_prior_week",
+        "spend_prior_month",
+        "purchase_next_week",
+        "commerce_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')\nX = df[['visits_prior_week', 'spend_prior_month', 'segment_rate']].copy()\ny = df['purchase_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "011_subscription_temporal_clean",
+    "pair_id": "subscription_temporal",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. subscription_activity_before_t0 is an event count over [t0-7 days,t0); subscription_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month",
+        "subscription_activity_before_t0",
+        "subscription_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_before_t0']].copy()\ny = df['churn_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "012_subscription_temporal_leaky",
+    "pair_id": "subscription_temporal",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. subscription_activity_before_t0 is an event count over [t0-7 days,t0); subscription_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month",
+        "subscription_activity_before_t0",
+        "subscription_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()\ny = df['churn_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "013_subscription_target_proxy_clean",
+    "pair_id": "subscription_target_proxy",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['churn_next_month'].astype(int)\nX = df[['active_days_prior_month', 'tenure_days']].copy()\ny = df['churn_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "014_subscription_target_proxy_leaky",
+    "pair_id": "subscription_target_proxy",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['churn_next_month'].astype(int)\nX = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()\ny = df['churn_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "015_subscription_preprocessing_clean",
+    "pair_id": "subscription_preprocessing",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "preprocessing",
+    "variant": "train_only_MinMaxScaler",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "统计量仅在训练集拟合，再应用于测试集。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['active_days_prior_month', 'tenure_days']].copy()\ny = df['churn_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\npreprocessor = MinMaxScaler()\nX_train = preprocessor.fit_transform(X_train)\nX_test = preprocessor.transform(X_test)\n"
+    }
+  },
+  {
+    "id": "016_subscription_preprocessing_leaky",
+    "pair_id": "subscription_preprocessing",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "preprocessing",
+    "variant": "global_MinMaxScaler",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['active_days_prior_month', 'tenure_days']].copy()\ny = df['churn_next_month']\npreprocessor = MinMaxScaler()\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "017_subscription_entity_split_clean",
+    "pair_id": "subscription_entity_split",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "entity_split",
+    "variant": "unique_id_random_split_hard_negative",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "每个实体严格只有一条记录，且 ID 未作特征，随机切分不会造成实体交叉。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. subscription_entity_id is globally unique: exactly one record per entity. Evaluation concerns iid new entities. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month",
+        "subscription_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['active_days_prior_month', 'tenure_days']].copy()\ny = df['churn_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "018_subscription_entity_split_leaky",
+    "pair_id": "subscription_entity_split",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each subscription_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month",
+        "subscription_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['active_days_prior_month', 'tenure_days']].copy()\ny = df['churn_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "019_subscription_target_aggregation_clean",
+    "pair_id": "subscription_target_aggregation",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. subscription_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month",
+        "subscription_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['active_days_prior_month', 'tenure_days', 'subscription_segment']].copy()\ny = df['churn_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['subscription_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['subscription_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['subscription_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['subscription_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['subscription_segment'])\nX_test = X_test.drop(columns=['subscription_segment'])\n"
+    }
+  },
+  {
+    "id": "020_subscription_target_aggregation_leaky",
+    "pair_id": "subscription_target_aggregation",
+    "domain": "subscription",
+    "topic": "会员流失",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. subscription_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "churn_next_month",
+      "csv_columns": [
+        "active_days_prior_month",
+        "tenure_days",
+        "churn_next_month",
+        "subscription_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('subscription_segment')['churn_next_month'].transform('mean')\nX = df[['active_days_prior_month', 'tenure_days', 'segment_rate']].copy()\ny = df['churn_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "021_rental_temporal_clean",
+    "pair_id": "rental_temporal",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. rental_activity_before_t0 is an event count over [t0-7 days,t0); rental_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week",
+        "rental_activity_before_t0",
+        "rental_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['area_sqm', 'asking_rent_at_listing', 'rental_activity_before_t0']].copy()\ny = df['rented_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "022_rental_temporal_leaky",
+    "pair_id": "rental_temporal",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. rental_activity_before_t0 is an event count over [t0-7 days,t0); rental_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week",
+        "rental_activity_before_t0",
+        "rental_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['area_sqm', 'asking_rent_at_listing', 'rental_activity_after_t0']].copy()\ny = df['rented_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "023_rental_target_proxy_clean",
+    "pair_id": "rental_target_proxy",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. rental_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week",
+        "rental_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['rental_resolution_code'] = df['rented_next_week'].astype(int)\nX = df[['area_sqm', 'asking_rent_at_listing']].copy()\ny = df['rented_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "024_rental_target_proxy_leaky",
+    "pair_id": "rental_target_proxy",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. rental_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week",
+        "rental_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['rental_resolution_code'] = df['rented_next_week'].astype(int)\nX = df[['area_sqm', 'asking_rent_at_listing', 'rental_resolution_code']].copy()\ny = df['rented_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "025_rental_preprocessing_clean",
+    "pair_id": "rental_preprocessing",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "preprocessing",
+    "variant": "stateless_normalizer_hard_negative",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "Normalizer 独立按行归一化，不跨行学习统计量，提前调用不构成此类泄漏。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Normalizer is a stateless per-row L2 normalization and does not learn cross-row statistics. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['area_sqm', 'asking_rent_at_listing']].copy()\ny = df['rented_next_week']\npreprocessor = Normalizer()\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "026_rental_preprocessing_leaky",
+    "pair_id": "rental_preprocessing",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "preprocessing",
+    "variant": "global_SimpleImputer",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['area_sqm', 'asking_rent_at_listing']].copy()\ny = df['rented_next_week']\npreprocessor = SimpleImputer(strategy='median')\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "027_rental_entity_split_clean",
+    "pair_id": "rental_entity_split",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "entity_split",
+    "variant": "repeated_entities_group_split",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "按实体分组切分，训练与测试不共享实体。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each rental_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week",
+        "rental_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['area_sqm', 'asking_rent_at_listing']].copy()\ny = df['rented_next_week']\nsplitter = GroupKFold(n_splits=5)\ntrain_idx, test_idx = next(splitter.split(X, y, groups=df['rental_entity_id']))\nX_train, X_test = X.iloc[train_idx], X.iloc[test_idx]\ny_train, y_test = y.iloc[train_idx], y.iloc[test_idx]\n"
+    }
+  },
+  {
+    "id": "028_rental_entity_split_leaky",
+    "pair_id": "rental_entity_split",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each rental_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week",
+        "rental_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['area_sqm', 'asking_rent_at_listing']].copy()\ny = df['rented_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "029_rental_target_aggregation_clean",
+    "pair_id": "rental_target_aggregation",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. rental_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week",
+        "rental_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['area_sqm', 'asking_rent_at_listing', 'rental_segment']].copy()\ny = df['rented_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['rental_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['rental_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['rental_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['rental_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['rental_segment'])\nX_test = X_test.drop(columns=['rental_segment'])\n"
+    }
+  },
+  {
+    "id": "030_rental_target_aggregation_leaky",
+    "pair_id": "rental_target_aggregation",
+    "domain": "rental",
+    "topic": "房源成交",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 房源成交 (rental). Predict rented_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. area_sqm and asking_rent_at_listing are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. rental_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "rented_next_week",
+      "csv_columns": [
+        "area_sqm",
+        "asking_rent_at_listing",
+        "rented_next_week",
+        "rental_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('rental_segment')['rented_next_week'].transform('mean')\nX = df[['area_sqm', 'asking_rent_at_listing', 'segment_rate']].copy()\ny = df['rented_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "031_credit_temporal_clean",
+    "pair_id": "credit_temporal",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. credit_activity_before_t0 is an event count over [t0-7 days,t0); credit_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year",
+        "credit_activity_before_t0",
+        "credit_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['income_at_application', 'balance_at_application', 'credit_activity_before_t0']].copy()\ny = df['default_next_year']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "032_credit_temporal_leaky",
+    "pair_id": "credit_temporal",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. credit_activity_before_t0 is an event count over [t0-7 days,t0); credit_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year",
+        "credit_activity_before_t0",
+        "credit_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['income_at_application', 'balance_at_application', 'credit_activity_after_t0']].copy()\ny = df['default_next_year']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "033_credit_target_proxy_clean",
+    "pair_id": "credit_target_proxy",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['default_next_year'].astype(int)\nX = df[['income_at_application', 'balance_at_application']].copy()\ny = df['default_next_year']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "034_credit_target_proxy_leaky",
+    "pair_id": "credit_target_proxy",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['default_next_year'].astype(int)\nX = df[['income_at_application', 'balance_at_application', 'outcome']].copy()\ny = df['default_next_year']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "035_credit_preprocessing_clean",
+    "pair_id": "credit_preprocessing",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "preprocessing",
+    "variant": "train_only_StandardScaler",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "统计量仅在训练集拟合，再应用于测试集。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['income_at_application', 'balance_at_application']].copy()\ny = df['default_next_year']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\npreprocessor = StandardScaler()\nX_train = preprocessor.fit_transform(X_train)\nX_test = preprocessor.transform(X_test)\n"
+    }
+  },
+  {
+    "id": "036_credit_preprocessing_leaky",
+    "pair_id": "credit_preprocessing",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "preprocessing",
+    "variant": "global_StandardScaler",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['income_at_application', 'balance_at_application']].copy()\ny = df['default_next_year']\npreprocessor = StandardScaler()\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "037_credit_entity_split_clean",
+    "pair_id": "credit_entity_split",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "entity_split",
+    "variant": "repeated_entities_group_split",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "按实体分组切分，训练与测试不共享实体。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each credit_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year",
+        "credit_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['income_at_application', 'balance_at_application']].copy()\ny = df['default_next_year']\nsplitter = GroupKFold(n_splits=5)\ntrain_idx, test_idx = next(splitter.split(X, y, groups=df['credit_entity_id']))\nX_train, X_test = X.iloc[train_idx], X.iloc[test_idx]\ny_train, y_test = y.iloc[train_idx], y.iloc[test_idx]\n"
+    }
+  },
+  {
+    "id": "038_credit_entity_split_leaky",
+    "pair_id": "credit_entity_split",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each credit_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year",
+        "credit_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['income_at_application', 'balance_at_application']].copy()\ny = df['default_next_year']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "039_credit_target_aggregation_clean",
+    "pair_id": "credit_target_aggregation",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. credit_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year",
+        "credit_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['income_at_application', 'balance_at_application', 'credit_segment']].copy()\ny = df['default_next_year']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['credit_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['credit_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['credit_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['credit_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['credit_segment'])\nX_test = X_test.drop(columns=['credit_segment'])\n"
+    }
+  },
+  {
+    "id": "040_credit_target_aggregation_leaky",
+    "pair_id": "credit_target_aggregation",
+    "domain": "credit",
+    "topic": "贷款违约",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 贷款违约 (credit). Predict default_next_year at a defined decision time t0; the binary outcome is resolved strictly after t0. income_at_application and balance_at_application are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. credit_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "default_next_year",
+      "csv_columns": [
+        "income_at_application",
+        "balance_at_application",
+        "default_next_year",
+        "credit_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('credit_segment')['default_next_year'].transform('mean')\nX = df[['income_at_application', 'balance_at_application', 'segment_rate']].copy()\ny = df['default_next_year']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "041_equipment_temporal_clean",
+    "pair_id": "equipment_temporal",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. equipment_activity_before_t0 is an event count over [t0-7 days,t0); equipment_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day",
+        "equipment_activity_before_t0",
+        "equipment_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['temperature_at_inspection', 'hours_before_inspection', 'equipment_activity_before_t0']].copy()\ny = df['failure_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "042_equipment_temporal_leaky",
+    "pair_id": "equipment_temporal",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. equipment_activity_before_t0 is an event count over [t0-7 days,t0); equipment_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day",
+        "equipment_activity_before_t0",
+        "equipment_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['temperature_at_inspection', 'hours_before_inspection', 'equipment_activity_after_t0']].copy()\ny = df['failure_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "043_equipment_target_proxy_clean",
+    "pair_id": "equipment_target_proxy",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. equipment_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day",
+        "equipment_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['equipment_resolution_code'] = df['failure_next_day'].astype(int)\nX = df[['temperature_at_inspection', 'hours_before_inspection']].copy()\ny = df['failure_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "044_equipment_target_proxy_leaky",
+    "pair_id": "equipment_target_proxy",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. equipment_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day",
+        "equipment_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['equipment_resolution_code'] = df['failure_next_day'].astype(int)\nX = df[['temperature_at_inspection', 'hours_before_inspection', 'equipment_resolution_code']].copy()\ny = df['failure_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "045_equipment_preprocessing_clean",
+    "pair_id": "equipment_preprocessing",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "preprocessing",
+    "variant": "train_only_MinMaxScaler",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "统计量仅在训练集拟合，再应用于测试集。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['temperature_at_inspection', 'hours_before_inspection']].copy()\ny = df['failure_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\npreprocessor = MinMaxScaler()\nX_train = preprocessor.fit_transform(X_train)\nX_test = preprocessor.transform(X_test)\n"
+    }
+  },
+  {
+    "id": "046_equipment_preprocessing_leaky",
+    "pair_id": "equipment_preprocessing",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "preprocessing",
+    "variant": "global_MinMaxScaler",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['temperature_at_inspection', 'hours_before_inspection']].copy()\ny = df['failure_next_day']\npreprocessor = MinMaxScaler()\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "047_equipment_entity_split_clean",
+    "pair_id": "equipment_entity_split",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "entity_split",
+    "variant": "repeated_entities_group_split",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "按实体分组切分，训练与测试不共享实体。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each equipment_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day",
+        "equipment_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['temperature_at_inspection', 'hours_before_inspection']].copy()\ny = df['failure_next_day']\nsplitter = GroupKFold(n_splits=5)\ntrain_idx, test_idx = next(splitter.split(X, y, groups=df['equipment_entity_id']))\nX_train, X_test = X.iloc[train_idx], X.iloc[test_idx]\ny_train, y_test = y.iloc[train_idx], y.iloc[test_idx]\n"
+    }
+  },
+  {
+    "id": "048_equipment_entity_split_leaky",
+    "pair_id": "equipment_entity_split",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each equipment_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day",
+        "equipment_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['temperature_at_inspection', 'hours_before_inspection']].copy()\ny = df['failure_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "049_equipment_target_aggregation_clean",
+    "pair_id": "equipment_target_aggregation",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. equipment_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day",
+        "equipment_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['temperature_at_inspection', 'hours_before_inspection', 'equipment_segment']].copy()\ny = df['failure_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['equipment_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['equipment_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['equipment_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['equipment_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['equipment_segment'])\nX_test = X_test.drop(columns=['equipment_segment'])\n"
+    }
+  },
+  {
+    "id": "050_equipment_target_aggregation_leaky",
+    "pair_id": "equipment_target_aggregation",
+    "domain": "equipment",
+    "topic": "设备故障",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 设备故障 (equipment). Predict failure_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. temperature_at_inspection and hours_before_inspection are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. equipment_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "failure_next_day",
+      "csv_columns": [
+        "temperature_at_inspection",
+        "hours_before_inspection",
+        "failure_next_day",
+        "equipment_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('equipment_segment')['failure_next_day'].transform('mean')\nX = df[['temperature_at_inspection', 'hours_before_inspection', 'segment_rate']].copy()\ny = df['failure_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "051_delivery_temporal_clean",
+    "pair_id": "delivery_temporal",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. delivery_activity_before_t0 is an event count over [t0-7 days,t0); delivery_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery",
+        "delivery_activity_before_t0",
+        "delivery_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['distance_at_dispatch', 'load_at_dispatch', 'delivery_activity_before_t0']].copy()\ny = df['delayed_at_delivery']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "052_delivery_temporal_leaky",
+    "pair_id": "delivery_temporal",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. delivery_activity_before_t0 is an event count over [t0-7 days,t0); delivery_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery",
+        "delivery_activity_before_t0",
+        "delivery_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['distance_at_dispatch', 'load_at_dispatch', 'delivery_activity_after_t0']].copy()\ny = df['delayed_at_delivery']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "053_delivery_target_proxy_clean",
+    "pair_id": "delivery_target_proxy",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['delayed_at_delivery'].astype(int)\nX = df[['distance_at_dispatch', 'load_at_dispatch']].copy()\ny = df['delayed_at_delivery']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "054_delivery_target_proxy_leaky",
+    "pair_id": "delivery_target_proxy",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['delayed_at_delivery'].astype(int)\nX = df[['distance_at_dispatch', 'load_at_dispatch', 'outcome']].copy()\ny = df['delayed_at_delivery']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "055_delivery_preprocessing_clean",
+    "pair_id": "delivery_preprocessing",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "preprocessing",
+    "variant": "train_only_SimpleImputer",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "统计量仅在训练集拟合，再应用于测试集。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['distance_at_dispatch', 'load_at_dispatch']].copy()\ny = df['delayed_at_delivery']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\npreprocessor = SimpleImputer(strategy='median')\nX_train = preprocessor.fit_transform(X_train)\nX_test = preprocessor.transform(X_test)\n"
+    }
+  },
+  {
+    "id": "056_delivery_preprocessing_leaky",
+    "pair_id": "delivery_preprocessing",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "preprocessing",
+    "variant": "global_SimpleImputer",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['distance_at_dispatch', 'load_at_dispatch']].copy()\ny = df['delayed_at_delivery']\npreprocessor = SimpleImputer(strategy='median')\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "057_delivery_entity_split_clean",
+    "pair_id": "delivery_entity_split",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "entity_split",
+    "variant": "repeated_entities_group_split",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "按实体分组切分，训练与测试不共享实体。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each delivery_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery",
+        "delivery_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['distance_at_dispatch', 'load_at_dispatch']].copy()\ny = df['delayed_at_delivery']\nsplitter = GroupKFold(n_splits=5)\ntrain_idx, test_idx = next(splitter.split(X, y, groups=df['delivery_entity_id']))\nX_train, X_test = X.iloc[train_idx], X.iloc[test_idx]\ny_train, y_test = y.iloc[train_idx], y.iloc[test_idx]\n"
+    }
+  },
+  {
+    "id": "058_delivery_entity_split_leaky",
+    "pair_id": "delivery_entity_split",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each delivery_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery",
+        "delivery_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['distance_at_dispatch', 'load_at_dispatch']].copy()\ny = df['delayed_at_delivery']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "059_delivery_target_aggregation_clean",
+    "pair_id": "delivery_target_aggregation",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. delivery_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery",
+        "delivery_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['distance_at_dispatch', 'load_at_dispatch', 'delivery_segment']].copy()\ny = df['delayed_at_delivery']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['delivery_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['delivery_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['delivery_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['delivery_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['delivery_segment'])\nX_test = X_test.drop(columns=['delivery_segment'])\n"
+    }
+  },
+  {
+    "id": "060_delivery_target_aggregation_leaky",
+    "pair_id": "delivery_target_aggregation",
+    "domain": "delivery",
+    "topic": "订单延迟",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 订单延迟 (delivery). Predict delayed_at_delivery at a defined decision time t0; the binary outcome is resolved strictly after t0. distance_at_dispatch and load_at_dispatch are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. delivery_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "delayed_at_delivery",
+      "csv_columns": [
+        "distance_at_dispatch",
+        "load_at_dispatch",
+        "delayed_at_delivery",
+        "delivery_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('delivery_segment')['delayed_at_delivery'].transform('mean')\nX = df[['distance_at_dispatch', 'load_at_dispatch', 'segment_rate']].copy()\ny = df['delayed_at_delivery']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "061_retail_temporal_clean",
+    "pair_id": "retail_temporal",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. retail_activity_before_t0 is an event count over [t0-7 days,t0); retail_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week",
+        "retail_activity_before_t0",
+        "retail_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['inventory_at_open', 'sales_prior_week', 'retail_activity_before_t0']].copy()\ny = df['stockout_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "062_retail_temporal_leaky",
+    "pair_id": "retail_temporal",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. retail_activity_before_t0 is an event count over [t0-7 days,t0); retail_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week",
+        "retail_activity_before_t0",
+        "retail_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['inventory_at_open', 'sales_prior_week', 'retail_activity_after_t0']].copy()\ny = df['stockout_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "063_retail_target_proxy_clean",
+    "pair_id": "retail_target_proxy",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. retail_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week",
+        "retail_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['retail_resolution_code'] = df['stockout_next_week'].astype(int)\nX = df[['inventory_at_open', 'sales_prior_week']].copy()\ny = df['stockout_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "064_retail_target_proxy_leaky",
+    "pair_id": "retail_target_proxy",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. retail_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week",
+        "retail_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['retail_resolution_code'] = df['stockout_next_week'].astype(int)\nX = df[['inventory_at_open', 'sales_prior_week', 'retail_resolution_code']].copy()\ny = df['stockout_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "065_retail_preprocessing_clean",
+    "pair_id": "retail_preprocessing",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "preprocessing",
+    "variant": "train_only_StandardScaler",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "统计量仅在训练集拟合，再应用于测试集。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['inventory_at_open', 'sales_prior_week']].copy()\ny = df['stockout_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\npreprocessor = StandardScaler()\nX_train = preprocessor.fit_transform(X_train)\nX_test = preprocessor.transform(X_test)\n"
+    }
+  },
+  {
+    "id": "066_retail_preprocessing_leaky",
+    "pair_id": "retail_preprocessing",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "preprocessing",
+    "variant": "global_StandardScaler",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['inventory_at_open', 'sales_prior_week']].copy()\ny = df['stockout_next_week']\npreprocessor = StandardScaler()\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "067_retail_entity_split_clean",
+    "pair_id": "retail_entity_split",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "entity_split",
+    "variant": "unique_id_random_split_hard_negative",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "每个实体严格只有一条记录，且 ID 未作特征，随机切分不会造成实体交叉。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. retail_entity_id is globally unique: exactly one record per entity. Evaluation concerns iid new entities. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week",
+        "retail_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['inventory_at_open', 'sales_prior_week']].copy()\ny = df['stockout_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "068_retail_entity_split_leaky",
+    "pair_id": "retail_entity_split",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each retail_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week",
+        "retail_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['inventory_at_open', 'sales_prior_week']].copy()\ny = df['stockout_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "069_retail_target_aggregation_clean",
+    "pair_id": "retail_target_aggregation",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. retail_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week",
+        "retail_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['inventory_at_open', 'sales_prior_week', 'retail_segment']].copy()\ny = df['stockout_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['retail_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['retail_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['retail_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['retail_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['retail_segment'])\nX_test = X_test.drop(columns=['retail_segment'])\n"
+    }
+  },
+  {
+    "id": "070_retail_target_aggregation_leaky",
+    "pair_id": "retail_target_aggregation",
+    "domain": "retail",
+    "topic": "商品缺货",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 商品缺货 (retail). Predict stockout_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. inventory_at_open and sales_prior_week are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. retail_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "stockout_next_week",
+      "csv_columns": [
+        "inventory_at_open",
+        "sales_prior_week",
+        "stockout_next_week",
+        "retail_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('retail_segment')['stockout_next_week'].transform('mean')\nX = df[['inventory_at_open', 'sales_prior_week', 'segment_rate']].copy()\ny = df['stockout_next_week']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "071_support_temporal_clean",
+    "pair_id": "support_temporal",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. support_activity_before_t0 is an event count over [t0-7 days,t0); support_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day",
+        "support_activity_before_t0",
+        "support_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['queue_at_creation', 'prior_ticket_count', 'support_activity_before_t0']].copy()\ny = df['escalated_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "072_support_temporal_leaky",
+    "pair_id": "support_temporal",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. support_activity_before_t0 is an event count over [t0-7 days,t0); support_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day",
+        "support_activity_before_t0",
+        "support_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['queue_at_creation', 'prior_ticket_count', 'support_activity_after_t0']].copy()\ny = df['escalated_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "073_support_target_proxy_clean",
+    "pair_id": "support_target_proxy",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['escalated_next_day'].astype(int)\nX = df[['queue_at_creation', 'prior_ticket_count']].copy()\ny = df['escalated_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "074_support_target_proxy_leaky",
+    "pair_id": "support_target_proxy",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['escalated_next_day'].astype(int)\nX = df[['queue_at_creation', 'prior_ticket_count', 'outcome']].copy()\ny = df['escalated_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "075_support_preprocessing_clean",
+    "pair_id": "support_preprocessing",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "preprocessing",
+    "variant": "stateless_normalizer_hard_negative",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "Normalizer 独立按行归一化，不跨行学习统计量，提前调用不构成此类泄漏。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Normalizer is a stateless per-row L2 normalization and does not learn cross-row statistics. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['queue_at_creation', 'prior_ticket_count']].copy()\ny = df['escalated_next_day']\npreprocessor = Normalizer()\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "076_support_preprocessing_leaky",
+    "pair_id": "support_preprocessing",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "preprocessing",
+    "variant": "global_MinMaxScaler",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['queue_at_creation', 'prior_ticket_count']].copy()\ny = df['escalated_next_day']\npreprocessor = MinMaxScaler()\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "077_support_entity_split_clean",
+    "pair_id": "support_entity_split",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "entity_split",
+    "variant": "repeated_entities_group_split",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "按实体分组切分，训练与测试不共享实体。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each support_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day",
+        "support_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['queue_at_creation', 'prior_ticket_count']].copy()\ny = df['escalated_next_day']\nsplitter = GroupKFold(n_splits=5)\ntrain_idx, test_idx = next(splitter.split(X, y, groups=df['support_entity_id']))\nX_train, X_test = X.iloc[train_idx], X.iloc[test_idx]\ny_train, y_test = y.iloc[train_idx], y.iloc[test_idx]\n"
+    }
+  },
+  {
+    "id": "078_support_entity_split_leaky",
+    "pair_id": "support_entity_split",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each support_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day",
+        "support_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['queue_at_creation', 'prior_ticket_count']].copy()\ny = df['escalated_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "079_support_target_aggregation_clean",
+    "pair_id": "support_target_aggregation",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. support_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day",
+        "support_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['queue_at_creation', 'prior_ticket_count', 'support_segment']].copy()\ny = df['escalated_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['support_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['support_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['support_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['support_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['support_segment'])\nX_test = X_test.drop(columns=['support_segment'])\n"
+    }
+  },
+  {
+    "id": "080_support_target_aggregation_leaky",
+    "pair_id": "support_target_aggregation",
+    "domain": "support",
+    "topic": "工单升级",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 工单升级 (support). Predict escalated_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. queue_at_creation and prior_ticket_count are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. support_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "escalated_next_day",
+      "csv_columns": [
+        "queue_at_creation",
+        "prior_ticket_count",
+        "escalated_next_day",
+        "support_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('support_segment')['escalated_next_day'].transform('mean')\nX = df[['queue_at_creation', 'prior_ticket_count', 'segment_rate']].copy()\ny = df['escalated_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "081_education_temporal_clean",
+    "pair_id": "education_temporal",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. education_activity_before_t0 is an event count over [t0-7 days,t0); education_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month",
+        "education_activity_before_t0",
+        "education_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['lessons_finished_prior_month', 'account_age_days', 'education_activity_before_t0']].copy()\ny = df['completed_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "082_education_temporal_leaky",
+    "pair_id": "education_temporal",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. education_activity_before_t0 is an event count over [t0-7 days,t0); education_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month",
+        "education_activity_before_t0",
+        "education_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['lessons_finished_prior_month', 'account_age_days', 'education_activity_after_t0']].copy()\ny = df['completed_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "083_education_target_proxy_clean",
+    "pair_id": "education_target_proxy",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. education_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month",
+        "education_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['education_resolution_code'] = df['completed_next_month'].astype(int)\nX = df[['lessons_finished_prior_month', 'account_age_days']].copy()\ny = df['completed_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "084_education_target_proxy_leaky",
+    "pair_id": "education_target_proxy",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. education_resolution_code is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month",
+        "education_resolution_code"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['education_resolution_code'] = df['completed_next_month'].astype(int)\nX = df[['lessons_finished_prior_month', 'account_age_days', 'education_resolution_code']].copy()\ny = df['completed_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "085_education_preprocessing_clean",
+    "pair_id": "education_preprocessing",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "preprocessing",
+    "variant": "train_only_SimpleImputer",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "统计量仅在训练集拟合，再应用于测试集。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['lessons_finished_prior_month', 'account_age_days']].copy()\ny = df['completed_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\npreprocessor = SimpleImputer(strategy='median')\nX_train = preprocessor.fit_transform(X_train)\nX_test = preprocessor.transform(X_test)\n"
+    }
+  },
+  {
+    "id": "086_education_preprocessing_leaky",
+    "pair_id": "education_preprocessing",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "preprocessing",
+    "variant": "global_SimpleImputer",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['lessons_finished_prior_month', 'account_age_days']].copy()\ny = df['completed_next_month']\npreprocessor = SimpleImputer(strategy='median')\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "087_education_entity_split_clean",
+    "pair_id": "education_entity_split",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "entity_split",
+    "variant": "repeated_entities_group_split",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "按实体分组切分，训练与测试不共享实体。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each education_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month",
+        "education_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['lessons_finished_prior_month', 'account_age_days']].copy()\ny = df['completed_next_month']\nsplitter = GroupKFold(n_splits=5)\ntrain_idx, test_idx = next(splitter.split(X, y, groups=df['education_entity_id']))\nX_train, X_test = X.iloc[train_idx], X.iloc[test_idx]\ny_train, y_test = y.iloc[train_idx], y.iloc[test_idx]\n"
+    }
+  },
+  {
+    "id": "088_education_entity_split_leaky",
+    "pair_id": "education_entity_split",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each education_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month",
+        "education_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['lessons_finished_prior_month', 'account_age_days']].copy()\ny = df['completed_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "089_education_target_aggregation_clean",
+    "pair_id": "education_target_aggregation",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. education_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month",
+        "education_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['lessons_finished_prior_month', 'account_age_days', 'education_segment']].copy()\ny = df['completed_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['education_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['education_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['education_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['education_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['education_segment'])\nX_test = X_test.drop(columns=['education_segment'])\n"
+    }
+  },
+  {
+    "id": "090_education_target_aggregation_leaky",
+    "pair_id": "education_target_aggregation",
+    "domain": "education",
+    "topic": "课程完成",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 课程完成 (education). Predict completed_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. lessons_finished_prior_month and account_age_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. education_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "completed_next_month",
+      "csv_columns": [
+        "lessons_finished_prior_month",
+        "account_age_days",
+        "completed_next_month",
+        "education_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('education_segment')['completed_next_month'].transform('mean')\nX = df[['lessons_finished_prior_month', 'account_age_days', 'segment_rate']].copy()\ny = df['completed_next_month']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "091_content_temporal_clean",
+    "pair_id": "content_temporal",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "temporal",
+    "variant": "future_column_present_but_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "X 只选择预测前的列；原表中的未来列未进入模型。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. content_activity_before_t0 is an event count over [t0-7 days,t0); content_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day",
+        "content_activity_before_t0",
+        "content_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['past_exposure_count', 'creator_prior_posts', 'content_activity_before_t0']].copy()\ny = df['engaged_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "092_content_temporal_leaky",
+    "pair_id": "content_temporal",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "temporal",
+    "variant": "future_feature_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Time leakage"
+    ],
+    "label_rationale": "X 使用 t0 之后的事件计数。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. content_activity_before_t0 is an event count over [t0-7 days,t0); content_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day",
+        "content_activity_before_t0",
+        "content_activity_after_t0"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['past_exposure_count', 'creator_prior_posts', 'content_activity_after_t0']].copy()\ny = df['engaged_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "093_content_target_proxy_clean",
+    "pair_id": "content_target_proxy",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "target_proxy",
+    "variant": "target_copy_excluded",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "当前标签副本留在原表，仅作为离线记录；X 明确排除它。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['engaged_next_day'].astype(int)\nX = df[['past_exposure_count', 'creator_prior_posts']].copy()\ny = df['engaged_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "094_content_target_proxy_leaky",
+    "pair_id": "content_target_proxy",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "target_proxy",
+    "variant": "target_copy_used",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "当前标签副本作为 X 特征。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. outcome is a numeric copy of the current outcome created after it resolves. It is in the raw offline table, but inspect the explicit X selection to decide whether it is used. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day",
+        "outcome"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['outcome'] = df['engaged_next_day'].astype(int)\nX = df[['past_exposure_count', 'creator_prior_posts', 'outcome']].copy()\ny = df['engaged_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "095_content_preprocessing_clean",
+    "pair_id": "content_preprocessing",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "preprocessing",
+    "variant": "train_only_StandardScaler",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "统计量仅在训练集拟合，再应用于测试集。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['past_exposure_count', 'creator_prior_posts']].copy()\ny = df['engaged_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\npreprocessor = StandardScaler()\nX_train = preprocessor.fit_transform(X_train)\nX_test = preprocessor.transform(X_test)\n"
+    }
+  },
+  {
+    "id": "096_content_preprocessing_leaky",
+    "pair_id": "content_preprocessing",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "preprocessing",
+    "variant": "global_StandardScaler",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "在拆分之前使用全量数据拟合统计量，测试集参与变换参数计算。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['past_exposure_count', 'creator_prior_posts']].copy()\ny = df['engaged_next_day']\npreprocessor = StandardScaler()\nX = preprocessor.fit_transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "097_content_entity_split_clean",
+    "pair_id": "content_entity_split",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "entity_split",
+    "variant": "unique_id_random_split_hard_negative",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "每个实体严格只有一条记录，且 ID 未作特征，随机切分不会造成实体交叉。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. content_entity_id is globally unique: exactly one record per entity. Evaluation concerns iid new entities. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day",
+        "content_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['past_exposure_count', 'creator_prior_posts']].copy()\ny = df['engaged_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "098_content_entity_split_leaky",
+    "pair_id": "content_entity_split",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "entity_split",
+    "variant": "repeated_entities_random_split",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage"
+    ],
+    "label_rationale": "重复实体随机分行，使同一实体跨训练与测试；与新实体泛化目标不符。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each content_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day",
+        "content_entity_id"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['past_exposure_count', 'creator_prior_posts']].copy()\ny = df['engaged_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  },
+  {
+    "id": "099_content_target_aggregation_clean",
+    "pair_id": "content_target_aggregation",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "target_aggregation",
+    "variant": "oof_train_encoding",
+    "expected_leakage": false,
+    "expected_any_bucket": [],
+    "label_rationale": "训练特征使用 OOF 编码；测试映射只来自训练标签，未引用 y_test。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. content_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day",
+        "content_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\nX = df[['past_exposure_count', 'creator_prior_posts', 'content_segment']].copy()\ny = df['engaged_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\nX_train = X_train.reset_index(drop=True)\ny_train = y_train.reset_index(drop=True)\noof = pd.Series(index=X_train.index, dtype=float)\nfor fit_idx, val_idx in KFold(n_splits=5, shuffle=True, random_state=7).split(X_train):\n    fold = pd.DataFrame({'segment': X_train.iloc[fit_idx]['content_segment'], 'label': y_train.iloc[fit_idx]})\n    mapping = fold.groupby('segment')['label'].mean()\n    oof.iloc[val_idx] = X_train.iloc[val_idx]['content_segment'].map(mapping).fillna(fold['label'].mean()).to_numpy()\nfull_train = pd.DataFrame({'segment': X_train['content_segment'], 'label': y_train})\nmapping = full_train.groupby('segment')['label'].mean()\nX_train['segment_rate'] = oof\nX_test = X_test.copy()\nX_test['segment_rate'] = X_test['content_segment'].map(mapping).fillna(y_train.mean())\nX_train = X_train.drop(columns=['content_segment'])\nX_test = X_test.drop(columns=['content_segment'])\n"
+    }
+  },
+  {
+    "id": "100_content_target_aggregation_leaky",
+    "pair_id": "content_target_aggregation",
+    "domain": "content",
+    "topic": "内容互动",
+    "family": "target_aggregation",
+    "variant": "global_target_mean",
+    "expected_leakage": true,
+    "expected_any_bucket": [
+      "Structure / pipeline leakage",
+      "Feature / proxy leakage",
+      "Time leakage"
+    ],
+    "label_rationale": "全量标签分组均值在划分前生成，测试集标签进入其特征。",
+    "request": {
+      "prediction_goal": "Business context: 内容互动 (content). Predict engaged_next_day at a defined decision time t0; the binary outcome is resolved strictly after t0. past_exposure_count and creator_prior_posts are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. content_segment is a known category at t0, shared by many independent entities; it is not an entity identifier. Target-rate encoding must not use holdout labels. ",
+      "target_column": "engaged_next_day",
+      "csv_columns": [
+        "past_exposure_count",
+        "creator_prior_posts",
+        "engaged_next_day",
+        "content_segment"
+      ],
+      "preprocessing_code": "import pandas as pd\nfrom sklearn.model_selection import train_test_split, GroupKFold, KFold\nfrom sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer\nfrom sklearn.impute import SimpleImputer\ndf = pd.read_csv('dataset.csv')\ndf['segment_rate'] = df.groupby('content_segment')['engaged_next_day'].transform('mean')\nX = df[['past_exposure_count', 'creator_prior_posts', 'segment_rate']].copy()\ny = df['engaged_next_day']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n"
+    }
+  }
+]

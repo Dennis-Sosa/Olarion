@@ -1,0 +1,8 @@
+{
+  "source_commit": "908ffc384e7c079275a692797d61374bd4431b88",
+  "cases_sha256": "03d86ffdcd73fcadf689dca9a25ec391d2007d81f13700154ca08cb9530af742",
+  "cases": 100,
+  "positive": 50,
+  "negative": 50,
+  "design": "Source-informed synthetic paired regression: 10 domains, 5 pattern families, 50 pairs. Labels frozen before refactor. Not an independent benchmark or real-user dataset."
+}

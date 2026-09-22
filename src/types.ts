@@ -28,6 +28,13 @@ export interface AuditRequest {
   csv_columns: string[];
   preprocessing_code: string;
   model_training_code?: string;
+  context?: {
+    prediction_time?: string;
+    used_features?: string[];
+    entity_column?: string;
+    entity_repetition?: "unknown" | "unique" | "repeated";
+    feature_availability?: Record<string, "before" | "after" | "unknown">;
+  };
 }
 
 export interface EvidenceItem {
@@ -70,6 +77,19 @@ export interface AgentTraceEntry {
 
 export interface AuditReport {
   overall_risk: Severity;
+  quality?: {
+    status: "complete" | "degraded";
+    assessment: "risk_detected" | "no_risk_detected" | "inconclusive";
+    stages: AuditStage[];
+    model: string;
+    prompt_version: string;
+    rules_version: string;
+    created_at: string;
+    duration_ms: number;
+    input_scope: string;
+  };
+  review_decisions?: ReviewDecision[];
+  retracted_findings?: AuditFinding[];
   summary: string;
   executive_summary?: string;
   narrative_report: string;
@@ -83,4 +103,26 @@ export interface AuditReport {
 export interface AgentMessage {
   role: "assistant" | "user";
   content: string;
+}
+
+export interface AuditStage {
+  id: string;
+  status: "done" | "failed" | "skipped";
+  duration_ms: number;
+  error_code?: string;
+}
+export interface ReviewDecision {
+  finding_id: string;
+  action: "keep" | "update" | "retract";
+  reason: string;
+  source: "prediction_goal" | "preprocessing_code" | "model_training_code";
+  quote: string;
+  severity?: Severity;
+  confidence?: Confidence;
+}
+export interface FindingFeedback {
+  finding_id: string;
+  verdict: "confirmed" | "false_positive" | "needs_context";
+  note: string;
+  updated_at: string;
 }

@@ -2,164 +2,214 @@ import cors from "cors";
 import express from "express";
 import { runAudit } from "./orchestrator";
 import { answerQuestion } from "./tools/llm/chatAgent";
-import { callOpenAIJson } from "./openaiClient";
-
+import {
+  callOpenAIJson,
+  modelErrorCode,
+  PROMPT_VERSION,
+  MODEL,
+} from "./openaiClient";
+import { validateRequest, validateChat } from "./validation";
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: "5mb" }));
-
-const auditLimiter = new Map<string, number>();
-const AUDIT_COOLDOWN_MS = 10_000;
-
-function isRateLimited(ip: string): boolean {
-  const last = auditLimiter.get(ip);
-  if (last && Date.now() - last < AUDIT_COOLDOWN_MS) return true;
-  auditLimiter.set(ip, Date.now());
-  return false;
+app.use(express.json({ limit: "1mb" }));
+const recent = new Map<string, number>();
+function allow(ip: string): boolean {
+  const now = Date.now();
+  for (const [key, until] of recent) if (until <= now) recent.delete(key);
+  if (recent.has(ip) || recent.size > 10000) return false;
+  recent.set(ip, now + 10000);
+  return true;
 }
-
-function validateAuditRequest(body: Record<string, unknown>): string | null {
-  const req = body.request as Record<string, unknown> | undefined;
-  if (!req || typeof req !== "object") return "Missing 'request' object in body";
-  if (!req.prediction_goal || typeof req.prediction_goal !== "string") return "Missing or invalid 'prediction_goal'";
-  if (!Array.isArray(req.csv_columns) || req.csv_columns.length === 0) return "Missing or empty 'csv_columns' array";
-  if (typeof req.preprocessing_code !== "string") return "Missing 'preprocessing_code' string";
-  return null;
-}
-
-app.post("/api/audit", async (req, res) => {
-  const ip = req.ip ?? "unknown";
-  if (isRateLimited(ip)) {
-    res.status(429).json({ error: "Too many requests. Please wait before starting another audit." });
-    return;
-  }
-
-  const validationError = validateAuditRequest(req.body);
-  if (validationError) {
-    res.status(400).json({ error: validationError });
-    return;
-  }
-
-  try {
-    const { request } = req.body;
-    const report = await runAudit(request);
-    res.json({ report });
-  } catch (error) {
-    console.error("Audit error:", error);
-    res.status(500).json({ error: "Audit failed" });
-  }
-});
-
-app.post("/api/audit-stream", async (req, res) => {
-  const ip = req.ip ?? "unknown";
-  if (isRateLimited(ip)) {
-    res.status(429).json({ error: "Too many requests. Please wait before starting another audit." });
-    return;
-  }
-
-  const validationError = validateAuditRequest(req.body);
-  if (validationError) {
-    res.status(400).json({ error: validationError });
-    return;
-  }
-
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  res.setHeader("X-Accel-Buffering", "no");
-  res.flushHeaders();
-
-  const { request } = req.body;
-
-  const sendEvent = (type: string, data: Record<string, unknown>) => {
-    res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
-  };
-
-  try {
-    const report = await runAudit(request, (event) => {
-      sendEvent("step", event as unknown as Record<string, unknown>);
+app.get("/api/health", (_req, res) =>
+  res.json({
+    service: "olarion",
+    prompt_version: PROMPT_VERSION,
+    model: MODEL,
+    model_configured: !!process.env.OPENAI_API_KEY?.trim(),
+  }),
+);
+for (const route of ["/api/audit", "/api/audit-stream"]) {
+  app.post(route, async (req, res) => {
+    if (!validateRequest(req.body?.request)) {
+      res
+        .status(400)
+        .json({
+          error:
+            "Provide a goal, CSV columns, a valid target, preprocessing code, and valid optional context (300 columns / 60,000 characters per code file maximum).",
+        });
+      return;
+    }
+    if (!allow(req.ip ?? "unknown")) {
+      res.setHeader("Retry-After", "10");
+      res
+        .status(429)
+        .json({ error: "Please wait 10 seconds before another request." });
+      return;
+    }
+    const controller = new AbortController();
+    res.on("close", () => {
+      if (!res.writableEnded) controller.abort();
     });
-    sendEvent("complete", { report: report as unknown as Record<string, unknown> });
-  } catch (error) {
-    console.error("Audit stream error:", error);
-    sendEvent("error", { message: "Audit failed" });
-  }
-
-  res.end();
-});
-
+    const streaming = route.endsWith("stream");
+    if (streaming) {
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache, no-transform");
+      res.setHeader("X-Accel-Buffering", "no");
+      res.flushHeaders();
+    }
+    const send = (data: unknown) => {
+      if (!res.destroyed) res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+    const heartbeat = streaming
+      ? setInterval(() => {
+          if (!res.destroyed) res.write(": heartbeat\n\n");
+        }, 10000)
+      : null;
+    try {
+      const report = await runAudit(
+        req.body.request,
+        streaming ? send : undefined,
+        controller.signal,
+      );
+      if (!res.destroyed) {
+        if (streaming) send({ type: "complete", report });
+        else res.json({ report });
+      }
+    } catch {
+      if (!res.destroyed) {
+        if (streaming)
+          send({
+            type: "error",
+            message: "Audit unavailable. Please try again.",
+          });
+        else
+          res
+            .status(503)
+            .json({ error: "Audit unavailable. Please try again." });
+      }
+    } finally {
+      if (heartbeat) clearInterval(heartbeat);
+      if (streaming && !res.destroyed) res.end();
+    }
+  });
+}
 app.post("/api/chat", async (req, res) => {
+  if (!validateChat(req.body)) {
+    res
+      .status(400)
+      .json({
+        error:
+          "A valid question, audit request, report and chat history are required.",
+      });
+    return;
+  }
+  if (!allow(`chat:${req.ip}`)) {
+    res
+      .status(429)
+      .json({ error: "Please wait 10 seconds before another question." });
+    return;
+  }
   try {
     const { question, report, request, history } = req.body;
-    if (!question || typeof question !== "string") {
-      res.status(400).json({ error: "Missing 'question' string" });
-      return;
-    }
-    const answer = await answerQuestion(
-      question,
-      report,
-      request,
-      history ?? [],
-    );
-    res.json({ answer });
-  } catch (error) {
-    console.error("Chat error:", error);
-    res.status(500).json({ error: "Chat failed" });
-  }
-});
-
-app.post("/api/classify-code", async (req, res) => {
-  try {
-    const { files } = req.body as {
-      files: Array<{ filename: string; content: string }>;
-    };
-
-    if (!files || files.length === 0) {
-      res.status(400).json({ error: "No files provided" });
-      return;
-    }
-
-    if (files.length === 1) {
-      res.json({
-        preprocessing_code: files[0].content,
-        model_training_code: null,
-      });
-      return;
-    }
-
-    const fileSummaries = files
-      .map(
-        (f, i) =>
-          `--- File ${i + 1}: "${f.filename}" ---\n${f.content.slice(0, 3000)}`,
-      )
-      .join("\n\n");
-
-    const result = await callOpenAIJson(
-      `You classify Python files for an ML audit tool. Given multiple Python files, determine which one is the data preprocessing / feature engineering code and which one is the model training / evaluation code.
-
-Return JSON: { "preprocessing_index": <0-based index>, "training_index": <0-based index or null> }
-
-Rules:
-- The preprocessing file typically contains: pd.read_csv, feature transforms, train_test_split, StandardScaler, encoding, etc.
-- The training file typically contains: model.fit, classifier/regressor instantiation, accuracy_score, cross_val_score, etc.
-- If both concerns are in a single file, set that as preprocessing_index and training_index to null.
-- If you can't tell, default the first file to preprocessing and the second to training.`,
-      `Classify these ${files.length} Python files:\n\n${fileSummaries}`,
-    );
-
-    const preIdx = Number(result.preprocessing_index ?? 0);
-    const trainIdx =
-      result.training_index != null ? Number(result.training_index) : null;
-
     res.json({
-      preprocessing_code: files[preIdx]?.content ?? files[0].content,
-      model_training_code:
-        trainIdx != null ? (files[trainIdx]?.content ?? null) : null,
+      answer: await answerQuestion(question, report, request, history ?? []),
     });
   } catch (error) {
-    console.error("Classify error:", error);
-    res.status(500).json({ error: "Classification failed" });
+    res
+      .status(503)
+      .json({
+        error:
+          "The AI assistant is currently unavailable. Your audit is still available.",
+        code: modelErrorCode(error),
+      });
   }
 });
-
+app.post("/api/classify-code", async (req, res) => {
+  const files = req.body?.files;
+  if (
+    !Array.isArray(files) ||
+    !files.length ||
+    files.length > 10 ||
+    !files.every(
+      (f) =>
+        f &&
+        typeof f.filename === "string" &&
+        f.filename.length <= 300 &&
+        typeof f.content === "string" &&
+        f.content.length <= 60000,
+    )
+  ) {
+    res
+      .status(400)
+      .json({
+        error: "Upload 1–10 Python files of at most 60,000 characters each.",
+      });
+    return;
+  }
+  if (!allow(`classify:${req.ip}`)) {
+    res.status(429).json({ error: "Please wait before uploading again." });
+    return;
+  }
+  if (files.length === 1) {
+    res.json({
+      preprocessing_code: files[0].content,
+      model_training_code: null,
+    });
+    return;
+  }
+  try {
+    const result = await callOpenAIJson(
+      'Classify ML files. Return JSON {"preprocessing_index": integer|null, "training_index": integer|null}. Indices are zero-based. Preprocessing contains dataset loading and transforms; training contains model fitting and evaluation. If uncertain use null. Never silently choose a default.',
+      JSON.stringify(
+        files.map((f) => ({
+          filename: f.filename,
+          content: f.content.slice(0, 3000),
+        })),
+      ),
+    );
+    const pre = result.preprocessing_index,
+      train = result.training_index;
+    if (
+      !Number.isInteger(pre) ||
+      Number(pre) < 0 ||
+      Number(pre) >= files.length ||
+      (train !== null &&
+        (!Number.isInteger(train) ||
+          Number(train) < 0 ||
+          Number(train) >= files.length ||
+          train === pre))
+    ) {
+      res
+        .status(422)
+        .json({
+          error:
+            "Could not identify the files reliably. Paste the preprocessing and training code separately.",
+        });
+      return;
+    }
+    res.json({
+      preprocessing_code: files[Number(pre)].content,
+      model_training_code: train === null ? null : files[Number(train)].content,
+    });
+  } catch {
+    res
+      .status(503)
+      .json({
+        error:
+          "Code classification unavailable. Paste the two code files separately.",
+      });
+  }
+});
+app.use(
+  (
+    error: { type?: string },
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    res
+      .status(error.type === "entity.too.large" ? 413 : 400)
+      .json({ error: "Invalid or oversized JSON request." });
+  },
+);
 export default app;

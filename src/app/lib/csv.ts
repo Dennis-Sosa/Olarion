@@ -35,6 +35,12 @@ export function parseCsvHeader(text: string): string[] {
 }
 
 export async function extractCsvColumns(file: File): Promise<string[]> {
-  const text = await file.text();
-  return parseCsvHeader(text);
+  // Read a bounded prefix; no dataset rows are sent to the API.
+  const text = await file.slice(0, 65536).text();
+  if (!text.includes("\n") && file.size > 65536)
+    throw new Error("CSV header exceeds 64 KB.");
+  const columns = parseCsvHeader(text.replace(/^\uFEFF/, ""));
+  if (!columns.length || new Set(columns).size !== columns.length)
+    throw new Error("CSV headers must be nonempty and unique.");
+  return columns;
 }

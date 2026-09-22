@@ -1,6 +1,6 @@
-import { motion } from 'motion/react';
-import ReactMarkdown from 'react-markdown';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { motion } from "motion/react";
+import ReactMarkdown from "react-markdown";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
   ArrowRight,
   AlertTriangle,
@@ -15,21 +15,37 @@ import {
   Download,
   FileText,
   X,
-} from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AmbientBackground } from '../components/AmbientBackground';
-import { FloatingChat } from '../components/FloatingChat';
-import { InlineChat } from '../components/InlineChat';
-import type { SharedChatState, ChatMessage } from '../hooks/useChat';
-import { Navigation } from '../components/Navigation';
-import { Footer } from '../components/Footer';
-import type { AuditFinding, AuditReport, AuditRequest, EvidenceItem, Severity, AgentTraceEntry } from '../../types';
-import { auditWithStream, type ThinkingStep } from '../../lib/llmEngine';
-import { buildAuditRecord, saveAuditRecord } from '../lib/storage';
-import { downloadAuditZip } from '../lib/exportZip';
-import { AuditThinking } from '../components/AuditThinking';
+} from "lucide-react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { AmbientBackground } from "../components/AmbientBackground";
+import { FloatingChat } from "../components/FloatingChat";
+import { InlineChat } from "../components/InlineChat";
+import type { SharedChatState, ChatMessage } from "../hooks/useChat";
+import { Navigation } from "../components/Navigation";
+import { Footer } from "../components/Footer";
+import type {
+  AuditFinding,
+  AuditReport,
+  AuditRequest,
+  EvidenceItem,
+  Severity,
+  AgentTraceEntry,
+} from "../../types";
+import { auditWithStream, type ThinkingStep } from "../../lib/llmEngine";
+import { buildAuditRecord, saveAuditRecord } from "../lib/storage";
+import { downloadAuditZip } from "../lib/exportZip";
+import { FindingFeedback } from "../components/FindingFeedback";
+import { AuditQuality } from "../components/AuditQuality";
+import { readFeedback, regressionCandidate } from "../lib/feedback";
+import { AuditThinking } from "../components/AuditThinking";
 
-type LeakageType = 'temporal' | 'feature' | 'pipeline';
+type LeakageType = "temporal" | "feature" | "pipeline";
 
 interface UiFinding {
   id: string;
@@ -37,7 +53,7 @@ interface UiFinding {
   leakageType: LeakageType;
   severity: Severity;
   severityRationale: string | null;
-  confidence: AuditFinding['confidence'];
+  confidence: AuditFinding["confidence"];
   evidence: EvidenceItem[];
   recommendation: string;
   humanReviewRequired: boolean;
@@ -47,20 +63,23 @@ interface UiFinding {
   whyItMatters: string;
 }
 
-function macroToLeakage(macro: AuditFinding['macro_bucket']): LeakageType {
-  if (macro === 'Time leakage') return 'temporal';
-  if (macro === 'Feature / proxy leakage') return 'feature';
-  return 'pipeline';
+function macroToLeakage(macro: AuditFinding["macro_bucket"]): LeakageType {
+  if (macro === "Time leakage") return "temporal";
+  if (macro === "Feature / proxy leakage") return "feature";
+  return "pipeline";
 }
 
 function normalizeEvidence(raw: EvidenceItem): EvidenceItem {
-  const claim = raw.claim || raw.text || '';
-  const filename = raw.source?.filename || raw.citation_label?.split(' (')[0] || '';
-  const location = raw.source?.location || '';
-  const snippet = raw.source?.snippet || raw.citation_detail || '';
+  const claim = raw.claim || raw.text || "";
+  const filename =
+    raw.source?.filename || raw.citation_label?.split(" (")[0] || "";
+  const location = raw.source?.location || "";
+  const snippet = raw.source?.snippet || raw.citation_detail || "";
   return {
     claim,
-    source: filename ? { filename, location, snippet: snippet || undefined } : undefined,
+    source: filename
+      ? { filename, location, snippet: snippet || undefined }
+      : undefined,
   };
 }
 
@@ -73,7 +92,7 @@ function mapFinding(f: AuditFinding): UiFinding {
     severityRationale: f.severity_rationale ?? null,
     confidence: f.confidence,
     evidence: f.evidence.map(normalizeEvidence),
-    recommendation: f.fix_recommendation.join(' '),
+    recommendation: f.fix_recommendation.join(" "),
     humanReviewRequired: f.needs_human_review,
     escalateReason: f.escalate_reason ?? null,
     ruleCited: f.rule_cited ?? null,
@@ -89,11 +108,14 @@ const severityRank: Record<Severity, number> = {
   low: 3,
 };
 
-type LocationState = {
-  request?: AuditRequest;
-  report?: AuditReport;
-  fromHistory?: boolean;
-} | null | undefined;
+type LocationState =
+  | {
+      request?: AuditRequest;
+      report?: AuditReport;
+      fromHistory?: boolean;
+    }
+  | null
+  | undefined;
 
 export function AuditResults() {
   const location = useLocation();
@@ -104,58 +126,79 @@ export function AuditResults() {
   const fromHistory = state?.fromHistory ?? false;
 
   const [report, setReport] = useState<AuditReport | null>(savedReport ?? null);
+  const [storageWarning, setStorageWarning] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(Boolean(request) && !savedReport);
   const [thinkingSteps, setThinkingSteps] = useState<ThinkingStep[]>([]);
 
   useEffect(() => {
     if (savedReport || !request) {
+      if (savedReport) setReport(savedReport);
       setLoading(false);
       return;
     }
 
     let cancelled = false;
+    const controller = new AbortController();
     setLoading(true);
     setLoadError(null);
     setReport(null);
     setThinkingSteps([]);
 
-    (async () => {
-      try {
-        const nextReport = await auditWithStream(request, (step) => {
-          if (cancelled) return;
-          setThinkingSteps((prev) => [...prev, step]);
-        });
-        if (cancelled) return;
-        setReport(nextReport);
-        saveAuditRecord(
-          buildAuditRecord({
-            title: request.prediction_goal.slice(0, 120),
-            domain: 'upload',
+    const kickoff = setTimeout(() => {
+      void (async () => {
+        try {
+          const nextReport = await auditWithStream(
             request,
-            report: nextReport,
-          }),
-        );
-      } catch (err) {
-        if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : 'Audit failed.');
+            (step) => {
+              if (cancelled) return;
+              setThinkingSteps((prev) => [...prev, step]);
+            },
+            controller.signal,
+          );
+          if (cancelled) return;
+          setReport(nextReport);
+          try {
+            saveAuditRecord(
+              buildAuditRecord({
+                title: request.prediction_goal.slice(0, 120),
+                domain: "upload",
+                request,
+                report: nextReport,
+              }),
+            );
+          } catch {
+            setStorageWarning(true);
+          }
+          navigate("/results", {
+            replace: true,
+            state: { request, report: nextReport },
+          });
+        } catch (err) {
+          if (!cancelled) {
+            setLoadError(err instanceof Error ? err.message : "Audit failed.");
+          }
+        } finally {
+          if (!cancelled) setLoading(false);
         }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+      })();
+    }, 0);
 
     return () => {
+      clearTimeout(kickoff);
+      controller.abort();
       cancelled = true;
     };
-  }, [request, savedReport]);
+  }, [request, savedReport, navigate]);
 
   const findings = useMemo(
     () => (report ? report.findings.map(mapFinding) : []),
     [report],
   );
 
-  const completedAt = useMemo(() => new Date().toLocaleString(), [report]);
+  const completedAt = report?.quality?.created_at
+    ? new Date(report.quality.created_at).toLocaleString()
+    : "Time not recorded";
 
   const counts = useMemo(() => {
     if (!report) {
@@ -163,8 +206,8 @@ export function AuditResults() {
     }
     const { findings: f } = report;
     return {
-      critical: f.filter((x) => x.severity === 'critical').length,
-      high: f.filter((x) => x.severity === 'high').length,
+      critical: f.filter((x) => x.severity === "critical").length,
+      high: f.filter((x) => x.severity === "high").length,
       total: f.length,
     };
   }, [report]);
@@ -187,7 +230,9 @@ export function AuditResults() {
   }, []);
 
   // Shared chat state so InlineChat and FloatingChat stay in sync
-  const [sharedConversation, setSharedConversation] = useState<ChatMessage[]>([]);
+  const [sharedConversation, setSharedConversation] = useState<ChatMessage[]>(
+    [],
+  );
   const [sharedIsThinking, setSharedIsThinking] = useState(false);
   const sharedChat: SharedChatState = {
     conversation: sharedConversation,
@@ -204,36 +249,49 @@ export function AuditResults() {
   }, [report]);
 
   const [expandedFinding, setExpandedFinding] = useState<string | null>(null);
-  const [severityFilter, setSeverityFilter] = useState<'all' | Severity>('all');
-  const [leakageFilter, setLeakageFilter] = useState<'all' | LeakageType>('all');
+  const [severityFilter, setSeverityFilter] = useState<"all" | Severity>("all");
+  const [leakageFilter, setLeakageFilter] = useState<"all" | LeakageType>(
+    "all",
+  );
   const [reportExpanded, setReportExpanded] = useState(false);
 
   const executiveSummaryText = useMemo(() => {
-    if (!report) return '';
-    console.log("[AuditResults] report.executive_summary:", typeof report.executive_summary, report.executive_summary ? `"${report.executive_summary.slice(0, 200)}..."` : report.executive_summary);
-    console.log("[AuditResults] report.summary:", typeof report.summary, `"${report.summary?.slice(0, 100)}"`);
-    console.log("[AuditResults] report.narrative_report length:", report.narrative_report?.length);
+    if (!report) return "";
     if (report.executive_summary) return report.executive_summary;
-    const narrative = report.narrative_report ?? '';
-    return narrative.length > 400 ? narrative.slice(0, 400) + '…' : narrative;
+    const narrative = report.narrative_report ?? "";
+    return narrative.length > 400 ? narrative.slice(0, 400) + "…" : narrative;
   }, [report]);
 
   const severityCounts = useMemo(() => {
-    const map: Record<string, number> = { all: findings.length, critical: 0, high: 0, medium: 0, low: 0 };
+    const map: Record<string, number> = {
+      all: findings.length,
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+    };
     for (const f of findings) map[f.severity] = (map[f.severity] ?? 0) + 1;
     return map;
   }, [findings]);
 
   const leakageCounts = useMemo(() => {
-    const map: Record<string, number> = { all: findings.length, temporal: 0, feature: 0, pipeline: 0 };
-    for (const f of findings) map[f.leakageType] = (map[f.leakageType] ?? 0) + 1;
+    const map: Record<string, number> = {
+      all: findings.length,
+      temporal: 0,
+      feature: 0,
+      pipeline: 0,
+    };
+    for (const f of findings)
+      map[f.leakageType] = (map[f.leakageType] ?? 0) + 1;
     return map;
   }, [findings]);
 
   const filteredFindings = useMemo(() => {
     return findings.filter((f) => {
-      if (severityFilter !== 'all' && f.severity !== severityFilter) return false;
-      if (leakageFilter !== 'all' && f.leakageType !== leakageFilter) return false;
+      if (severityFilter !== "all" && f.severity !== severityFilter)
+        return false;
+      if (leakageFilter !== "all" && f.leakageType !== leakageFilter)
+        return false;
       return true;
     });
   }, [findings, severityFilter, leakageFilter]);
@@ -243,54 +301,77 @@ export function AuditResults() {
     visible: { opacity: 1, y: 0 },
   };
 
-  const markdownComponents = useMemo(() => ({
-    p: ({ children }: { children?: React.ReactNode }) => (
-      <p className="text-sm text-[var(--foreground)] leading-relaxed mb-4 last:mb-0">{children}</p>
-    ),
-    h1: ({ children }: { children?: React.ReactNode }) => (
-      <h1 className="text-lg font-semibold text-[var(--foreground)] mt-6 mb-3 first:mt-0">{children}</h1>
-    ),
-    h2: ({ children }: { children?: React.ReactNode }) => (
-      <h2 className="text-base font-semibold text-[var(--foreground)] mt-6 mb-2 first:mt-0">{children}</h2>
-    ),
-    h3: ({ children }: { children?: React.ReactNode }) => (
-      <h3 className="text-sm font-semibold text-[var(--foreground)] mt-5 mb-2 first:mt-0">{children}</h3>
-    ),
-    strong: ({ children }: { children?: React.ReactNode }) => (
-      <strong className="font-semibold text-[var(--foreground)]">{children}</strong>
-    ),
-    ul: ({ children }: { children?: React.ReactNode }) => (
-      <ul className="list-disc list-outside pl-5 space-y-1 mb-4 text-sm text-[var(--foreground)]">{children}</ul>
-    ),
-    ol: ({ children }: { children?: React.ReactNode }) => (
-      <ol className="list-decimal list-outside pl-5 space-y-1.5 mb-4 text-sm text-[var(--foreground)]">{children}</ol>
-    ),
-    li: ({ children }: { children?: React.ReactNode }) => (
-      <li className="leading-relaxed">{children}</li>
-    ),
-    code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
-      const isBlock = className?.includes('language-');
-      if (isBlock) {
+  const markdownComponents = useMemo(
+    () => ({
+      p: ({ children }: { children?: React.ReactNode }) => (
+        <p className="text-sm text-[var(--foreground)] leading-relaxed mb-4 last:mb-0">
+          {children}
+        </p>
+      ),
+      h1: ({ children }: { children?: React.ReactNode }) => (
+        <h1 className="text-lg font-semibold text-[var(--foreground)] mt-6 mb-3 first:mt-0">
+          {children}
+        </h1>
+      ),
+      h2: ({ children }: { children?: React.ReactNode }) => (
+        <h2 className="text-base font-semibold text-[var(--foreground)] mt-6 mb-2 first:mt-0">
+          {children}
+        </h2>
+      ),
+      h3: ({ children }: { children?: React.ReactNode }) => (
+        <h3 className="text-sm font-semibold text-[var(--foreground)] mt-5 mb-2 first:mt-0">
+          {children}
+        </h3>
+      ),
+      strong: ({ children }: { children?: React.ReactNode }) => (
+        <strong className="font-semibold text-[var(--foreground)]">
+          {children}
+        </strong>
+      ),
+      ul: ({ children }: { children?: React.ReactNode }) => (
+        <ul className="list-disc list-outside pl-5 space-y-1 mb-4 text-sm text-[var(--foreground)]">
+          {children}
+        </ul>
+      ),
+      ol: ({ children }: { children?: React.ReactNode }) => (
+        <ol className="list-decimal list-outside pl-5 space-y-1.5 mb-4 text-sm text-[var(--foreground)]">
+          {children}
+        </ol>
+      ),
+      li: ({ children }: { children?: React.ReactNode }) => (
+        <li className="leading-relaxed">{children}</li>
+      ),
+      code: ({
+        children,
+        className,
+      }: {
+        children?: React.ReactNode;
+        className?: string;
+      }) => {
+        const isBlock = className?.includes("language-");
+        if (isBlock) {
+          return (
+            <code className="block w-full rounded-lg bg-slate-50 border border-[var(--border)] px-4 py-3 text-xs font-mono text-slate-700 overflow-x-auto my-3">
+              {children}
+            </code>
+          );
+        }
         return (
-          <code className="block w-full rounded-lg bg-slate-50 border border-[var(--border)] px-4 py-3 text-xs font-mono text-slate-700 overflow-x-auto my-3">
+          <code className="px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--accent-primary)] text-xs font-mono border border-[var(--border)]">
             {children}
           </code>
         );
-      }
-      return (
-        <code className="px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--accent-primary)] text-xs font-mono border border-[var(--border)]">
+      },
+      pre: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+      blockquote: ({ children }: { children?: React.ReactNode }) => (
+        <blockquote className="border-l-2 border-[var(--accent-primary)]/40 pl-4 italic text-[var(--muted-foreground)] my-3">
           {children}
-        </code>
-      );
-    },
-    pre: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-    blockquote: ({ children }: { children?: React.ReactNode }) => (
-      <blockquote className="border-l-2 border-[var(--accent-primary)]/40 pl-4 italic text-[var(--muted-foreground)] my-3">
-        {children}
-      </blockquote>
-    ),
-    hr: () => <hr className="border-[var(--border)]/50 my-4" />,
-  }), []);
+        </blockquote>
+      ),
+      hr: () => <hr className="border-[var(--border)]/50 my-4" />,
+    }),
+    [],
+  );
 
   if (!request) {
     return (
@@ -298,7 +379,9 @@ export function AuditResults() {
         <Navigation />
         <div className="h-20" />
         <div className="max-w-lg mx-auto px-8 py-24 text-center">
-          <p className="text-[var(--foreground)] mb-4">No audit to show. Start from setup and run an audit.</p>
+          <p className="text-[var(--foreground)] mb-4">
+            No audit to show. Start from setup and run an audit.
+          </p>
           <Link
             to="/setup"
             className="inline-flex items-center gap-2 text-[var(--accent-primary)] font-medium hover:underline"
@@ -322,9 +405,12 @@ export function AuditResults() {
         <div className="h-20" />
         <div className="flex flex-col items-center justify-center py-20 px-8 relative z-10">
           <div className="text-center mb-8">
-            <h2 className="text-2xl text-[var(--foreground)] font-medium mb-2">Running Olarion Audit</h2>
+            <h2 className="text-2xl text-[var(--foreground)] font-medium mb-2">
+              Running Olarion Audit
+            </h2>
             <p className="text-sm text-[var(--muted-foreground)] max-w-md">
-              Olarion is analyzing your task, columns, and code for data leakage patterns.
+              Olarion is analyzing your task, columns, and code for data leakage
+              patterns.
             </p>
           </div>
           <AuditThinking steps={thinkingSteps} />
@@ -340,17 +426,19 @@ export function AuditResults() {
         <Navigation />
         <div className="h-20" />
         <div className="max-w-lg mx-auto px-8 py-24 text-center">
-          <p className="text-[var(--risk-critical)] mb-2 font-medium">Audit could not complete</p>
-          <p className="text-sm text-[var(--muted-foreground)] mb-6">{loadError ?? 'Unknown error.'}</p>
+          <p className="text-[var(--risk-critical)] mb-2 font-medium">
+            Audit could not complete
+          </p>
+          <p className="text-sm text-[var(--muted-foreground)] mb-6">
+            {loadError ?? "Unknown error."}
+          </p>
           <p className="text-xs text-[var(--muted-foreground)] mb-6">
-            Ensure the API server is running (<code className="font-mono bg-[var(--secondary)] px-1">npm run server</code> or{' '}
-            <code className="font-mono bg-[var(--secondary)] px-1">npm run dev:full</code>) and{' '}
-            <code className="font-mono bg-[var(--secondary)] px-1">OPENAI_API_KEY</code> is set in{' '}
-            <code className="font-mono bg-[var(--secondary)] px-1">.env</code>.
+            The audit service could not finish this request. Please try again in
+            a moment.
           </p>
           <button
             type="button"
-            onClick={() => navigate('/setup', { replace: true })}
+            onClick={() => navigate("/setup", { replace: true })}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--primary)] text-white text-sm"
           >
             Back to Setup
@@ -387,6 +475,29 @@ export function AuditResults() {
           </div>
           <button
             type="button"
+            className="text-sm underline text-slate-600"
+            onClick={() => {
+              const data = regressionCandidate(
+                request,
+                report,
+                readFeedback(report),
+              );
+              const url = URL.createObjectURL(
+                new Blob([JSON.stringify(data, null, 2)], {
+                  type: "application/json",
+                }),
+              );
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "olarion-regression-candidate.json";
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            Export feedback + case
+          </button>
+          <button
+            type="button"
             onClick={() => downloadAuditZip(report)}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border)]/60 bg-white/65 backdrop-blur-sm text-sm text-[var(--foreground)] hover:border-[var(--accent-primary)]/40 hover:text-[var(--accent-primary)] transition-colors"
           >
@@ -395,66 +506,162 @@ export function AuditResults() {
           </button>
         </div>
 
-        <motion.div initial="hidden" animate="visible" variants={fadeInVariants} className="mb-10">
+        {storageWarning && (
+          <p role="status" className="mb-4 text-sm text-amber-800">
+            Report ready, but browser storage is unavailable. Download the
+            report to keep a copy.
+          </p>
+        )}
+        <AuditQuality report={report} />
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeInVariants}
+          className="mb-10"
+        >
           <div className="bg-white/65 backdrop-blur-sm rounded-xl border border-[var(--border)]/60 overflow-hidden">
             {/* Top summary row */}
             <div className="px-8 pt-6 pb-5 flex items-start justify-between flex-wrap gap-6">
               <div className="flex items-center gap-10">
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-[var(--muted-foreground)] mb-2">Overall Risk Level</p>
-                  <RiskBadge severity={overallRisk} large />
+                  <p className="text-xs uppercase tracking-widest text-[var(--muted-foreground)] mb-2">
+                    Overall Risk Level
+                  </p>
+                  {report.quality?.assessment === "inconclusive" ||
+                  !report.quality ? (
+                    <span className="font-semibold text-amber-700">
+                      Inconclusive
+                    </span>
+                  ) : (
+                    <RiskBadge severity={overallRisk} large />
+                  )}
                 </div>
                 <div className="h-12 w-px bg-[var(--border)]/60 hidden sm:block" />
                 {/* Severity counts */}
                 <div className="flex items-center gap-8">
                   {[
-                    { label: 'Critical', count: severityCounts.critical ?? 0, color: 'text-[var(--risk-critical)]' },
-                    { label: 'High', count: severityCounts.high ?? 0, color: 'text-[var(--risk-high)]' },
-                    { label: 'Medium', count: severityCounts.medium ?? 0, color: 'text-[var(--risk-medium)]' },
-                    { label: 'Low', count: severityCounts.low ?? 0, color: 'text-lime-600' },
+                    {
+                      label: "Critical",
+                      count: severityCounts.critical ?? 0,
+                      color: "text-[var(--risk-critical)]",
+                    },
+                    {
+                      label: "High",
+                      count: severityCounts.high ?? 0,
+                      color: "text-[var(--risk-high)]",
+                    },
+                    {
+                      label: "Medium",
+                      count: severityCounts.medium ?? 0,
+                      color: "text-[var(--risk-medium)]",
+                    },
+                    {
+                      label: "Low",
+                      count: severityCounts.low ?? 0,
+                      color: "text-lime-600",
+                    },
                   ].map(({ label, count, color }) => (
-                    <div key={label} className="flex flex-col items-center gap-1">
-                      <span className={`text-2xl font-semibold ${color}`}>{count}</span>
-                      <span className="text-xs text-[var(--muted-foreground)]">{label}</span>
+                    <div
+                      key={label}
+                      className="flex flex-col items-center gap-1"
+                    >
+                      <span className={`text-2xl font-semibold ${color}`}>
+                        {count}
+                      </span>
+                      <span className="text-xs text-[var(--muted-foreground)]">
+                        {label}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs text-[var(--muted-foreground)] mb-1">Audit completed</p>
-                <p className="text-sm text-[var(--foreground)]">{completedAt}</p>
+                <p className="text-xs text-[var(--muted-foreground)] mb-1">
+                  {report.quality?.status === "complete"
+                    ? "Checks completed"
+                    : "Partial / unverified audit"}
+                </p>
+                <p className="text-sm text-[var(--foreground)]">
+                  {completedAt}
+                </p>
               </div>
             </div>
 
             {/* Leakage type breakdown bar */}
-            {findings.length > 0 && (() => {
-              const temporal = findings.filter(f => f.leakageType === 'temporal').length;
-              const feature = findings.filter(f => f.leakageType === 'feature').length;
-              const pipeline = findings.filter(f => f.leakageType === 'pipeline').length;
-              const total = findings.length;
-              return (
-                <div className="px-8 pb-6">
-                  <p className="text-xs text-[var(--muted-foreground)] mb-2 uppercase tracking-widest">Leakage breakdown</p>
-                  <div className="flex h-2 rounded-full overflow-hidden gap-0.5">
-                    {temporal > 0 && <div className="bg-blue-500 transition-all duration-700" style={{ width: `${(temporal / total) * 100}%` }} />}
-                    {feature > 0 && <div className="bg-violet-400 transition-all duration-700" style={{ width: `${(feature / total) * 100}%` }} />}
-                    {pipeline > 0 && <div className="bg-blue-300 transition-all duration-700" style={{ width: `${(pipeline / total) * 100}%` }} />}
+            {findings.length > 0 &&
+              (() => {
+                const temporal = findings.filter(
+                  (f) => f.leakageType === "temporal",
+                ).length;
+                const feature = findings.filter(
+                  (f) => f.leakageType === "feature",
+                ).length;
+                const pipeline = findings.filter(
+                  (f) => f.leakageType === "pipeline",
+                ).length;
+                const total = findings.length;
+                return (
+                  <div className="px-8 pb-6">
+                    <p className="text-xs text-[var(--muted-foreground)] mb-2 uppercase tracking-widest">
+                      Leakage breakdown
+                    </p>
+                    <div className="flex h-2 rounded-full overflow-hidden gap-0.5">
+                      {temporal > 0 && (
+                        <div
+                          className="bg-blue-500 transition-all duration-700"
+                          style={{ width: `${(temporal / total) * 100}%` }}
+                        />
+                      )}
+                      {feature > 0 && (
+                        <div
+                          className="bg-violet-400 transition-all duration-700"
+                          style={{ width: `${(feature / total) * 100}%` }}
+                        />
+                      )}
+                      {pipeline > 0 && (
+                        <div
+                          className="bg-blue-300 transition-all duration-700"
+                          style={{ width: `${(pipeline / total) * 100}%` }}
+                        />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-5 mt-2">
+                      {[
+                        {
+                          label: "Temporal",
+                          count: temporal,
+                          color: "bg-blue-500",
+                        },
+                        {
+                          label: "Feature",
+                          count: feature,
+                          color: "bg-violet-400",
+                        },
+                        {
+                          label: "Pipeline",
+                          count: pipeline,
+                          color: "bg-blue-300",
+                        },
+                      ]
+                        .filter((x) => x.count > 0)
+                        .map(({ label, count, color }) => (
+                          <div
+                            key={label}
+                            className="flex items-center gap-1.5"
+                          >
+                            <span className={`w-2 h-2 rounded-full ${color}`} />
+                            <span className="text-xs text-[var(--muted-foreground)]">
+                              {label}{" "}
+                              <span className="font-medium text-[var(--foreground)]">
+                                ({count})
+                              </span>
+                            </span>
+                          </div>
+                        ))}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-5 mt-2">
-                    {[
-                      { label: 'Temporal', count: temporal, color: 'bg-blue-500' },
-                      { label: 'Feature', count: feature, color: 'bg-violet-400' },
-                      { label: 'Pipeline', count: pipeline, color: 'bg-blue-300' },
-                    ].filter(x => x.count > 0).map(({ label, count, color }) => (
-                      <div key={label} className="flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${color}`} />
-                        <span className="text-xs text-[var(--muted-foreground)]">{label} <span className="font-medium text-[var(--foreground)]">({count})</span></span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
           </div>
         </motion.div>
 
@@ -467,27 +674,33 @@ export function AuditResults() {
         >
           <div className="flex items-end justify-between mb-6">
             <div>
-              <h2 className="text-2xl text-[var(--foreground)] mb-2">Detailed Findings</h2>
+              <h2 className="text-2xl text-[var(--foreground)] mb-2">
+                Detailed Findings
+              </h2>
               <p className="text-sm text-[var(--muted-foreground)]">
-                Inspect each flagged item with evidence, severity, and remediation guidance
+                Inspect each flagged item with evidence, severity, and
+                remediation guidance
               </p>
             </div>
           </div>
 
           {findings.length === 0 ? (
             <div className="bg-white/65 backdrop-blur-sm rounded-xl border border-[var(--border)]/60 px-8 py-12 text-center text-sm text-[var(--muted-foreground)]">
-              No issues were flagged for this submission. Review the narrative below for methodology notes.
+              No concerns were returned. Check coverage above: unavailable
+              checks cannot establish that the pipeline is safe.
             </div>
           ) : (
             <>
               <div className="flex items-center gap-3 mb-4">
                 {/* Severity filter */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)] opacity-60 select-none">Severity</span>
+                  <span className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)] opacity-60 select-none">
+                    Severity
+                  </span>
                   <div className="flex items-center gap-1 p-0.5 bg-white/55 backdrop-blur-sm rounded-lg border border-[var(--border)]/50">
                     {FILTER_OPTIONS.map(({ key, label, dot }) => {
                       const count = severityCounts[key] ?? 0;
-                      if (key !== 'all' && count === 0) return null;
+                      if (key !== "all" && count === 0) return null;
                       const isActive = severityFilter === key;
                       return (
                         <button
@@ -496,13 +709,21 @@ export function AuditResults() {
                           onClick={() => setSeverityFilter(key)}
                           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                             isActive
-                              ? 'bg-white text-[var(--foreground)] shadow-sm border border-[var(--border)]/60'
-                              : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-transparent'
+                              ? "bg-white text-[var(--foreground)] shadow-sm border border-[var(--border)]/60"
+                              : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-transparent"
                           }`}
                         >
-                          {dot && <span className={`w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0`} />}
+                          {dot && (
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0`}
+                            />
+                          )}
                           <span>{label}</span>
-                          <span className={`text-xs ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--muted-foreground)]'}`}>{count}</span>
+                          <span
+                            className={`text-xs ${isActive ? "text-[var(--accent-primary)]" : "text-[var(--muted-foreground)]"}`}
+                          >
+                            {count}
+                          </span>
                         </button>
                       );
                     })}
@@ -511,11 +732,13 @@ export function AuditResults() {
 
                 {/* Leakage type filter */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)] opacity-60 select-none">Type</span>
+                  <span className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)] opacity-60 select-none">
+                    Type
+                  </span>
                   <div className="flex items-center gap-1 p-0.5 bg-white/55 backdrop-blur-sm rounded-lg border border-[var(--border)]/50">
                     {LEAKAGE_FILTER_OPTIONS.map(({ key, label, dot }) => {
                       const count = leakageCounts[key] ?? 0;
-                      if (key !== 'all' && count === 0) return null;
+                      if (key !== "all" && count === 0) return null;
                       const isActive = leakageFilter === key;
                       return (
                         <button
@@ -524,13 +747,21 @@ export function AuditResults() {
                           onClick={() => setLeakageFilter(key)}
                           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
                             isActive
-                              ? 'bg-white text-[var(--foreground)] shadow-sm border border-[var(--border)]/60'
-                              : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-transparent'
+                              ? "bg-white text-[var(--foreground)] shadow-sm border border-[var(--border)]/60"
+                              : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-transparent"
                           }`}
                         >
-                          {dot && <span className={`w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0`} />}
+                          {dot && (
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0`}
+                            />
+                          )}
                           <span>{label}</span>
-                          <span className={`text-xs ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--muted-foreground)]'}`}>{count}</span>
+                          <span
+                            className={`text-xs ${isActive ? "text-[var(--accent-primary)]" : "text-[var(--muted-foreground)]"}`}
+                          >
+                            {count}
+                          </span>
                         </button>
                       );
                     })}
@@ -544,14 +775,18 @@ export function AuditResults() {
                   </div>
                 ) : (
                   filteredFindings.map((finding) => (
-                    <FindingItem
-                      key={finding.id}
-                      finding={finding}
-                      expanded={expandedFinding === finding.id}
-                      onToggle={() =>
-                        setExpandedFinding(expandedFinding === finding.id ? null : finding.id)
-                      }
-                    />
+                    <div key={finding.id}>
+                      <FindingItem
+                        finding={finding}
+                        expanded={expandedFinding === finding.id}
+                        onToggle={() =>
+                          setExpandedFinding(
+                            expandedFinding === finding.id ? null : finding.id,
+                          )
+                        }
+                      />
+                      <FindingFeedback report={report} findingId={finding.id} />
+                    </div>
                   ))
                 )}
               </div>
@@ -561,7 +796,10 @@ export function AuditResults() {
 
         {/* Mid-page ambient gradient — purely decorative */}
         <div className="relative h-0 overflow-visible pointer-events-none">
-          <AmbientBackground variant="midpage" className="!overflow-visible -translate-y-40" />
+          <AmbientBackground
+            variant="midpage"
+            className="!overflow-visible -translate-y-40"
+          />
         </div>
 
         <motion.div
@@ -572,7 +810,9 @@ export function AuditResults() {
           className="mb-10"
         >
           <div className="mb-6">
-            <h2 className="text-2xl text-[var(--foreground)] mb-2">Audit Report</h2>
+            <h2 className="text-2xl text-[var(--foreground)] mb-2">
+              Audit Report
+            </h2>
             <p className="text-sm text-[var(--muted-foreground)]">
               Natural-language methodology review summarizing key findings
             </p>
@@ -581,34 +821,44 @@ export function AuditResults() {
           <div className="bg-white/65 backdrop-blur-sm rounded-xl border border-[var(--border)]/60">
             <div className="px-8 py-8">
               <div className="flex flex-col" style={{ gap: 14 }}>
-                {executiveSummaryText.split('\n').filter((l) => l.trim()).map((line, i) => {
-                  const text = line.trim().replace(/^•\s*/, '');
-                  return (
-                    <div key={i} className="flex items-start" style={{ gap: 12 }}>
-                      <span
-                        className="flex-shrink-0 rounded-full"
-                        style={{
-                          width: 8,
-                          height: 8,
-                          marginTop: 7,
-                          background: getBulletColor(text),
-                        }}
-                      />
-                      <span className="text-sm text-[var(--foreground)] leading-relaxed">
-                        {renderExecLine(text)}
-                      </span>
-                    </div>
-                  );
-                })}
+                {executiveSummaryText
+                  .split("\n")
+                  .filter((l) => l.trim())
+                  .map((line, i) => {
+                    const text = line.trim().replace(/^•\s*/, "");
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-start"
+                        style={{ gap: 12 }}
+                      >
+                        <span
+                          className="flex-shrink-0 rounded-full"
+                          style={{
+                            width: 8,
+                            height: 8,
+                            marginTop: 7,
+                            background: getBulletColor(text),
+                          }}
+                        />
+                        <span className="text-sm text-[var(--foreground)] leading-relaxed">
+                          {renderExecLine(text)}
+                        </span>
+                      </div>
+                    );
+                  })}
               </div>
 
-              <div className="border-t mt-6 pt-4" style={{ borderColor: 'var(--border)', borderTopWidth: 0.5 }}>
+              <div
+                className="border-t mt-6 pt-4"
+                style={{ borderColor: "var(--border)", borderTopWidth: 0.5 }}
+              >
                 {!reportExpanded && (
                   <button
                     type="button"
                     onClick={() => setReportExpanded(true)}
                     className="bg-none border-none cursor-pointer p-0"
-                    style={{ fontSize: 14, color: 'var(--muted-foreground)' }}
+                    style={{ fontSize: 14, color: "var(--muted-foreground)" }}
                   >
                     Expand full report ▾
                   </button>
@@ -618,19 +868,25 @@ export function AuditResults() {
               {reportExpanded && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
+                  animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   className="pt-4"
                 >
                   <ReactMarkdown components={markdownComponents}>
                     {auditReportText}
                   </ReactMarkdown>
-                  <div className="border-t mt-6 pt-4" style={{ borderColor: 'var(--border)', borderTopWidth: 0.5 }}>
+                  <div
+                    className="border-t mt-6 pt-4"
+                    style={{
+                      borderColor: "var(--border)",
+                      borderTopWidth: 0.5,
+                    }}
+                  >
                     <button
                       type="button"
                       onClick={() => setReportExpanded(false)}
                       className="bg-none border-none cursor-pointer p-0"
-                      style={{ fontSize: 14, color: 'var(--muted-foreground)' }}
+                      style={{ fontSize: 14, color: "var(--muted-foreground)" }}
                     >
                       Collapse ▴
                     </button>
@@ -665,9 +921,13 @@ export function AuditResults() {
           <div className="flex items-start gap-3 px-5 py-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200/50 text-xs text-emerald-800">
             <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <p>
-              <span className="font-semibold">Privacy:</span> Olarion processes your data in-session only.
-              No uploaded files, code, or audit results are stored on our servers or shared with third parties.
-              LLM calls are made directly to OpenAI using your own API key.
+              <span className="font-semibold">Data &amp; feedback:</span> CSV
+              headers, submitted code and task context are sent to our API and
+              OpenAI for analysis. CSV rows stay in your browser. Audit history
+              and feedback are stored on this device. Feedback is not
+              automatically used for training. The feedback export includes your
+              submitted code and context; review it before sharing. You can
+              clear local records in Past Audits.
             </p>
           </div>
         </motion.div>
@@ -680,23 +940,29 @@ export function AuditResults() {
           className="mb-8"
         >
           <div className="mb-6">
-            <h2 className="text-2xl text-[var(--foreground)] mb-2">Recommended Actions</h2>
+            <h2 className="text-2xl text-[var(--foreground)] mb-2">
+              Recommended Actions
+            </h2>
             <p className="text-sm text-[var(--muted-foreground)]">
               Prioritized steps from the audit (by severity)
             </p>
           </div>
 
           <div className="bg-white/65 backdrop-blur-sm rounded-xl border border-[var(--border)]/60 divide-y divide-[var(--border)]/50">
-              {actionItems.map((f, idx) => (
-                <ActionItem
-                  key={f.id}
-                  index={idx + 1}
-                  priority={f.severity.charAt(0).toUpperCase() + f.severity.slice(1)}
-                  action={f.title}
-                  description={[f.why_it_matters, ...f.fix_recommendation].filter(Boolean).join(' ')}
-                  severity={f.severity}
-                />
-              ))}
+            {actionItems.map((f, idx) => (
+              <ActionItem
+                key={f.id}
+                index={idx + 1}
+                priority={
+                  f.severity.charAt(0).toUpperCase() + f.severity.slice(1)
+                }
+                action={f.title}
+                description={[f.why_it_matters, ...f.fix_recommendation]
+                  .filter(Boolean)
+                  .join(" ")}
+                severity={f.severity}
+              />
+            ))}
           </div>
         </motion.div>
       </div>
@@ -711,12 +977,18 @@ export function AuditResults() {
         className="max-w-5xl mx-auto px-8 pb-16 relative z-10"
       >
         <div className="mb-6">
-          <h2 className="text-2xl text-[var(--foreground)] mb-2">Ask Olarion</h2>
+          <h2 className="text-2xl text-[var(--foreground)] mb-2">
+            Ask Olarion
+          </h2>
           <p className="text-sm text-[var(--muted-foreground)]">
             Have questions about these findings? Ask Olarion for guidance.
           </p>
         </div>
-        <InlineChat context="results" auditContext={{ request, report }} shared={sharedChat} />
+        <InlineChat
+          context="results"
+          auditContext={{ request, report }}
+          shared={sharedChat}
+        />
       </motion.div>
 
       <Footer />
@@ -732,19 +1004,19 @@ export function AuditResults() {
 }
 
 const RISK_BADGES: Record<string, { bg: string; color: string }> = {
-  CRITICAL: { bg: '#FCEBEB', color: '#791F1F' },
-  HIGH: { bg: '#FAECE7', color: '#712B13' },
-  MEDIUM: { bg: '#FAEEDA', color: '#633806' },
-  LOW: { bg: '#EAF3DE', color: '#27500A' },
+  CRITICAL: { bg: "#FCEBEB", color: "#791F1F" },
+  HIGH: { bg: "#FAECE7", color: "#712B13" },
+  MEDIUM: { bg: "#FAEEDA", color: "#633806" },
+  LOW: { bg: "#EAF3DE", color: "#27500A" },
 };
 
 function getBulletColor(text: string): string {
   const lower = text.toLowerCase();
-  if (/verdict|overall/i.test(lower)) return '#E24B4A';
-  if (/critical/i.test(lower)) return '#E24B4A';
-  if (/high|time\b|temporal/i.test(lower)) return '#D85A30';
-  if (/recommend|next\s*step/i.test(lower)) return '#1D9E75';
-  return '#888780';
+  if (/verdict|overall/i.test(lower)) return "#E24B4A";
+  if (/critical/i.test(lower)) return "#E24B4A";
+  if (/high|time\b|temporal/i.test(lower)) return "#D85A30";
+  if (/recommend|next\s*step/i.test(lower)) return "#1D9E75";
+  return "#888780";
 }
 
 function renderExecLine(text: string): React.ReactNode[] {
@@ -753,7 +1025,7 @@ function renderExecLine(text: string): React.ReactNode[] {
 
   const nodes: React.ReactNode[] = [];
   let cursor = 0;
-  const combined = new RegExp(`${riskRe.source}|${quoteRe.source}`, 'g');
+  const combined = new RegExp(`${riskRe.source}|${quoteRe.source}`, "g");
   let m: RegExpExecArray | null;
 
   while ((m = combined.exec(text)) !== null) {
@@ -772,10 +1044,10 @@ function renderExecLine(text: string): React.ReactNode[] {
             color: badge.color,
             fontSize: 12,
             fontWeight: 500,
-            padding: '2px 10px',
+            padding: "2px 10px",
             borderRadius: 99,
-            display: 'inline-flex',
-            alignItems: 'center',
+            display: "inline-flex",
+            alignItems: "center",
           }}
         >
           {level}
@@ -786,10 +1058,10 @@ function renderExecLine(text: string): React.ReactNode[] {
         <code
           key={`c-${m.index}`}
           style={{
-            fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+            fontFamily: "var(--font-mono, ui-monospace, monospace)",
             fontSize: 13,
-            background: 'var(--secondary)',
-            padding: '1px 6px',
+            background: "var(--secondary)",
+            padding: "1px 6px",
             borderRadius: 4,
           }}
         >
@@ -808,33 +1080,39 @@ function renderExecLine(text: string): React.ReactNode[] {
   return nodes;
 }
 
-function RiskBadge({ severity, large = false }: { severity: Severity; large?: boolean }) {
+function RiskBadge({
+  severity,
+  large = false,
+}: {
+  severity: Severity;
+  large?: boolean;
+}) {
   const getStyles = () => {
-    if (severity === 'critical')
+    if (severity === "critical")
       return {
-        bg: 'bg-red-50',
-        text: 'text-[var(--risk-critical)]',
-        border: 'border-red-200',
+        bg: "bg-red-50",
+        text: "text-[var(--risk-critical)]",
+        border: "border-red-200",
         icon: AlertTriangle,
       };
-    if (severity === 'high')
+    if (severity === "high")
       return {
-        bg: 'bg-orange-50',
-        text: 'text-[var(--risk-high)]',
-        border: 'border-orange-200',
+        bg: "bg-orange-50",
+        text: "text-[var(--risk-high)]",
+        border: "border-orange-200",
         icon: AlertCircle,
       };
-    if (severity === 'medium')
+    if (severity === "medium")
       return {
-        bg: 'bg-amber-50',
-        text: 'text-[var(--risk-medium)]',
-        border: 'border-amber-200',
+        bg: "bg-amber-50",
+        text: "text-[var(--risk-medium)]",
+        border: "border-amber-200",
         icon: Info,
       };
     return {
-      bg: 'bg-lime-50',
-      text: 'text-[var(--risk-low)]',
-      border: 'border-lime-200',
+      bg: "bg-lime-50",
+      text: "text-[var(--risk-low)]",
+      border: "border-lime-200",
       icon: CheckCircle,
     };
   };
@@ -845,10 +1123,10 @@ function RiskBadge({ severity, large = false }: { severity: Severity; large?: bo
   return (
     <div
       className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border ${styles.bg} ${styles.text} ${styles.border} ${
-        large ? 'text-sm' : 'text-xs'
+        large ? "text-sm" : "text-xs"
       }`}
     >
-      <Icon className={large ? 'w-4 h-4' : 'w-3 h-3'} />
+      <Icon className={large ? "w-4 h-4" : "w-3 h-3"} />
       <span className="font-semibold uppercase tracking-wide">{severity}</span>
     </div>
   );
@@ -871,21 +1149,35 @@ function StatusMetric({
   );
 }
 
-function ConfidenceBadge({ confidence }: { confidence: AuditFinding['confidence'] }) {
+function ConfidenceBadge({
+  confidence,
+}: {
+  confidence: AuditFinding["confidence"];
+}) {
   const styles =
-    confidence === 'high'
-      ? 'bg-green-50 text-green-700 border-green-200'
-      : confidence === 'medium'
-        ? 'bg-amber-50 text-amber-700 border-amber-200'
-        : 'bg-red-50 text-red-700 border-red-200';
+    confidence === "high"
+      ? "bg-green-50 text-green-700 border-green-200"
+      : confidence === "medium"
+        ? "bg-amber-50 text-amber-700 border-amber-200"
+        : "bg-red-50 text-red-700 border-red-200";
   return (
-    <span className={`text-xs px-2 py-0.5 rounded border font-medium uppercase tracking-wide ${styles}`}>
+    <span
+      className={`text-xs px-2 py-0.5 rounded border font-medium uppercase tracking-wide ${styles}`}
+    >
       {confidence}
     </span>
   );
 }
 
-function SourceBadge({ filename, location, snippet }: { filename: string; location: string; snippet?: string }) {
+function SourceBadge({
+  filename,
+  location,
+  snippet,
+}: {
+  filename: string;
+  location: string;
+  snippet?: string;
+}) {
   const [expanded, setExpanded] = useState(false);
   const hasSnippet = !!snippet;
 
@@ -893,20 +1185,31 @@ function SourceBadge({ filename, location, snippet }: { filename: string; locati
     <div className="inline-flex flex-col">
       <button
         type="button"
-        onClick={hasSnippet ? (e) => { e.stopPropagation(); setExpanded(!expanded); } : undefined}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--secondary)] border border-[var(--border)] text-xs text-[var(--muted-foreground)] font-mono transition-colors ${hasSnippet ? 'cursor-pointer hover:bg-[var(--accent-primary)]/10 hover:border-[var(--accent-primary)]/30' : 'cursor-default'}`}
+        onClick={
+          hasSnippet
+            ? (e) => {
+                e.stopPropagation();
+                setExpanded(!expanded);
+              }
+            : undefined
+        }
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--secondary)] border border-[var(--border)] text-xs text-[var(--muted-foreground)] font-mono transition-colors ${hasSnippet ? "cursor-pointer hover:bg-[var(--accent-primary)]/10 hover:border-[var(--accent-primary)]/30" : "cursor-default"}`}
       >
         <FileText className="w-3 h-3 flex-shrink-0" />
         <span className="font-medium text-[var(--foreground)]">{filename}</span>
-        {location && <span className="text-[var(--muted-foreground)]">({location})</span>}
+        {location && (
+          <span className="text-[var(--muted-foreground)]">({location})</span>
+        )}
         {hasSnippet && (
-          <ChevronDown className={`w-3 h-3 ml-0.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            className={`w-3 h-3 ml-0.5 transition-transform ${expanded ? "rotate-180" : ""}`}
+          />
         )}
       </button>
       {expanded && snippet && (
         <motion.pre
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
+          animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           className="mt-1.5 px-3 py-2 rounded-md bg-[#1e1e2e] text-[#cdd6f4] text-xs font-mono leading-relaxed overflow-x-auto border border-[var(--border)] whitespace-pre-wrap"
         >
@@ -917,7 +1220,13 @@ function SourceBadge({ filename, location, snippet }: { filename: string; locati
   );
 }
 
-function EscalateModal({ reason, onClose }: { reason: string; onClose: () => void }) {
+function EscalateModal({
+  reason,
+  onClose,
+}: {
+  reason: string;
+  onClose: () => void;
+}) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
@@ -932,11 +1241,17 @@ function EscalateModal({ reason, onClose }: { reason: string; onClose: () => voi
             <AlertCircle className="w-5 h-5" />
             <h3 className="font-semibold text-base">Human Review Required</h3>
           </div>
-          <button type="button" onClick={onClose} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
-        <p className="text-sm text-[var(--foreground)] leading-relaxed">{reason}</p>
+        <p className="text-sm text-[var(--foreground)] leading-relaxed">
+          {reason}
+        </p>
       </div>
     </div>
   );
@@ -954,8 +1269,8 @@ function FindingItem({
   const [showEscalate, setShowEscalate] = useState(false);
 
   const getLeakageIcon = () => {
-    if (finding.leakageType === 'temporal') return Clock;
-    if (finding.leakageType === 'feature') return Network;
+    if (finding.leakageType === "temporal") return Clock;
+    if (finding.leakageType === "feature") return Network;
     return Layers;
   };
 
@@ -965,16 +1280,22 @@ function FindingItem({
     <motion.div
       className="px-8 py-6 transition-colors"
       whileHover={{
-        backgroundColor: 'rgba(255,255,255,0.28)',
+        backgroundColor: "rgba(255,255,255,0.28)",
         y: -1,
-        boxShadow: '0 4px 16px rgba(167,191,251,0.18)',
-        transition: { duration: 0.18, ease: 'easeOut' },
+        boxShadow: "0 4px 16px rgba(167,191,251,0.18)",
+        transition: { duration: 0.18, ease: "easeOut" },
       }}
     >
       {showEscalate && finding.escalateReason && (
-        <EscalateModal reason={finding.escalateReason} onClose={() => setShowEscalate(false)} />
+        <EscalateModal
+          reason={finding.escalateReason}
+          onClose={() => setShowEscalate(false)}
+        />
       )}
-      <div onClick={onToggle} className="flex items-start justify-between cursor-pointer group">
+      <div
+        onClick={onToggle}
+        className="flex items-start justify-between cursor-pointer group"
+      >
         <div className="flex items-start gap-5 flex-1">
           <motion.div
             className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[var(--secondary)]"
@@ -983,7 +1304,9 @@ function FindingItem({
             <Icon className="w-5 h-5 text-[var(--muted-foreground)]" />
           </motion.div>
           <div className="flex-1 pt-0.5 min-w-0">
-            <p className="text-xs text-[var(--muted-foreground)] mb-1">{finding.title}</p>
+            <p className="text-xs text-[var(--muted-foreground)] mb-1">
+              {finding.title}
+            </p>
             <code className="text-sm text-[var(--foreground)] font-mono font-medium break-all block mb-2">
               {finding.feature}
             </code>
@@ -1010,14 +1333,18 @@ function FindingItem({
           className="text-[var(--muted-foreground)] hover:text-[var(--accent-primary)] transition-colors p-1"
           aria-expanded={expanded}
         >
-          {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {expanded ? (
+            <ChevronUp className="w-5 h-5" />
+          ) : (
+            <ChevronDown className="w-5 h-5" />
+          )}
         </button>
       </div>
 
       {expanded && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
+          animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           onClick={(e) => e.stopPropagation()}
           className="mt-6 ml-[60px] space-y-5 border-l border-[var(--border)]/50 pl-6"
@@ -1025,26 +1352,43 @@ function FindingItem({
           {finding.ruleCited && (
             <div className="flex items-start gap-2 text-xs text-[var(--muted-foreground)] bg-slate-50 rounded-lg px-3 py-2 border border-[var(--border)]/40">
               <FileText className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[var(--accent-primary)]" />
-              <span><span className="font-medium text-[var(--foreground)]">Rule:</span> {finding.ruleCited}</span>
+              <span>
+                <span className="font-medium text-[var(--foreground)]">
+                  Rule:
+                </span>{" "}
+                {finding.ruleCited}
+              </span>
             </div>
           )}
           {finding.severityRationale && (
             <div className="flex items-start gap-2 text-xs text-[var(--muted-foreground)] bg-amber-50/60 rounded-lg px-3 py-2 border border-amber-200/40">
               <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-600" />
-              <span><span className="font-medium text-[var(--foreground)]">Severity rationale:</span> {finding.severityRationale}</span>
+              <span>
+                <span className="font-medium text-[var(--foreground)]">
+                  Severity rationale:
+                </span>{" "}
+                {finding.severityRationale}
+              </span>
             </div>
           )}
           {finding.escalateReason && (
             <div className="flex items-start gap-2 text-xs text-[var(--muted-foreground)] bg-blue-50/60 rounded-lg px-3 py-2 border border-blue-200/40">
               <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-600" />
-              <span><span className="font-medium text-[var(--foreground)]">Escalation:</span> {finding.escalateReason}</span>
+              <span>
+                <span className="font-medium text-[var(--foreground)]">
+                  Escalation:
+                </span>{" "}
+                {finding.escalateReason}
+              </span>
             </div>
           )}
           <div>
             <h4 className="text-xs uppercase tracking-wide text-[var(--muted-foreground)] mb-3 font-medium">
               Why it matters
             </h4>
-            <p className="text-sm text-[var(--foreground)] leading-relaxed">{finding.whyItMatters}</p>
+            <p className="text-sm text-[var(--foreground)] leading-relaxed">
+              {finding.whyItMatters}
+            </p>
           </div>
           <div>
             <h4 className="text-xs uppercase tracking-wide text-[var(--muted-foreground)] mb-3 font-medium">
@@ -1056,12 +1400,18 @@ function FindingItem({
                 return (
                   <li key={idx} className="flex flex-col gap-1.5">
                     <div className="flex items-start gap-3 text-sm text-[var(--foreground)]">
-                      <span className="text-[var(--accent-primary)] mt-1 font-bold flex-shrink-0">•</span>
+                      <span className="text-[var(--accent-primary)] mt-1 font-bold flex-shrink-0">
+                        •
+                      </span>
                       <span className="leading-relaxed">{item.claim}</span>
                     </div>
                     {item.source?.filename && (
                       <div className="ml-5">
-                        <SourceBadge filename={item.source.filename} location={item.source.location ?? ''} snippet={item.source.snippet} />
+                        <SourceBadge
+                          filename={item.source.filename}
+                          location={item.source.location ?? ""}
+                          snippet={item.source.snippet}
+                        />
                       </div>
                     )}
                   </li>
@@ -1073,7 +1423,9 @@ function FindingItem({
             <h4 className="text-xs uppercase tracking-wide text-[var(--muted-foreground)] mb-3 font-medium">
               Recommendation
             </h4>
-            <p className="text-sm text-[var(--foreground)] leading-relaxed">{finding.recommendation}</p>
+            <p className="text-sm text-[var(--foreground)] leading-relaxed">
+              {finding.recommendation}
+            </p>
           </div>
         </motion.div>
       )}
@@ -1081,12 +1433,22 @@ function FindingItem({
   );
 }
 
-const FILTER_OPTIONS: Array<{ key: 'all' | Severity; label: string; dot?: string; icon?: typeof AlertTriangle }> = [
-  { key: 'all', label: 'All' },
-  { key: 'critical', label: 'Critical', dot: 'bg-red-500', icon: AlertTriangle },
-  { key: 'high', label: 'High', dot: 'bg-orange-500', icon: AlertCircle },
-  { key: 'medium', label: 'Medium', dot: 'bg-amber-500', icon: Info },
-  { key: 'low', label: 'Low', dot: 'bg-lime-500', icon: CheckCircle },
+const FILTER_OPTIONS: Array<{
+  key: "all" | Severity;
+  label: string;
+  dot?: string;
+  icon?: typeof AlertTriangle;
+}> = [
+  { key: "all", label: "All" },
+  {
+    key: "critical",
+    label: "Critical",
+    dot: "bg-red-500",
+    icon: AlertTriangle,
+  },
+  { key: "high", label: "High", dot: "bg-orange-500", icon: AlertCircle },
+  { key: "medium", label: "Medium", dot: "bg-amber-500", icon: Info },
+  { key: "low", label: "Low", dot: "bg-lime-500", icon: CheckCircle },
 ];
 
 function SeverityFilterBar({
@@ -1094,15 +1456,15 @@ function SeverityFilterBar({
   counts,
   onChange,
 }: {
-  active: 'all' | Severity;
+  active: "all" | Severity;
   counts: Record<string, number>;
-  onChange: (value: 'all' | Severity) => void;
+  onChange: (value: "all" | Severity) => void;
 }) {
   return (
     <div className="flex items-center gap-1 mb-2 p-0.5 bg-white/55 backdrop-blur-sm rounded-lg border border-[var(--border)]/50 w-fit">
       {FILTER_OPTIONS.map(({ key, label, dot }) => {
         const count = counts[key] ?? 0;
-        if (key !== 'all' && count === 0) return null;
+        if (key !== "all" && count === 0) return null;
         const isActive = active === key;
 
         return (
@@ -1112,13 +1474,19 @@ function SeverityFilterBar({
             onClick={() => onChange(key)}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
               isActive
-                ? 'bg-white text-[var(--foreground)] shadow-sm border border-[var(--border)]/60'
-                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-transparent'
+                ? "bg-white text-[var(--foreground)] shadow-sm border border-[var(--border)]/60"
+                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-transparent"
             }`}
           >
-            {dot && <span className={`w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0`} />}
+            {dot && (
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0`}
+              />
+            )}
             <span>{label}</span>
-            <span className={`text-xs ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--muted-foreground)]'}`}>
+            <span
+              className={`text-xs ${isActive ? "text-[var(--accent-primary)]" : "text-[var(--muted-foreground)]"}`}
+            >
               {count}
             </span>
           </button>
@@ -1128,11 +1496,15 @@ function SeverityFilterBar({
   );
 }
 
-const LEAKAGE_FILTER_OPTIONS: Array<{ key: 'all' | LeakageType; label: string; dot?: string }> = [
-  { key: 'all', label: 'All' },
-  { key: 'temporal', label: 'Temporal', dot: 'bg-blue-500' },
-  { key: 'feature', label: 'Feature', dot: 'bg-violet-400' },
-  { key: 'pipeline', label: 'Pipeline', dot: 'bg-blue-300' },
+const LEAKAGE_FILTER_OPTIONS: Array<{
+  key: "all" | LeakageType;
+  label: string;
+  dot?: string;
+}> = [
+  { key: "all", label: "All" },
+  { key: "temporal", label: "Temporal", dot: "bg-blue-500" },
+  { key: "feature", label: "Feature", dot: "bg-violet-400" },
+  { key: "pipeline", label: "Pipeline", dot: "bg-blue-300" },
 ];
 
 function LeakageFilterBar({
@@ -1140,15 +1512,15 @@ function LeakageFilterBar({
   counts,
   onChange,
 }: {
-  active: 'all' | LeakageType;
+  active: "all" | LeakageType;
   counts: Record<string, number>;
-  onChange: (value: 'all' | LeakageType) => void;
+  onChange: (value: "all" | LeakageType) => void;
 }) {
   return (
     <div className="flex items-center gap-1 mb-4 p-0.5 bg-white/55 backdrop-blur-sm rounded-lg border border-[var(--border)]/50 w-fit">
       {LEAKAGE_FILTER_OPTIONS.map(({ key, label, dot }) => {
         const count = counts[key] ?? 0;
-        if (key !== 'all' && count === 0) return null;
+        if (key !== "all" && count === 0) return null;
         const isActive = active === key;
         return (
           <button
@@ -1157,13 +1529,19 @@ function LeakageFilterBar({
             onClick={() => onChange(key)}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
               isActive
-                ? 'bg-white text-[var(--foreground)] shadow-sm border border-[var(--border)]/60'
-                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-transparent'
+                ? "bg-white text-[var(--foreground)] shadow-sm border border-[var(--border)]/60"
+                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-transparent"
             }`}
           >
-            {dot && <span className={`w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0`} />}
+            {dot && (
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${dot} flex-shrink-0`}
+              />
+            )}
             <span>{label}</span>
-            <span className={`text-xs ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--muted-foreground)]'}`}>
+            <span
+              className={`text-xs ${isActive ? "text-[var(--accent-primary)]" : "text-[var(--muted-foreground)]"}`}
+            >
               {count}
             </span>
           </button>
@@ -1177,18 +1555,29 @@ function LeakageFilterBar({
 // rendering them as inline <code> elements.
 function inlineCode(text: string): React.ReactNode[] {
   // Match `backtick` spans first, then bare snake_case or camelCase identifiers
-  const parts = text.split(/(`[^`]+`|\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b|\b[a-z]+[A-Z][a-zA-Z0-9]+\b)/g);
+  const parts = text.split(
+    /(`[^`]+`|\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b|\b[a-z]+[A-Z][a-zA-Z0-9]+\b)/g,
+  );
   return parts.map((part, i) => {
-    if (part.startsWith('`') && part.endsWith('`')) {
+    if (part.startsWith("`") && part.endsWith("`")) {
       return (
-        <code key={i} className="px-1 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[0.75em]">
+        <code
+          key={i}
+          className="px-1 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[0.75em]"
+        >
           {part.slice(1, -1)}
         </code>
       );
     }
-    if (/^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/.test(part) || /^[a-z]+[A-Z][a-zA-Z0-9]+$/.test(part)) {
+    if (
+      /^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/.test(part) ||
+      /^[a-z]+[A-Z][a-zA-Z0-9]+$/.test(part)
+    ) {
       return (
-        <code key={i} className="px-1 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[0.75em]">
+        <code
+          key={i}
+          className="px-1 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[0.75em]"
+        >
           {part}
         </code>
       );
@@ -1200,7 +1589,7 @@ function inlineCode(text: string): React.ReactNode[] {
 // Returns true when a double-quoted string's contents look like code or an identifier.
 function looksLikeCode(s: string): boolean {
   // Strip trailing sentence punctuation that sometimes ends up inside the quotes
-  const clean = s.replace(/[.,;:!?]+$/, '').trim();
+  const clean = s.replace(/[.,;:!?]+$/, "").trim();
   if (clean.length === 0) return false;
   // Code expressions: contain brackets, operators, or dots (e.g. df['col'] = ...)
   if (/[\[\]()=]/.test(clean)) return true;
@@ -1216,9 +1605,10 @@ function looksLikeCode(s: string): boolean {
 // ("leased_within_7_days."), and full code expressions ("df['col'] = df.groupby(...)").
 function renderReportInline(text: string): React.ReactNode[] {
   const codeClass =
-    'px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--accent-primary)] text-xs font-mono border border-[var(--border)]';
+    "px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--accent-primary)] text-xs font-mono border border-[var(--border)]";
   // Order matters: backtick first, then double-quoted, then bare identifiers
-  const re = /`([^`]+)`|"([^"]+)"|(\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b|\b[a-z]+[A-Z][a-zA-Z0-9]+\b)/g;
+  const re =
+    /`([^`]+)`|"([^"]+)"|(\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b|\b[a-z]+[A-Z][a-zA-Z0-9]+\b)/g;
   const nodes: React.ReactNode[] = [];
   let lastIdx = 0;
   let match: RegExpExecArray | null;
@@ -1228,22 +1618,34 @@ function renderReportInline(text: string): React.ReactNode[] {
     }
     if (match[1] !== undefined) {
       // `backtick` span
-      nodes.push(<code key={match.index} className={codeClass}>{match[1]}</code>);
+      nodes.push(
+        <code key={match.index} className={codeClass}>
+          {match[1]}
+        </code>,
+      );
     } else if (match[2] !== undefined) {
       // "double-quoted" content — render as code only if it looks like an identifier/snippet
       const inner = match[2];
-      const trailingPunct = inner.match(/[.,;:!?]+$/)?.[0] ?? '';
+      const trailingPunct = inner.match(/[.,;:!?]+$/)?.[0] ?? "";
       const clean = inner.slice(0, inner.length - trailingPunct.length).trim();
       if (looksLikeCode(inner)) {
         // Emit the code block, then restore any punctuation that was inside the quotes
-        nodes.push(<code key={match.index} className={codeClass}>{clean}</code>);
+        nodes.push(
+          <code key={match.index} className={codeClass}>
+            {clean}
+          </code>,
+        );
         if (trailingPunct) nodes.push(trailingPunct);
       } else {
         nodes.push(`"${inner}"`);
       }
     } else if (match[3] !== undefined) {
       // bare snake_case or camelCase identifier
-      nodes.push(<code key={match.index} className={codeClass}>{match[3]}</code>);
+      nodes.push(
+        <code key={match.index} className={codeClass}>
+          {match[3]}
+        </code>,
+      );
     }
     lastIdx = match.index + match[0].length;
   }
@@ -1263,12 +1665,19 @@ function AgentTraceSection({ trace }: { trace: AgentTraceEntry[] }) {
         className="w-full flex items-center justify-between px-8 py-5 text-left"
       >
         <div>
-          <h2 className="text-lg text-[var(--foreground)] font-medium">Review Agent Trace</h2>
+          <h2 className="text-lg text-[var(--foreground)] font-medium">
+            Review Agent Trace
+          </h2>
           <p className="text-xs text-[var(--muted-foreground)] mt-1">
-            {trace.length} tool call{trace.length !== 1 ? 's' : ''} during Phase 2 review
+            {trace.length} tool call{trace.length !== 1 ? "s" : ""} during Phase
+            2 review
           </p>
         </div>
-        {expanded ? <ChevronUp className="w-5 h-5 text-[var(--muted-foreground)]" /> : <ChevronDown className="w-5 h-5 text-[var(--muted-foreground)]" />}
+        {expanded ? (
+          <ChevronUp className="w-5 h-5 text-[var(--muted-foreground)]" />
+        ) : (
+          <ChevronDown className="w-5 h-5 text-[var(--muted-foreground)]" />
+        )}
       </button>
       {expanded && (
         <div className="px-8 pb-6 space-y-3">
@@ -1278,13 +1687,21 @@ function AgentTraceSection({ trace }: { trace: AgentTraceEntry[] }) {
                 R{entry.round}
               </span>
               <div className="flex-1 min-w-0">
-                <code className="text-xs font-mono text-[var(--accent-primary)]">{entry.tool_called}</code>
+                <code className="text-xs font-mono text-[var(--accent-primary)]">
+                  {entry.tool_called}
+                </code>
                 {entry.arguments && Object.keys(entry.arguments).length > 0 && (
                   <span className="text-xs text-[var(--muted-foreground)] ml-2">
-                    ({Object.entries(entry.arguments).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join(', ')})
+                    (
+                    {Object.entries(entry.arguments)
+                      .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
+                      .join(", ")}
+                    )
                   </span>
                 )}
-                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">{entry.result_summary}</p>
+                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                  {entry.result_summary}
+                </p>
               </div>
             </div>
           ))}
@@ -1307,32 +1724,42 @@ function ActionItem({
   description: string;
   severity: Severity;
 }) {
-  const indexColor = severity === 'critical' ? 'text-red-400'
-    : severity === 'high' ? 'text-orange-400'
-    : severity === 'medium' ? 'text-amber-400'
-    : 'text-lime-500';
+  const indexColor =
+    severity === "critical"
+      ? "text-red-400"
+      : severity === "high"
+        ? "text-orange-400"
+        : severity === "medium"
+          ? "text-amber-400"
+          : "text-lime-500";
 
   return (
     <motion.div
       className="group flex items-start gap-5 px-8 py-5"
       whileHover={{
-        backgroundColor: 'rgba(255,255,255,0.28)',
+        backgroundColor: "rgba(255,255,255,0.28)",
         y: -1,
-        boxShadow: '0 4px 16px rgba(167,191,251,0.18)',
-        transition: { duration: 0.18, ease: 'easeOut' },
+        boxShadow: "0 4px 16px rgba(167,191,251,0.18)",
+        transition: { duration: 0.18, ease: "easeOut" },
       }}
     >
-      <span className={`text-lg font-serif font-semibold ${indexColor} flex-shrink-0 w-5 text-center leading-tight mt-0.5`}>
-        {String(index).padStart(2, '0')}
+      <span
+        className={`text-lg font-serif font-semibold ${indexColor} flex-shrink-0 w-5 text-center leading-tight mt-0.5`}
+      >
+        {String(index).padStart(2, "0")}
       </span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1.5">
-          <h4 className="text-sm font-medium text-[var(--foreground)]">{inlineCode(action)}</h4>
+          <h4 className="text-sm font-medium text-[var(--foreground)]">
+            {inlineCode(action)}
+          </h4>
           <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             <RiskBadge severity={severity} />
           </span>
         </div>
-        <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">{inlineCode(description)}</p>
+        <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+          {inlineCode(description)}
+        </p>
       </div>
     </motion.div>
   );
