@@ -61,3 +61,5 @@ CSV 行留在浏览器；代码、表头、任务上下文和问答上下文会�
 错误处理参考 [OpenAI API error codes](https://developers.openai.com/api/docs/guides/error-codes)。模型调用配置需与实际部署账号和模型权限一致。健康接口仅报告配置存在，不能证明凭证有效。
 
 开发依赖升级至 Vite 7 / Vitest 4，开发服务器默认仅绑定本机；qs 通过 override 使用 6.16.0 及兼容补丁版本，避免 Express 的旧版精确依赖。版本修复依据包括 [Vitest 安全公告](https://github.com/advisories/GHSA-82fw-gwwq-j7x9)。提交锁文件并用 CI 验证。
+
+部署配置已迁移为 Vite preset、显式 build/output 配置和 `/api/index` rewrite，移除与 functions 冲突的旧版 builds。依据 [Vercel 配置说明](https://vercel.com/docs/project-configuration/vercel-json)，两者不能混用。
