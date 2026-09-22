@@ -1,4 +1,4 @@
-import type { AuditRequest, AuditReport, AgentMessage } from "../src/types";
+import type { AuditRequest, AuditReport, AgentMessage } from "../src/types.js";
 function record(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object" && !Array.isArray(v);
 }

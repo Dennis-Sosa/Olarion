@@ -1,4 +1,4 @@
-import { AuditFinding, Severity } from "../src/types";
+import { AuditFinding, Severity } from "../src/types.js";
 
 const severityRank: Record<string, number> = {
   low: 1,

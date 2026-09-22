@@ -8,12 +8,13 @@
     "server": "node --import tsx server/index.ts",
     "server:watch": "node --import tsx --watch server/index.ts",
     "dev:full": "concurrently \"vite\" \"npm run server:watch\"",
-    "build": "tsc && vite build",
+    "build": "tsc && tsc -p tsconfig.server.json && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "eval:rules": "tsx evals/run.ts",
     "eval:check": "tsx evals/run.ts --check",
-    "eval:live": "tsx evals/run.ts --live"
+    "eval:live": "tsx evals/run.ts --live",
+    "test:runtime": "node scripts/check-runtime.mjs"
   },
   "dependencies": {
     "cors": "^2.8.5",

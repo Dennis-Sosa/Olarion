@@ -63,3 +63,5 @@ CSV 行留在浏览器；代码、表头、任务上下文和问答上下文会�
 开发依赖升级至 Vite 7 / Vitest 4，开发服务器默认仅绑定本机；qs 通过 override 使用 6.16.0 及兼容补丁版本，避免 Express 的旧版精确依赖。版本修复依据包括 [Vitest 安全公告](https://github.com/advisories/GHSA-82fw-gwwq-j7x9)。提交锁文件并用 CI 验证。
 
 部署配置已迁移为 Vite preset、显式 build/output 配置和 `/api/index` rewrite，移除与 functions 冲突的旧版 builds。依据 [Vercel 配置说明](https://vercel.com/docs/project-configuration/vercel-json)，两者不能混用。
+
+后端使用显式 `.js` ESM import 路径；构建分别检查浏览器与 NodeNext 解析模式。`npm run test:runtime` 会编译服务端、以原生 Node 导入 API 入口、请求健康接口并清理临时文件，防止仅在 serverless 启动时才暴露模块解析问题。

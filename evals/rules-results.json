@@ -1,13 +1,13 @@
 {
   "mode": "rules",
   "provenance": {
-    "git_base": "908ffc384e7c079275a692797d61374bd4431b88",
-    "source_sha256": "809c8c5a6a78b62a2ec8323f7d1c3656c2e8a85f3781e4eb7de1db368d27008b",
+    "git_base": "50d100f5191272c79642e5db39b6eba1c9037de1",
+    "source_sha256": "2d978a7a18d4c90bde1685a2c2ec29af5934ad8e2c65ae39de52b6d827b3dda0",
     "cases_sha256": "03d86ffdcd73fcadf689dca9a25ec391d2007d81f13700154ca08cb9530af742",
     "model": "gpt-4o",
     "prompt_version": "audit-2.0.0",
     "rules_version": "2.0.0",
-    "executed_at": "2026-09-22T22:27:43.181Z"
+    "executed_at": "2026-09-22T23:34:29.711Z"
   },
   "scope": "Source-informed synthetic paired regression: 10 domains, 5 pattern families, 50 pairs. Labels frozen before refactor. Not an independent benchmark or real-user dataset.",
   "baseline": {

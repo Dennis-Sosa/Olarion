@@ -1,4 +1,4 @@
-import type { AuditFinding } from "../../../src/types";
+import type { AuditFinding } from "../../../src/types.js";
 export function ruleFinding(
   id: string,
   type: AuditFinding["fine_grained_type"],

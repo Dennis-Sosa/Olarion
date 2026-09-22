@@ -46,6 +46,7 @@ Open `http://localhost:5173/setup`. Use a Quick Fill example or provide a CSV, p
 
 ```bash
 npm test                 # Offline tests; no provider calls
+npm run test:runtime     # Compile and load the API under native Node ESM
 npm run build            # Type-check frontend AND backend; build frontend
 npm run eval:rules       # Run frozen 100-case regression; write raw results
 npm run eval:check       # CI regression gate; does not overwrite evidence

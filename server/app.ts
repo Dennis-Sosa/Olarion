@@ -1,14 +1,14 @@
 import cors from "cors";
 import express from "express";
-import { runAudit } from "./orchestrator";
-import { answerQuestion } from "./tools/llm/chatAgent";
+import { runAudit } from "./orchestrator.js";
+import { answerQuestion } from "./tools/llm/chatAgent.js";
 import {
   callOpenAIJson,
   modelErrorCode,
   PROMPT_VERSION,
   MODEL,
-} from "./openaiClient";
-import { validateRequest, validateChat } from "./validation";
+} from "./openaiClient.js";
+import { validateRequest, validateChat } from "./validation.js";
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));

@@ -3,19 +3,19 @@ import type {
   AuditReport,
   AuditFinding,
   AuditStage,
-} from "../src/types";
-import { metadataCheck } from "./tools/rules/metadataCheck";
-import { pipelineScan } from "./tools/rules/pipelineScan";
-import { structuralCheck } from "./tools/rules/structuralCheck";
-import { RULES_VERSION, missingContext } from "./tools/rules/context";
-import { detectProxyLeakage } from "./tools/llm/proxyDetector";
-import { detectTemporalLeakage } from "./tools/llm/temporalDetector";
-import { auditPreprocessingCode } from "./tools/llm/codeAuditor";
-import { auditModelTrainingCode } from "./tools/llm/modelCodeAuditor";
-import { reviewAgent } from "./tools/llm/reviewAgent";
-import { renderNarrative } from "./tools/llm/reportGenerator";
-import { MODEL, PROMPT_VERSION, modelErrorCode } from "./openaiClient";
-import { dedupeFindings, computeOverallRisk } from "./utils";
+} from "../src/types.js";
+import { metadataCheck } from "./tools/rules/metadataCheck.js";
+import { pipelineScan } from "./tools/rules/pipelineScan.js";
+import { structuralCheck } from "./tools/rules/structuralCheck.js";
+import { RULES_VERSION, missingContext } from "./tools/rules/context.js";
+import { detectProxyLeakage } from "./tools/llm/proxyDetector.js";
+import { detectTemporalLeakage } from "./tools/llm/temporalDetector.js";
+import { auditPreprocessingCode } from "./tools/llm/codeAuditor.js";
+import { auditModelTrainingCode } from "./tools/llm/modelCodeAuditor.js";
+import { reviewAgent } from "./tools/llm/reviewAgent.js";
+import { renderNarrative } from "./tools/llm/reportGenerator.js";
+import { MODEL, PROMPT_VERSION, modelErrorCode } from "./openaiClient.js";
+import { dedupeFindings, computeOverallRisk } from "./utils.js";
 export interface ProgressEvent {
   type: "step";
   id: string;

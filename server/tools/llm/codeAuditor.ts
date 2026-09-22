@@ -1,5 +1,5 @@
-import type { AuditFinding, AuditRequest } from "../../../src/types";
-import { analyze } from "./analysis";
+import type { AuditFinding, AuditRequest } from "../../../src/types.js";
+import { analyze } from "./analysis.js";
 export interface CodeAuditResult {
   findings: AuditFinding[];
   split_method: string | null;

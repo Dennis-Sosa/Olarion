@@ -2,8 +2,8 @@ import type {
   AuditRequest,
   AuditReport,
   AgentMessage,
-} from "../../../src/types";
-import { callOpenAIChat } from "../../openaiClient";
+} from "../../../src/types.js";
+import { callOpenAIChat } from "../../openaiClient.js";
 export function answerQuestion(
   question: string,
   report: AuditReport,

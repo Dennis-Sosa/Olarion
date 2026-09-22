@@ -2,9 +2,9 @@ import type {
   AuditFinding,
   AuditRequest,
   ReviewDecision,
-} from "../../../src/types";
-import { callOpenAIJson, ModelFailure } from "../../openaiClient";
-import { featureScope } from "../rules/context";
+} from "../../../src/types.js";
+import { callOpenAIJson, ModelFailure } from "../../openaiClient.js";
+import { featureScope } from "../rules/context.js";
 export const severities = ["low", "medium", "high", "critical"];
 const confidences = ["low", "medium", "high"];
 const types = [

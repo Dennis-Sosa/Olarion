@@ -1,4 +1,4 @@
-import type { AuditRequest } from "../../../src/types";
+import type { AuditRequest } from "../../../src/types.js";
 
 export const RULES_VERSION = "2.0.0";
 export function escapeRegex(s: string) {

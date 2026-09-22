@@ -1,7 +1,7 @@
-import type { AuditFinding, AuditRequest } from "../../../src/types";
-import { callOpenAIJson } from "../../openaiClient";
-import { applyReview } from "./analysis";
-import { featureScope } from "../rules/context";
+import type { AuditFinding, AuditRequest } from "../../../src/types.js";
+import { callOpenAIJson } from "../../openaiClient.js";
+import { applyReview } from "./analysis.js";
+import { featureScope } from "../rules/context.js";
 export async function reviewAgent(
   request: AuditRequest,
   findings: AuditFinding[],

@@ -1,4 +1,4 @@
-import type { AuditReport } from "../../../src/types";
+import type { AuditReport } from "../../../src/types.js";
 /** Render only validated structured facts; no additional model claims. */
 export function renderNarrative(report: AuditReport): string {
   const q = report.quality;

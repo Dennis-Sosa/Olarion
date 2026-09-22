@@ -1,6 +1,6 @@
-import type { AuditRequest, AuditFinding } from "../../../src/types";
-import { featureScope, executableCode, escapeRegex } from "./context";
-import { ruleFinding } from "./finding";
+import type { AuditRequest, AuditFinding } from "../../../src/types.js";
+import { featureScope, executableCode, escapeRegex } from "./context.js";
+import { ruleFinding } from "./finding.js";
 export function metadataCheck(request: AuditRequest): AuditFinding[] {
   const scope = featureScope(request),
     code = executableCode(request.preprocessing_code),

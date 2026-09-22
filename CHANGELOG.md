@@ -10,6 +10,7 @@
 - Preserve 100 frozen synthetic cases and publish before/after rule results plus live preflight status.
 - Upgrade the development toolchain and vulnerable runtime dependencies; pin the patched qs range through an override.
 - Replace conflicting legacy Vercel builds/functions configuration with the Vite preset and explicit API routing.
+- Use explicit ESM import extensions and compile/load the API under Node in CI to catch runtime-only module failures.
 - Extend type-checking to the backend and add offline tests and CI.
 
 Known limitation: live model preflight failed authentication in the evaluation environment. No completed live Agent benchmark is claimed. The live Vercel environment requires separate verification after GitHub publication.

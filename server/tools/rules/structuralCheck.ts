@@ -1,7 +1,7 @@
-import type { AuditRequest, AuditFinding } from "../../../src/types";
-import type { CodeAuditResult } from "../llm/codeAuditor";
-import { executableCode, entityState } from "./context";
-import { ruleFinding } from "./finding";
+import type { AuditRequest, AuditFinding } from "../../../src/types.js";
+import type { CodeAuditResult } from "../llm/codeAuditor.js";
+import { executableCode, entityState } from "./context.js";
+import { ruleFinding } from "./finding.js";
 export function structuralCheck(
   request: AuditRequest,
   _codeResult: CodeAuditResult | null,

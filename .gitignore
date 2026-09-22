@@ -6,3 +6,5 @@ empirehacks.zip
 
 .env.*
 !.env.example
+.runtime-check-*/
+*.timestamp-*.mjs

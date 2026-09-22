@@ -1,6 +1,6 @@
-import type { AuditRequest, AuditFinding } from "../../../src/types";
-import { executableCode } from "./context";
-import { ruleFinding } from "./finding";
+import type { AuditRequest, AuditFinding } from "../../../src/types.js";
+import { executableCode } from "./context.js";
+import { ruleFinding } from "./finding.js";
 export function pipelineScan(request: AuditRequest): AuditFinding[] {
   const code = executableCode(request.preprocessing_code),
     findings: AuditFinding[] = [];
