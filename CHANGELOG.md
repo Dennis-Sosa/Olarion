@@ -2,6 +2,9 @@
 
 ## Agent reliability — audit-2.1.2
 
+- Publish the full 100-case comparison (95 complete/correct, 3 misclassified, 2 rate-limited incomplete audits) and separate 20-case challenge results (18 correct, 2 misses).
+- Show leakage mechanisms, recognized derived fields and preliminary-review warnings in the UI; derive public metrics from raw reports and validate them in CI.
+
 - Distinguish provider rate limits from exhausted quota; reduce output reservations and permit bounded, cancellable rate-limit backoff.
 
 - Preserve the interrupted 2.1.0 pilot and address import-only evidence and reversed fit/split reasoning before a fresh full run.

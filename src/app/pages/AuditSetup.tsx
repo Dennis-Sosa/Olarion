@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   ArrowRight,
@@ -21,6 +21,7 @@ import { Footer } from "../components/Footer";
 import { FloatingChat } from "../components/FloatingChat";
 import { AmbientBackground } from "../components/AmbientBackground";
 import { extractCsvColumns } from "../lib/csv";
+import { derivedColumns } from "../../lib/featureCatalog";
 import { auditPreflight } from "../lib/auditPreflight";
 import { AUDIT_LIMITS } from "../../auditLimits";
 import { AUDIT_TASK_TEMPLATE } from "../../data/auditGuide";
@@ -61,6 +62,15 @@ export function AuditSetup() {
   >([]);
   const [preprocessingFile, setPreprocessingFile] = useState("");
   const [trainingFile, setTrainingFile] = useState("");
+  const recognizedDerived = useMemo(
+    () =>
+      derivedColumns({
+        csv_columns: csvColumns,
+        preprocessing_code: preprocessingCode,
+        model_training_code: trainingCode,
+      }),
+    [csvColumns, preprocessingCode, trainingCode],
+  );
 
   useEffect(() => {
     let active = true;
@@ -740,6 +750,17 @@ export function AuditSetup() {
                     Leave this list blank if it cannot express the complete
                     input set; do not list only part of the model inputs.
                   </p>
+                  {recognizedDerived.length > 0 && (
+                    <p
+                      className="text-xs leading-6 text-blue-800 rounded-lg bg-blue-50 p-3"
+                      role="status"
+                    >
+                      Recognized derived field names:{" "}
+                      {recognizedDerived.join(", ")}. You can include these in
+                      the feature lists. Name recognition does not establish
+                      whether a field is used or safe.
+                    </p>
+                  )}
                   <label className="block text-sm">
                     Columns known only after prediction (comma-separated)
                     <input

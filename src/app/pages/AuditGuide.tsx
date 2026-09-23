@@ -1,7 +1,6 @@
 import { Link, useSearchParams } from "react-router";
 import {
   ArrowRight,
-  ArrowUpRight,
   Archive,
   Download,
   FileText,
@@ -10,6 +9,8 @@ import {
 } from "lucide-react";
 import { Navigation } from "../components/Navigation";
 import { Footer } from "../components/Footer";
+import { EvaluationEvidence } from "../components/EvaluationEvidence";
+import evaluationSummary from "../../data/evaluationSummary.json";
 import { AUDIT_GUIDE, AUDIT_TASK_TEMPLATE } from "../../data/auditGuide";
 
 export function AuditGuide() {
@@ -216,34 +217,7 @@ export function AuditGuide() {
           <h2 id="evidence-heading" className="text-2xl">
             {copy.evidenceTitle}
           </h2>
-          <p className="text-xs leading-6 text-slate-500 mt-2">
-            {copy.evidenceIntro}
-          </p>
-          <div className="grid grid-cols-3 gap-3 mt-6 mb-5">
-            {[65, 20, 15].map((value, i) => (
-              <div key={value} className="border-l-2 border-blue-200 pl-3">
-                <p className="text-3xl sm:text-4xl font-serif text-slate-900">
-                  {value}
-                  <span className="text-sm text-slate-400"> / 100</span>
-                </p>
-                <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-5">
-                  {copy.stats[i]}
-                </p>
-              </div>
-            ))}
-          </div>
-          <p className="text-sm leading-7 text-slate-600">
-            {copy.evidenceDetail}
-          </p>
-          <a
-            href="https://github.com/Dennis-Sosa/Olarion/blob/main/evals/remote-report-2.0.1.md"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-blue-700 mt-4 hover:underline"
-          >
-            {copy.evidenceLink}
-            <ArrowUpRight size={16} />
-          </a>
+          <EvaluationEvidence data={evaluationSummary} language={language} />
           <div className="mt-7 pt-6 border-t border-slate-100">
             <h3 className="font-medium">{copy.nextTitle}</h3>
             <p className="text-sm text-slate-600 leading-7 mt-2">

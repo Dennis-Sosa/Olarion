@@ -61,6 +61,8 @@ interface UiFinding {
   ruleCited: string | null;
   title: string;
   whyItMatters: string;
+  mechanism?: string;
+  usedPath?: string;
 }
 
 function macroToLeakage(macro: AuditFinding["macro_bucket"]): LeakageType {
@@ -98,6 +100,8 @@ function mapFinding(f: AuditFinding): UiFinding {
     ruleCited: f.rule_cited ?? null,
     title: f.title,
     whyItMatters: f.why_it_matters,
+    mechanism: f.mechanism,
+    usedPath: f.used_path,
   };
 }
 
@@ -675,7 +679,11 @@ export function AuditResults() {
           <div className="flex items-end justify-between mb-6">
             <div>
               <h2 className="text-2xl text-[var(--foreground)] mb-2">
-                Detailed Findings
+                {report.quality?.stages.some(
+                  (s) => s.id === "review" && s.status === "failed",
+                )
+                  ? "Preliminary Findings"
+                  : "Detailed Findings"}
               </h2>
               <p className="text-sm text-[var(--muted-foreground)]">
                 Inspect each flagged item with evidence, severity, and
@@ -1380,6 +1388,24 @@ function FindingItem({
                 </span>{" "}
                 {finding.escalateReason}
               </span>
+            </div>
+          )}
+          {finding.mechanism && (
+            <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4 space-y-3">
+              <div>
+                <h4 className="text-xs uppercase tracking-wide text-blue-800 mb-2 font-medium">
+                  Leakage mechanism
+                </h4>
+                <p className="text-sm leading-relaxed">{finding.mechanism}</p>
+              </div>
+              {finding.usedPath && (
+                <div>
+                  <h4 className="text-xs uppercase tracking-wide text-blue-800 mb-2 font-medium">
+                    How it enters the workflow
+                  </h4>
+                  <p className="text-sm leading-relaxed">{finding.usedPath}</p>
+                </div>
+              )}
             </div>
           )}
           <div>

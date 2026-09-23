@@ -11,3 +11,7 @@ Retain this file and the raw pilot. Run every frozen case from the beginning wit
 [Raw evidence](remote-live-results-2.1.1-limited.json) records 10 attempted cases: 9 complete and correctly classified, followed by one incomplete review with `rate_or_quota_limit`. The runner stopped automatically rather than retrying/selecting a favorable replacement. This is a diagnostic subset, not a full accuracy claim.
 
 2.1.2 preserves the semantic changes, lowers output-token reservations, distinguishes rate-limit versus quota-exhausted responses, and permits one bounded rate-limit backoff within the audit deadline. It never retries exhausted quota or authentication errors. The full run starts over with a 12.5-second minimum interval and retains these earlier results separately.
+
+## 2.1.2 evaluation continuation
+
+The 2.1.2 run paused after case 19 hit a confirmed provider rate limit. An append-only continuation preserved that failed row and resumed at case 20 with a 15-second interval. The [pause snapshot](remote-live-results-2.1.2-pause-19.json) remains separate. Case 100 also hit rate limiting, so the terminal status is `stopped_rate_limit` even though all 100 planned cases were attempted. No failed case was rerun or replaced. The final report counts both cases as incomplete.

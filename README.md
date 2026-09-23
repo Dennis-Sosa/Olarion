@@ -29,6 +29,8 @@ Originally built for EmpireHacks 2026, Track 2: The Auditor. Original teammates:
 
 These are **source-informed synthetic regression results**, not real-world accuracy. The remaining 10 rule-layer misses are temporal cases expressed in natural language.
 
+**Latest Agent run (`audit-2.1.2`):** on the same frozen 100 cases, 98 audits completed, 95 were complete and correctly classified, and 2 were incomplete due to provider rate limits. Complete-case TP/FP/TN/FN = **49/3/46/0** (95/98 = **96.9%** accuracy). On the 84 cases completed by both versions, false positives fell from 16 to 3 and false negatives from 4 to 0. A separate 20-case synthetic challenge set completed 20/20, with **18 correct and 2 false negatives** (manual median imputation and test-set threshold selection); it includes 6 training-code audits. These are development evaluations, not independent blind tests or real-world accuracy guarantees. See the [full version comparison, remaining failures and raw evidence](evals/remote-report-2.1.2.md).
+
 **Live Agent run (`audit-2.0.1`):** all 100 cases were requested from the personal production deployment; 85 returned complete audits and 15 were degraded. Among the 85 complete audits, accuracy was 65/85 (76.5%), precision 32/48 (66.7%), recall 32/36 (88.9%) and false-positive rate 16/49 (32.7%). Thus 65 of all 100 cases were both complete and correctly classified. Failed audits were excluded from detection metrics, not treated as true negatives; the completed subset has selection bias. In the same subset, adding Agent checks/review improved recall but reduced precision and accuracy versus rules alone. See the [full report and failure analysis](evals/remote-report-2.0.1.md) and [raw results and methodology](evals/README.md).
 
 ## Run locally

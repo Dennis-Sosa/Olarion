@@ -32,7 +32,12 @@ const cases: Case[] = JSON.parse(bytes.toString());
 const baseline = JSON.parse(
   fs.readFileSync(path.join(root, "baseline.json"), "utf8"),
 );
-const sourceFiles = ["server", "src/types.ts"]
+const sourceFiles = [
+  "server",
+  "src/types.ts",
+  "src/auditLimits.ts",
+  "src/lib/featureCatalog.ts",
+]
   .flatMap((p) => {
     const walk = (p: string): string[] =>
       fs.statSync(p).isDirectory()

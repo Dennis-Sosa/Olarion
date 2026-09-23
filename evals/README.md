@@ -6,7 +6,7 @@ Run `npm run eval:rules` from the repository root. For CI use `npm run eval:chec
 
 `cases.json` is an unchanged 100-case synthetic fixture generated before this refactor. SHA256: `03d86ffdcd73fcadf689dca9a25ec391d2007d81f13700154ca08cb9530af742`. Each pair changes one leakage mechanism. There are 10 domains, 5 families and 50 clean/leaky pairs. The templates were informed by the original rules. Domain names do not make the repeated patterns statistically independent.
 
-`baseline.json` records the original rule module outputs at commit `908ffc384e7c079275a692797d61374bd4431b88`. It excludes missing-metadata and service diagnostics from leakage counts. `rules-results.json` includes current findings, confusion matrices and source/content hashes. The source hash is calculated over sorted server TypeScript implementation files and `src/types.ts`; tests are excluded. The git base is the checkout HEAD at evaluation time, not a claim that uncommitted code already existed in that commit.
+`baseline.json` records the original rule module outputs at commit `908ffc384e7c079275a692797d61374bd4431b88`. It excludes missing-metadata and service diagnostics from leakage counts. `rules-results.json` includes current findings, confusion matrices and source/content hashes. The current source hash covers sorted server TypeScript implementation files plus shared types, limits and feature-catalog helpers; tests are excluded. Historical results identify their original git base and hashing implementation. The git base is the checkout HEAD at evaluation time, not a claim that uncommitted code already existed in that commit.
 
 ## Results (rule layer only)
 
@@ -29,6 +29,8 @@ Run `npm run eval:rules` from the repository root. For CI use `npm run eval:chec
 The CI gate (`TP >= 40`, `FP <= 5`) catches known regressions. It is not a production acceptance threshold. No fixtures or labels were rewritten to make results pass. This suite is development regression evidence, not an independent holdout or evidence of causal business impact.
 
 ## Full Agent status
+
+Latest: [audit-2.1.2 comparison and failure analysis](remote-report-2.1.2.md). Original set: 100 attempted, 98 complete, 95 complete and correct, 3 false positives and 0 false negatives among complete cases. Supplemental set: 20 complete, 18 correct, 2 false negatives. Baseline evidence is retained below.
 
 The personal production run has now attempted all 100 frozen cases with `gpt-4o` and prompt `audit-2.0.1`: **85 complete, 15 degraded**. Of the complete cases, TP/FP/TN/FN = **32/16/33/4** (76.5% accuracy, 66.7% precision, 88.9% recall, 32.7% false-positive rate). There were **65 complete and correct reports out of 100 planned cases**. Only 36/50 positive cases completed versus 49/50 negative cases, so completed-case recall is not overall recall. All training-code stages were skipped because the frozen requests contain no training code.
 
@@ -55,3 +57,12 @@ node evals/run-remote.mjs \
 ```
 
 This incurs real provider usage through the server and does not read the Vercel secret. Keep the deployment unchanged during the run. The runner checks the frozen fixture hash and model/prompt versions, respects the endpoint cooldown, checkpoints every response and refuses to overwrite earlier evidence. It retries only an HTTP 429 cooldown once, never a model result. Authentication/quota errors or three consecutive degraded audits stop the run. Detection metrics include only complete audits; coverage uses all 100 planned cases as its denominator. Read failed stages and individual findings before interpreting aggregate numbers.
+
+
+## Append-only continuation after rate limiting
+
+`--interval 15000` sets a longer minimum interval between requests. If a run stops with `stopped_rate_limit` or `interrupted`, the explicit `--resume` option verifies the same deployment, model/prompt, fixture hash and ordered case prefix. It saves a separate immutable pause snapshot, records the new interval and continues with the next unattempted case. Existing failed rows are preserved and never rerun/replaced. Authentication/quota stops require resolving provider configuration, not repeated calls.
+
+The 2.1.2 original-case run used a 12.5-second interval initially, paused after case 19 hit provider rate limiting, and continued from case 20 at 15 seconds. This operational change is recorded in the raw evidence and is part of the completion-rate interpretation.
+
+The versioned summary generator recomputes metrics and matched subsets from raw reports, verifies frozen labels/hashes and source citations, and generates the website's summary and readable report. CI checks those generated artifacts for drift. Completion is distinct from classification correctness; incomplete reports may contain preliminary false alarms and are never counted as correct negatives.

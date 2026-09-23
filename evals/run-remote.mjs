@@ -10,6 +10,7 @@ const { values } = parseArgs({
     url: { type: "string" },
     output: { type: "string" },
     interval: { type: "string" },
+    resume: { type: "boolean", default: false },
     cases: { type: "string" },
     manifest: { type: "string" },
     commit: { type: "string" },
@@ -35,7 +36,7 @@ if (
 }
 const root = path.dirname(fileURLToPath(import.meta.url));
 const output = path.resolve(values.output);
-if (fs.existsSync(output))
+if (fs.existsSync(output) && !values.resume)
   throw new Error(
     "Refusing to overwrite evaluation evidence; choose a new output path.",
   );
@@ -109,6 +110,47 @@ const result = {
   families: {},
   rows: [],
 };
+if (values.resume) {
+  const prior = JSON.parse(fs.readFileSync(output, "utf8"));
+  if (
+    !["stopped_rate_limit", "interrupted"].includes(prior.status) ||
+    prior.provenance.tested_commit !== values.commit ||
+    prior.provenance.deployment_url !== values.deployment ||
+    prior.provenance.url !== base.origin ||
+    prior.provenance.cases_sha256 !== hash ||
+    prior.provenance.health.model !== health.model ||
+    prior.provenance.health.prompt_version !== health.prompt_version ||
+    prior.rows.length >= cases.length ||
+    prior.rows.some(
+      (r, i) =>
+        r.case_id !== cases[i]?.id ||
+        r.expected_leakage !== cases[i]?.expected_leakage,
+    )
+  ) {
+    throw new Error(
+      "Resume requires unchanged cases/deployment and a rate-limited or interrupted prefix; no case replacement is allowed",
+    );
+  }
+  const snapshot = output.replace(
+    /\.json$/,
+    `-pause-${prior.rows.length}.json`,
+  );
+  fs.copyFileSync(output, snapshot, fs.constants.COPYFILE_EXCL);
+  Object.assign(result, prior);
+  result.continuations = [
+    ...(prior.continuations ?? []),
+    {
+      resumed_at: new Date().toISOString(),
+      next_case_id: cases[prior.rows.length].id,
+      interval_ms: interval,
+      prior_status: prior.status,
+      preserved_snapshot: path.basename(snapshot),
+      note: "Append only: all earlier failures remain; do not rerun attempted cases.",
+    },
+  ];
+  result.status = "running";
+  delete result.finished_at;
+}
 function save() {
   const complete = result.rows.filter((r) => r.complete);
   result.attempted = result.rows.length;
@@ -132,7 +174,7 @@ process.once("SIGINT", () => {
 save();
 let lastStart = 0,
   failedInRow = 0;
-for (const c of cases) {
+for (const c of cases.slice(result.rows.length)) {
   await delay(Math.max(0, lastStart + interval - Date.now()));
   const row = {
     case_id: c.id,

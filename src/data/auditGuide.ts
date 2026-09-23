@@ -110,24 +110,14 @@ export const AUDIT_GUIDE = {
         "Check the source quote, whether the field is used, and when the information is available. Review withdrawn findings too; report a false positive with supporting evidence.",
       ],
     ],
-    evidenceTitle: "What our current evaluation shows",
-    evidenceIntro:
-      "Recorded baseline · prompt audit-2.0.1 · 100 synthetic paired cases · September 2026",
-    stats: [
-      "Complete and correctly classified",
-      "Complete but misclassified",
-      "Incomplete audits",
-    ],
-    evidenceDetail:
-      "85 reports completed; among those, 16 were false positives and 4 were false negatives. These synthetic development cases are not an independent benchmark or a promise of real-world accuracy. Training-code checks were outside this run’s scope.",
-    evidenceLink: "Read all results and failure cases",
-    nextTitle: "Improvements still to validate",
+    evidenceTitle: "Recorded Agent evaluation",
+    nextTitle: "What changed and what still needs validation",
     nextIntro:
-      "This guide and upload checks improve input clarity. They do not establish improved model accuracy. The next model iteration needs to:",
+      "The current release adds mechanism checks, structured source references and bounded recovery. The recorded evaluation describes these cases; further validation is still necessary.",
     next: [
-      "Require a specific leakage mechanism, rather than treating predictive features as suspicious.",
-      "Require counterevidence before retracting a supported finding; surface unresolved disagreements.",
-      "Improve derived-field tracking and structured outputs while preserving evidence checks.",
+      "Require a specific leakage mechanism, actual usage and observed boundaries before reporting a concern.",
+      "Require cited counterevidence for retractions and guard against invalid fit-scope arguments. Target-encoding judgments, hand-written statistics and test-threshold selection remain weaknesses.",
+      "Recognize assigned derived field names, validate source-reference IDs and show failures or bounded recovery explicitly.",
       "Rerun regression tests and independently authored unseen cases, measuring missed risks, false alarms and completion separately.",
     ],
     closing: "Ready to explain your prediction boundary?",
@@ -222,20 +212,14 @@ export const AUDIT_GUIDE = {
         "核对引用原文、字段是否使用及信息可用时点；也要复查被撤回的告警。反馈误报时，请补充依据。",
       ],
     ],
-    evidenceTitle: "当前评测告诉我们什么",
-    evidenceIntro:
-      "已记录基线 · Prompt audit-2.0.1 · 100 个合成配对案例 · 2026 年 9 月",
-    stats: ["检查完整且判断正确", "检查完整但判断错误", "检查覆盖不完整"],
-    evidenceDetail:
-      "85 例报告完整，其中包含 16 例误报和 4 例漏报。这是开发用合成回归集，不是独立盲测或真实场景准确率承诺。本轮未覆盖训练代码审计。",
-    evidenceLink: "查看完整结果与失败案例",
-    nextTitle: "仍需验证的改进方向",
+    evidenceTitle: "已记录的 Agent 评测",
+    nextTitle: "本轮改进与后续验证",
     nextIntro:
-      "本次指南与上传校验帮助澄清输入，不代表模型准确率已提高。下一轮模型迭代需要：",
+      "当前版本已加强机制判断、结构化引用和有限重试。上述实测只描述这些案例上的表现，仍需继续验证。",
     next: [
-      "要求具体的泄漏机制，避免将有预测力的正常特征当作风险。",
-      "撤回有依据的告警前提供反证；存在分歧时保留待确认事项。",
-      "完善派生字段识别与结构化输出，同时保留证据校验。",
+      "告警必须说明泄漏机制、实际使用路径及观察到的边界。",
+      "撤回须提供反证，并校验拟合范围相关理由；目标编码误判、手工统计变换和测试集阈值调优漏检仍是弱点。",
+      "识别代码赋值产生的字段名，校验原文引用，并明确展示失败和有限重试情况。",
       "重跑回归案例，并补充独立编写的未见案例，分别衡量漏报、误报和完成率。",
     ],
     closing: "准备好说明你的预测边界了吗？",

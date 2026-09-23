@@ -205,12 +205,31 @@ describe("bounded recovery with honest coverage", () => {
     expect(r.quality?.stages.find((s) => s.id === "proxy")?.attempts).toBe(2);
     expect(callOpenAIJson).toHaveBeenCalledTimes(6);
   });
-  it.each(["authentication", "quota_exhausted"])("never retries %s failures", async (code) => {
-    vi.mocked(callOpenAIJson).mockRejectedValue(
-      new ModelFailure(code),
-    );
-    const r = await runAudit(clean);
-    expect(r.quality?.status).toBe("degraded");
-    expect(callOpenAIJson).toHaveBeenCalledTimes(3);
+  it("backs off once on a recoverable rate limit and records recovery", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.mocked(callOpenAIJson)
+        .mockRejectedValueOnce(new ModelFailure("rate_limited"))
+        .mockResolvedValue({ findings: [] });
+      const waiting = runAudit(clean);
+      await vi.advanceTimersByTimeAsync(2000);
+      const r = await waiting;
+      expect(r.quality?.status).toBe("complete");
+      expect(
+        r.quality?.stages.find((s) => s.id === "proxy")?.recovered_errors,
+      ).toEqual(["rate_limited"]);
+      expect(callOpenAIJson).toHaveBeenCalledTimes(4);
+    } finally {
+      vi.useRealTimers();
+    }
   });
+  it.each(["authentication", "quota_exhausted"])(
+    "never retries %s failures",
+    async (code) => {
+      vi.mocked(callOpenAIJson).mockRejectedValue(new ModelFailure(code));
+      const r = await runAudit(clean);
+      expect(r.quality?.status).toBe("degraded");
+      expect(callOpenAIJson).toHaveBeenCalledTimes(3);
+    },
+  );
 });

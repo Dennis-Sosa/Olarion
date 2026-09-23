@@ -1,5 +1,18 @@
 import type { AuditReport } from "../../types";
 import { Link } from "react-router";
+function failureHelp(code: string): string {
+  if (code === "quota_exhausted")
+    return "The model provider reports exhausted quota. The service owner must restore provider quota before another audit can complete.";
+  if (code === "rate_limited")
+    return "The model provider is temporarily rate-limiting requests. Wait before starting another audit; completed checks are preserved here.";
+  if (code === "authentication" || code === "not_configured")
+    return "The model service needs a valid server-side configuration. Contact the service owner.";
+  if (code === "rate_or_quota_limit")
+    return "The provider blocked a request because of a rate or quota limit. The service owner needs to check the provider status.";
+  if (code === "timeout_or_cancelled" || code === "provider_unavailable")
+    return "A check timed out or the provider was unavailable. Retry later; this report does not establish complete coverage.";
+  return "A model result did not pass evidence or output validation. This check remains unresolved; review the source and findings before relying on the report.";
+}
 export function AuditQuality({ report }: { report: AuditReport }) {
   const q = report.quality,
     partial = !q || q.status === "degraded";
@@ -20,6 +33,12 @@ export function AuditQuality({ report }: { report: AuditReport }) {
           ? "Do not interpret a low score or an empty findings list as a clean audit. Review the failed checks and supplied context; resolve the issue before relying on a rerun."
           : "Checks returned validated responses. Findings still need verification against actual data and deployment context."}
       </p>
+      {q?.stages.some((s) => s.id === "review" && s.status === "failed") && (
+        <p className="text-sm mt-2 font-medium">
+          Findings below are preliminary: the review stage did not complete.
+          They may include false alarms and must be verified before acting.
+        </p>
+      )}
       <Link
         to="/guide#results"
         className="inline-block mt-2 text-sm text-blue-700 underline underline-offset-2"
@@ -43,6 +62,19 @@ export function AuditQuality({ report }: { report: AuditReport }) {
               </span>
             ))}
           </div>
+          {q.stages.some((s) => s.status === "failed") && (
+            <ul className="mt-3 text-sm space-y-2 list-disc pl-5">
+              {[
+                ...new Set(
+                  q.stages
+                    .filter((s) => s.status === "failed")
+                    .map((s) => failureHelp(s.error_code ?? "unknown")),
+                ),
+              ].map((help) => (
+                <li key={help}>{help}</li>
+              ))}
+            </ul>
+          )}
           <details className="mt-3 text-xs">
             <summary className="cursor-pointer">Scope and version</summary>
             <p className="mt-2">

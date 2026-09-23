@@ -1,0 +1,3262 @@
+{
+  "mode": "live_remote",
+  "status": "stopped_rate_limit",
+  "provenance": {
+    "url": "https://olarion-zeta.vercel.app",
+    "tested_commit": "eb7d4c95c2cc5cc2eec43ab31881e80a80225217",
+    "deployment_url": "https://vercel.com/sosadennis39-debugs-projects/olarion/8tEyGXqoLFbMk6nWf8fNWGxmqWu3",
+    "cases_sha256": "03d86ffdcd73fcadf689dca9a25ec391d2007d81f13700154ca08cb9530af742",
+    "executed_at": "2026-09-23T04:57:22.317Z",
+    "health": {
+      "service": "olarion",
+      "prompt_version": "audit-2.1.2",
+      "model": "gpt-4o",
+      "model_configured": true
+    }
+  },
+  "scope": "Source-informed synthetic paired regression: 10 domains, 5 pattern families, 50 pairs. Labels frozen before refactor. Not an independent benchmark or real-user dataset.",
+  "protocol": "One sequential request per frozen case; at least 12.5 seconds between starts. One retry only for the app's HTTP 429 cooldown. No runner-level model retries or cherry-picked reruns. Server repair attempts are preserved in each stage. Detection metrics include only complete audits; degraded audits remain in raw evidence. Stop after three consecutive degraded/error audits or an authentication/quota error. Training-code checks are out of scope where no training code is supplied.",
+  "total": 100,
+  "attempted": 19,
+  "completed": 18,
+  "coverage": 0.18,
+  "metrics": {
+    "n": 18,
+    "tp": 9,
+    "fp": 0,
+    "tn": 9,
+    "fn": 0,
+    "accuracy": 1,
+    "precision": 1,
+    "recall": 1,
+    "false_positive_rate": 0
+  },
+  "families": {
+    "temporal": {
+      "n": 4,
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "false_positive_rate": 0
+    },
+    "target_proxy": {
+      "n": 4,
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "false_positive_rate": 0
+    },
+    "preprocessing": {
+      "n": 4,
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "false_positive_rate": 0
+    },
+    "entity_split": {
+      "n": 4,
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "false_positive_rate": 0
+    },
+    "target_aggregation": {
+      "n": 2,
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "accuracy": 1,
+      "precision": 1,
+      "recall": 1,
+      "false_positive_rate": 0
+    }
+  },
+  "rows": [
+    {
+      "case_id": "001_commerce_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T04:57:22.321Z",
+      "complete": true,
+      "predicted_leakage": false,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- code: done\n\n- proxy: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "complete",
+          "assessment": "no_risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 2,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 2010,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 3497,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 3613,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:57:22.694Z",
+          "duration_ms": 3617,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 3716
+    },
+    {
+      "case_id": "002_commerce_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "started_at": "2026-09-23T04:57:34.823Z",
+      "complete": true,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "high",
+        "summary": "Audit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### Inclusion of Future Information\nSeverity: high; confidence: high.\nThe feature 'commerce_activity_after_t0' is explicitly stated to be unavailable at t0, yet it is included in the model's input features, leading to potential leakage of future information.\n- Remove 'commerce_activity_after_t0' from the feature set used for training and testing.\n\n### Use of Future Information in Model Inputs\nSeverity: high; confidence: high.\nThe feature 'commerce_activity_after_t0' is explicitly included in the model inputs, despite being defined as unavailable at t0. This constitutes a clear temporal leakage.\n- Remove 'commerce_activity_after_t0' from the feature set used for training and prediction.\n\n### Use of future information in model features\nSeverity: high; confidence: high.\nThe inclusion of 'commerce_activity_after_t0' in the model features directly violates the temporal constraint that features must be available at t0. This feature contains information from the future relative to the prediction point.\n- Remove 'commerce_activity_after_t0' from the feature set used in X_train.\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- proxy-0: keep. The feature 'commerce_activity_after_t0' is included in the model's input features, providing future information that is unavailable at the decision time t0, leading to potential leakage. Evidence: prediction_goal: Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. commerce_activity_before_t0 is an event count over [t0-7 days,t0); commerce_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. \n\n- temporal-0: keep. The feature 'commerce_activity_after_t0' is included in the model inputs, despite being defined as unavailable at t0, constituting a clear temporal leakage. Evidence: preprocessing_code: X = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_after_t0']].copy()\n\n- code-0: keep. The inclusion of 'commerce_activity_after_t0' in the model features directly violates the temporal constraint that features must be available at t0, as it contains information from the future relative to the prediction point. Evidence: preprocessing_code: X = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_after_t0']].copy()\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- code: done\n\n- temporal: done\n\n- proxy: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "proxy-0",
+            "title": "Inclusion of Future Information",
+            "flagged_object": "commerce_activity_after_t0",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The feature 'commerce_activity_after_t0' includes data from after the decision point t0, which is unavailable at prediction time.",
+            "used_path": "The feature 'commerce_activity_after_t0' is included in X_train and X_test, providing future information to the model.",
+            "evidence": [
+              {
+                "claim": "The feature 'commerce_activity_after_t0' is explicitly stated to be unavailable at t0, yet it is included in the model's input features, leading to potential leakage of future information.",
+                "source": {
+                  "filename": "task description",
+                  "location": "line 1",
+                  "snippet": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. commerce_activity_before_t0 is an event count over [t0-7 days,t0); commerce_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. "
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'commerce_activity_after_t0' is explicitly stated to be unavailable at t0, yet it is included in the model's input features, leading to potential leakage of future information.",
+            "fix_recommendation": [
+              "Remove 'commerce_activity_after_t0' from the feature set used for training and testing."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "temporal-0",
+            "title": "Use of Future Information in Model Inputs",
+            "flagged_object": "commerce_activity_after_t0",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "'commerce_activity_after_t0' is included in the model inputs, but it represents events occurring after t0, which are unavailable at the decision time.",
+            "used_path": "The feature 'commerce_activity_after_t0' is selected and included in X_train, which is used for model training and prediction.",
+            "evidence": [
+              {
+                "claim": "The feature 'commerce_activity_after_t0' is explicitly included in the model inputs, despite being defined as unavailable at t0. This constitutes a clear temporal leakage.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_after_t0']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'commerce_activity_after_t0' is explicitly included in the model inputs, despite being defined as unavailable at t0. This constitutes a clear temporal leakage.",
+            "fix_recommendation": [
+              "Remove 'commerce_activity_after_t0' from the feature set used for training and prediction."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Use of future information in model features",
+            "flagged_object": "commerce_activity_after_t0",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "'commerce_activity_after_t0' is included in the model features, but it contains information from after the decision point t0, which is unavailable at prediction time.",
+            "used_path": "The feature 'commerce_activity_after_t0' is selected and used in X_train, which is then split into training and test sets.",
+            "evidence": [
+              {
+                "claim": "The inclusion of 'commerce_activity_after_t0' in the model features directly violates the temporal constraint that features must be available at t0. This feature contains information from the future relative to the prediction point.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_after_t0']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The inclusion of 'commerce_activity_after_t0' in the model features directly violates the temporal constraint that features must be available at t0. This feature contains information from the future relative to the prediction point.",
+            "fix_recommendation": [
+              "Remove 'commerce_activity_after_t0' from the feature set used in X_train."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 3,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The feature 'commerce_activity_after_t0' is included in the model's input features, providing future information that is unavailable at the decision time t0, leading to potential leakage.",
+            "evidence_id": "prediction_goal:1",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "prediction_goal",
+            "quote": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. commerce_activity_before_t0 is an event count over [t0-7 days,t0); commerce_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0. The raw table contains both for offline analysis; only explicitly selected X columns reach the classifier. "
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The feature 'commerce_activity_after_t0' is included in the model inputs, despite being defined as unavailable at t0, constituting a clear temporal leakage.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "temporal-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_after_t0']].copy()"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The inclusion of 'commerce_activity_after_t0' in the model features directly violates the temporal constraint that features must be available at t0, as it contains information from the future relative to the prediction point.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_after_t0']].copy()"
+          }
+        ],
+        "retracted_findings": [],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'commerce_activity_after_t0' is included in the model's input features, providing future information that is unavailable at the decision time t0, leading to potential leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "temporal-0",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'commerce_activity_after_t0' is included in the model inputs, despite being defined as unavailable at t0, constituting a clear temporal leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "keep"
+            },
+            "result_summary": "The inclusion of 'commerce_activity_after_t0' in the model features directly violates the temporal constraint that features must be available at t0, as it contains information from the future relative to the prediction point."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 7,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 2502,
+              "attempts": 1
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 2503,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 2886,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 2129,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:57:35.240Z",
+          "duration_ms": 5022,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 5162
+    },
+    {
+      "case_id": "003_commerce_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T04:57:47.324Z",
+      "complete": true,
+      "predicted_leakage": false,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- proxy: done\n\n- temporal: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "complete",
+          "assessment": "no_risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 1099,
+              "attempts": 1
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1165,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 1780,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:57:47.724Z",
+          "duration_ms": 1781,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 1900
+    },
+    {
+      "case_id": "004_commerce_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "started_at": "2026-09-23T04:57:59.825Z",
+      "complete": true,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "critical",
+        "summary": "Audit checks completed: 4 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 4 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 4 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### Target or direct target copy may reach the model\nSeverity: critical; confidence: medium.\nThe selected input commerce_resolution_code is the target or a direct copy of it.\n- Keep only inputs available at prediction time; verify the feature lineage.\n\n### Use of Resolved Outcome as Feature\nSeverity: high; confidence: high.\nThe feature 'commerce_resolution_code' is derived directly from the target 'purchase_next_week' and is included in the model inputs, which constitutes a direct leakage of the target information into the model.\n- Remove 'commerce_resolution_code' from the feature set used for training and evaluation.\n\n### Post-resolution feature inclusion\nSeverity: high; confidence: high.\nThe feature 'commerce_resolution_code' is a numeric copy of the target 'purchase_next_week', created after the outcome is resolved, and is included in the model inputs, leading to leakage.\n- Exclude 'commerce_resolution_code' from the model inputs to prevent leakage.\n\n### Post-resolution feature leakage\nSeverity: high; confidence: high.\nThe feature 'commerce_resolution_code' is derived from the target 'purchase_next_week' after it resolves, which introduces future information into the model training process, violating the temporal boundary of prediction before t0.\n- Remove 'commerce_resolution_code' from the feature set used in model training.\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- metadata-target-copy-commerce_resolution_code: keep. The feature 'commerce_resolution_code' is a direct copy of the target 'purchase_next_week', created after the outcome resolves, and is included in the model inputs, which constitutes a direct leakage of the target information into the model. Evidence: preprocessing_code: df['commerce_resolution_code'] = df['purchase_next_week'].astype(int)\n\n- proxy-0: keep. The feature 'commerce_resolution_code' is derived directly from the target 'purchase_next_week' and is included in the model inputs, which constitutes a direct leakage of the target information into the model. Evidence: preprocessing_code: X = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()\n\n- temporal-0: keep. The feature 'commerce_resolution_code' is a numeric copy of the target 'purchase_next_week', created after the outcome is resolved, and is included in the model inputs, leading to leakage. Evidence: preprocessing_code: X = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()\n\n- code-0: keep. The feature 'commerce_resolution_code' is derived from the target 'purchase_next_week' after it resolves, which introduces future information into the model training process, violating the temporal boundary of prediction before t0. Evidence: preprocessing_code: X = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- proxy: done\n\n- code: done\n\n- temporal: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "metadata-target-copy-commerce_resolution_code",
+            "title": "Target or direct target copy may reach the model",
+            "macro_bucket": "Feature / proxy leakage",
+            "fine_grained_type": "proxy",
+            "severity": "critical",
+            "confidence": "medium",
+            "flagged_object": "commerce_resolution_code",
+            "evidence": [
+              {
+                "claim": "The selected input commerce_resolution_code is the target or a direct copy of it.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "df['commerce_resolution_code'] = df['purchase_next_week'].astype(int)"
+                }
+              }
+            ],
+            "rule_cited": "metadata-target-copy-commerce_resolution_code",
+            "why_it_matters": "The selected input commerce_resolution_code is the target or a direct copy of it.",
+            "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+            "fix_recommendation": [
+              "Keep only inputs available at prediction time; verify the feature lineage."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "proxy-0",
+            "title": "Use of Resolved Outcome as Feature",
+            "flagged_object": "commerce_resolution_code",
+            "macro_bucket": "Feature / proxy leakage",
+            "fine_grained_type": "proxy",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The feature 'commerce_resolution_code' is a numeric copy of the target 'purchase_next_week', created after the outcome resolves.",
+            "used_path": "The feature 'commerce_resolution_code' is included in X_train, which is used for model training.",
+            "evidence": [
+              {
+                "claim": "The feature 'commerce_resolution_code' is derived directly from the target 'purchase_next_week' and is included in the model inputs, which constitutes a direct leakage of the target information into the model.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 7",
+                  "snippet": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'commerce_resolution_code' is derived directly from the target 'purchase_next_week' and is included in the model inputs, which constitutes a direct leakage of the target information into the model.",
+            "fix_recommendation": [
+              "Remove 'commerce_resolution_code' from the feature set used for training and evaluation."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "temporal-0",
+            "title": "Post-resolution feature inclusion",
+            "flagged_object": "commerce_resolution_code",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The feature 'commerce_resolution_code' is derived from the target 'purchase_next_week' after it resolves, and is included in the model inputs.",
+            "used_path": "The feature 'commerce_resolution_code' is created from 'purchase_next_week' and included in X, which is then split into X_train and X_test.",
+            "evidence": [
+              {
+                "claim": "The feature 'commerce_resolution_code' is a numeric copy of the target 'purchase_next_week', created after the outcome is resolved, and is included in the model inputs, leading to leakage.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 7",
+                  "snippet": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'commerce_resolution_code' is a numeric copy of the target 'purchase_next_week', created after the outcome is resolved, and is included in the model inputs, leading to leakage.",
+            "fix_recommendation": [
+              "Exclude 'commerce_resolution_code' from the model inputs to prevent leakage."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Post-resolution feature leakage",
+            "flagged_object": "commerce_resolution_code",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The feature 'commerce_resolution_code' is a numeric copy of the target 'purchase_next_week', created after the outcome resolves.",
+            "used_path": "The feature 'commerce_resolution_code' is included in X_train and used for model training.",
+            "evidence": [
+              {
+                "claim": "The feature 'commerce_resolution_code' is derived from the target 'purchase_next_week' after it resolves, which introduces future information into the model training process, violating the temporal boundary of prediction before t0.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 7",
+                  "snippet": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'commerce_resolution_code' is derived from the target 'purchase_next_week' after it resolves, which introduces future information into the model training process, violating the temporal boundary of prediction before t0.",
+            "fix_recommendation": [
+              "Remove 'commerce_resolution_code' from the feature set used in model training."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 2,
+          "Feature / proxy leakage": 2,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The feature 'commerce_resolution_code' is a direct copy of the target 'purchase_next_week', created after the outcome resolves, and is included in the model inputs, which constitutes a direct leakage of the target information into the model.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "critical",
+            "confidence": "medium",
+            "finding_id": "metadata-target-copy-commerce_resolution_code",
+            "source": "preprocessing_code",
+            "quote": "df['commerce_resolution_code'] = df['purchase_next_week'].astype(int)"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The feature 'commerce_resolution_code' is derived directly from the target 'purchase_next_week' and is included in the model inputs, which constitutes a direct leakage of the target information into the model.",
+            "evidence_id": "preprocessing_code:7",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The feature 'commerce_resolution_code' is a numeric copy of the target 'purchase_next_week', created after the outcome is resolved, and is included in the model inputs, leading to leakage.",
+            "evidence_id": "preprocessing_code:7",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "temporal-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The feature 'commerce_resolution_code' is derived from the target 'purchase_next_week' after it resolves, which introduces future information into the model training process, violating the temporal boundary of prediction before t0.",
+            "evidence_id": "preprocessing_code:7",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_resolution_code']].copy()"
+          }
+        ],
+        "retracted_findings": [],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "metadata-target-copy-commerce_resolution_code",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'commerce_resolution_code' is a direct copy of the target 'purchase_next_week', created after the outcome resolves, and is included in the model inputs, which constitutes a direct leakage of the target information into the model."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'commerce_resolution_code' is derived directly from the target 'purchase_next_week' and is included in the model inputs, which constitutes a direct leakage of the target information into the model."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "temporal-0",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'commerce_resolution_code' is a numeric copy of the target 'purchase_next_week', created after the outcome is resolved, and is included in the model inputs, leading to leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'commerce_resolution_code' is derived from the target 'purchase_next_week' after it resolves, which introduces future information into the model training process, violating the temporal boundary of prediction before t0."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 2605,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 3286,
+              "attempts": 1
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 3439,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 1966,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:58:00.213Z",
+          "duration_ms": 5406,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 5523
+    },
+    {
+      "case_id": "005_commerce_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T04:58:12.326Z",
+      "complete": true,
+      "predicted_leakage": false,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- code: done\n\n- proxy: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "complete",
+          "assessment": "no_risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1248,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 1301,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 1408,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:58:12.689Z",
+          "duration_ms": 1410,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 1520
+    },
+    {
+      "case_id": "006_commerce_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "started_at": "2026-09-23T04:58:24.830Z",
+      "complete": true,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "medium",
+        "summary": "Audit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### A learned transform may see holdout rows\nSeverity: medium; confidence: low.\nA fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.\n- Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data.\n\n### Evaluation Leakage from StandardScaler\nSeverity: medium; confidence: high.\nFitting the StandardScaler on the entire dataset before splitting allows information from the test set to influence the scaling parameters, which can lead to biased evaluation results.\n- Fit the StandardScaler on the training data only and apply the same transformation to the test data.\n\n### Evaluation Leakage due to Preprocessing\nSeverity: medium; confidence: high.\nFitting the StandardScaler on the entire dataset before splitting introduces evaluation leakage, as the test data influences the scaling parameters used during training.\n- Fit the StandardScaler on X_train only and then apply the same transformation to X_test.\n\n## Context to verify\n\n- Confirm exactly which columns reach the model.\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- pipeline-global-preprocessing: keep. The StandardScaler is fitted on the entire dataset before splitting, which allows test data to influence the scaling parameters. This is a valid concern for evaluation leakage. Evidence: preprocessing_code: X = preprocessor.fit_transform(X)\n\n- proxy-0: keep. The StandardScaler is fitted on the entire dataset before splitting, allowing test data to influence the scaling parameters, which can lead to biased evaluation results. Evidence: preprocessing_code: X = preprocessor.fit_transform(X)\n\n- code-0: keep. The StandardScaler is fitted on the entire dataset before the train-test split, allowing test data to influence the scaling parameters, which introduces evaluation leakage. Evidence: preprocessing_code: X = preprocessor.fit_transform(X)\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- proxy: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "pipeline-global-preprocessing",
+            "title": "A learned transform may see holdout rows",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "evaluation",
+            "severity": "medium",
+            "confidence": "low",
+            "flagged_object": "preprocessor",
+            "evidence": [
+              {
+                "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "rule_cited": "pipeline-global-preprocessing",
+            "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+            "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+            "fix_recommendation": [
+              "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "proxy-0",
+            "title": "Evaluation Leakage from StandardScaler",
+            "flagged_object": "visits_prior_week",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "evaluation",
+            "severity": "medium",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "StandardScaler is fitted on the entire dataset before splitting, allowing test data to influence the scaling parameters.",
+            "used_path": "StandardScaler is fitted on X before train_test_split, affecting both 'visits_prior_week' and 'spend_prior_month'.",
+            "evidence": [
+              {
+                "claim": "Fitting the StandardScaler on the entire dataset before splitting allows information from the test set to influence the scaling parameters, which can lead to biased evaluation results.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "why_it_matters": "Fitting the StandardScaler on the entire dataset before splitting allows information from the test set to influence the scaling parameters, which can lead to biased evaluation results.",
+            "fix_recommendation": [
+              "Fit the StandardScaler on the training data only and apply the same transformation to the test data."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Evaluation Leakage due to Preprocessing",
+            "flagged_object": "pipeline",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "evaluation",
+            "severity": "medium",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The StandardScaler is fitted on the entire dataset before the train-test split, allowing test data to influence the scaling parameters.",
+            "used_path": "The StandardScaler is fitted on X, which includes both training and test data, before splitting into X_train and X_test.",
+            "evidence": [
+              {
+                "claim": "Fitting the StandardScaler on the entire dataset before splitting introduces evaluation leakage, as the test data influences the scaling parameters used during training.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "why_it_matters": "Fitting the StandardScaler on the entire dataset before splitting introduces evaluation leakage, as the test data influences the scaling parameters used during training.",
+            "fix_recommendation": [
+              "Fit the StandardScaler on X_train only and then apply the same transformation to X_test."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm exactly which columns reach the model.",
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm exactly which columns reach the model.",
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 3
+        },
+        "review_decisions": [
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The StandardScaler is fitted on the entire dataset before splitting, which allows test data to influence the scaling parameters. This is a valid concern for evaluation leakage.",
+            "evidence_id": "preprocessing_code:9",
+            "severity": "medium",
+            "confidence": "low",
+            "finding_id": "pipeline-global-preprocessing",
+            "source": "preprocessing_code",
+            "quote": "X = preprocessor.fit_transform(X)"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The StandardScaler is fitted on the entire dataset before splitting, allowing test data to influence the scaling parameters, which can lead to biased evaluation results.",
+            "evidence_id": "preprocessing_code:9",
+            "severity": "medium",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "preprocessing_code",
+            "quote": "X = preprocessor.fit_transform(X)"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The StandardScaler is fitted on the entire dataset before the train-test split, allowing test data to influence the scaling parameters, which introduces evaluation leakage.",
+            "evidence_id": "preprocessing_code:9",
+            "severity": "medium",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "preprocessing_code",
+            "quote": "X = preprocessor.fit_transform(X)"
+          }
+        ],
+        "retracted_findings": [],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "pipeline-global-preprocessing",
+              "action": "keep"
+            },
+            "result_summary": "The StandardScaler is fitted on the entire dataset before splitting, which allows test data to influence the scaling parameters. This is a valid concern for evaluation leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "keep"
+            },
+            "result_summary": "The StandardScaler is fitted on the entire dataset before splitting, allowing test data to influence the scaling parameters, which can lead to biased evaluation results."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "keep"
+            },
+            "result_summary": "The StandardScaler is fitted on the entire dataset before the train-test split, allowing test data to influence the scaling parameters, which introduces evaluation leakage."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1906,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 2234,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 2727,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 1321,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:58:25.200Z",
+          "duration_ms": 4048,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 4138
+    },
+    {
+      "case_id": "007_commerce_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T04:58:37.330Z",
+      "complete": true,
+      "predicted_leakage": false,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- proxy: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "complete",
+          "assessment": "no_risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1395,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 1864,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 1940,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:58:37.699Z",
+          "duration_ms": 1941,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 2032
+    },
+    {
+      "case_id": "008_commerce_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "started_at": "2026-09-23T04:58:49.831Z",
+      "complete": true,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "high",
+        "summary": "Audit checks completed: 1 active concern(s); 3 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 1 active concern(s); 3 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 1 active concern(s); 3 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### Random split may overlap repeated entities\nSeverity: high; confidence: medium.\nContext declares repeated entities and code uses a row split. Verify overlap and intended generalization.\n- Verify entity overlap; use a group split when evaluating unseen entities.\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- structural-entity-leakage: keep. The use of train_test_split without grouping by commerce_entity_id risks including some observations of an entity in both training and test sets, violating the requirement to hold out entire entities. Evidence: preprocessing_code: X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n- proxy-0: retract. This finding duplicates the concern about entity overlap due to train_test_split without grouping by commerce_entity_id, which is already covered by the structural-entity-leakage finding. Evidence: preprocessing_code: X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n- temporal-0: retract. This finding duplicates the concern about entity overlap due to train_test_split without grouping by commerce_entity_id, which is already covered by the structural-entity-leakage finding. Evidence: preprocessing_code: X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n- code-0: retract. This finding duplicates the concern about entity overlap due to train_test_split without grouping by commerce_entity_id, which is already covered by the structural-entity-leakage finding. Evidence: preprocessing_code: X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- proxy: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "structural-entity-leakage",
+            "title": "Random split may overlap repeated entities",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "join_entity",
+            "severity": "high",
+            "confidence": "medium",
+            "flagged_object": "commerce_entity_id",
+            "evidence": [
+              {
+                "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 8",
+                  "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+                }
+              }
+            ],
+            "rule_cited": "structural-entity-leakage",
+            "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+            "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+            "fix_recommendation": [
+              "Verify entity overlap; use a group split when evaluating unseen entities."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 1
+        },
+        "review_decisions": [
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The use of train_test_split without grouping by commerce_entity_id risks including some observations of an entity in both training and test sets, violating the requirement to hold out entire entities.",
+            "evidence_id": "preprocessing_code:8",
+            "severity": "high",
+            "confidence": "medium",
+            "finding_id": "structural-entity-leakage",
+            "source": "preprocessing_code",
+            "quote": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+          },
+          {
+            "action": "retract",
+            "basis": "duplicate",
+            "reason": "This finding duplicates the concern about entity overlap due to train_test_split without grouping by commerce_entity_id, which is already covered by the structural-entity-leakage finding.",
+            "evidence_id": "preprocessing_code:8",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "preprocessing_code",
+            "quote": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+          },
+          {
+            "action": "retract",
+            "basis": "duplicate",
+            "reason": "This finding duplicates the concern about entity overlap due to train_test_split without grouping by commerce_entity_id, which is already covered by the structural-entity-leakage finding.",
+            "evidence_id": "preprocessing_code:8",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "temporal-0",
+            "source": "preprocessing_code",
+            "quote": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+          },
+          {
+            "action": "retract",
+            "basis": "duplicate",
+            "reason": "This finding duplicates the concern about entity overlap due to train_test_split without grouping by commerce_entity_id, which is already covered by the structural-entity-leakage finding.",
+            "evidence_id": "preprocessing_code:8",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "preprocessing_code",
+            "quote": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+          }
+        ],
+        "retracted_findings": [
+          {
+            "id": "proxy-0",
+            "title": "Entity Overlap in Evaluation",
+            "flagged_object": "visits_prior_week",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "boundary",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "Repeated observations of commerce_entity_id may cross the train-test boundary, violating the requirement to hold out entire entities.",
+            "used_path": "The train_test_split function is used without ensuring that entire commerce_entity_id groups are held out from the test set.",
+            "evidence": [
+              {
+                "claim": "The task context specifies that each commerce_entity_id has 10 repeated observations and that evaluation must hold out entire entities. The use of train_test_split without grouping by commerce_entity_id risks including some observations of an entity in both training and test sets.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 8",
+                  "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+                }
+              }
+            ],
+            "why_it_matters": "The task context specifies that each commerce_entity_id has 10 repeated observations and that evaluation must hold out entire entities. The use of train_test_split without grouping by commerce_entity_id risks including some observations of an entity in both training and test sets.",
+            "fix_recommendation": [
+              "Use GroupKFold or a similar method to ensure that entire commerce_entity_id groups are held out during evaluation."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "temporal-0",
+            "title": "Entity Overlap in Evaluation",
+            "flagged_object": "visits_prior_week",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "boundary",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The train_test_split method does not ensure that entire entities are held out during evaluation, which is necessary due to repeated observations per commerce_entity_id.",
+            "used_path": "The train_test_split function is used without considering the commerce_entity_id, leading to potential overlap of entities between training and test sets.",
+            "evidence": [
+              {
+                "claim": "The task context specifies that each commerce_entity_id has 10 repeated observations and that evaluation must hold out entire entities. The use of train_test_split without grouping by commerce_entity_id violates this requirement.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 8",
+                  "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+                }
+              }
+            ],
+            "why_it_matters": "The task context specifies that each commerce_entity_id has 10 repeated observations and that evaluation must hold out entire entities. The use of train_test_split without grouping by commerce_entity_id violates this requirement.",
+            "fix_recommendation": [
+              "Use GroupKFold or GroupShuffleSplit with commerce_entity_id as the group identifier to ensure entities are held out during evaluation."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Entity Overlap in Evaluation",
+            "flagged_object": "commerce_entity_id",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "join_entity",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "Repeated observations of 'commerce_entity_id' are not held out as entire entities during evaluation.",
+            "used_path": "The train_test_split method is used, which does not ensure that all observations of a single 'commerce_entity_id' are kept together in either the training or test set.",
+            "evidence": [
+              {
+                "claim": "The task context specifies that each 'commerce_entity_id' has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. However, train_test_split does not guarantee this, leading to potential leakage of entity-specific information across the train-test boundary.",
+                "source": {
+                  "filename": "task description",
+                  "location": "line 1",
+                  "snippet": "Business context: 网站访客购买 (commerce). Predict purchase_next_week at a defined decision time t0; the binary outcome is resolved strictly after t0. visits_prior_week and spend_prior_month are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each commerce_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. "
+                }
+              }
+            ],
+            "why_it_matters": "The task context specifies that each 'commerce_entity_id' has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. However, train_test_split does not guarantee this, leading to potential leakage of entity-specific information across the train-test boundary.",
+            "fix_recommendation": [
+              "Use GroupKFold or GroupShuffleSplit with 'commerce_entity_id' as the group identifier to ensure that all observations of a single entity are kept together in either the training or test set."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "structural-entity-leakage",
+              "action": "keep"
+            },
+            "result_summary": "The use of train_test_split without grouping by commerce_entity_id risks including some observations of an entity in both training and test sets, violating the requirement to hold out entire entities."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "retract"
+            },
+            "result_summary": "This finding duplicates the concern about entity overlap due to train_test_split without grouping by commerce_entity_id, which is already covered by the structural-entity-leakage finding."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "temporal-0",
+              "action": "retract"
+            },
+            "result_summary": "This finding duplicates the concern about entity overlap due to train_test_split without grouping by commerce_entity_id, which is already covered by the structural-entity-leakage finding."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "retract"
+            },
+            "result_summary": "This finding duplicates the concern about entity overlap due to train_test_split without grouping by commerce_entity_id, which is already covered by the structural-entity-leakage finding."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 2172,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 2626,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 2864,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 3722,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:58:50.195Z",
+          "duration_ms": 6586,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 6701
+    },
+    {
+      "case_id": "009_commerce_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T04:59:02.332Z",
+      "complete": true,
+      "predicted_leakage": false,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Audit checks completed: 0 active concern(s); 2 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 0 active concern(s); 2 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 0 active concern(s); 2 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- proxy-0: retract. The target encoding for 'segment_rate' is correctly implemented using out-of-fold means for training data and a separate mapping for test data, ensuring no leakage from test labels. The mapping for test data does not use any information from test labels, and thus, there is no leakage. Evidence: preprocessing_code: X_test['segment_rate'] = X_test['commerce_segment'].map(mapping).fillna(y_train.mean())\n\n- code-0: retract. The mapping for 'segment_rate' applied to X_test is derived from the full X_train without using test labels, ensuring no leakage. The use of y_train.mean() as a fallback does not introduce leakage as it does not use test labels. Evidence: preprocessing_code: X_test['segment_rate'] = X_test['commerce_segment'].map(mapping).fillna(y_train.mean())\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- proxy: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [
+          {
+            "action": "retract",
+            "basis": "valid_oof_encoding",
+            "reason": "The target encoding for 'segment_rate' is correctly implemented using out-of-fold means for training data and a separate mapping for test data, ensuring no leakage from test labels. The mapping for test data does not use any information from test labels, and thus, there is no leakage.",
+            "evidence_id": "preprocessing_code:20",
+            "severity": "medium",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "preprocessing_code",
+            "quote": "X_test['segment_rate'] = X_test['commerce_segment'].map(mapping).fillna(y_train.mean())"
+          },
+          {
+            "action": "retract",
+            "basis": "valid_oof_encoding",
+            "reason": "The mapping for 'segment_rate' applied to X_test is derived from the full X_train without using test labels, ensuring no leakage. The use of y_train.mean() as a fallback does not introduce leakage as it does not use test labels.",
+            "evidence_id": "preprocessing_code:20",
+            "severity": "medium",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "preprocessing_code",
+            "quote": "X_test['segment_rate'] = X_test['commerce_segment'].map(mapping).fillna(y_train.mean())"
+          }
+        ],
+        "retracted_findings": [
+          {
+            "id": "proxy-0",
+            "title": "Target Encoding with Holdout Labels",
+            "flagged_object": "commerce_segment",
+            "macro_bucket": "Feature / proxy leakage",
+            "fine_grained_type": "proxy",
+            "severity": "medium",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The 'segment_rate' feature is derived using target encoding, which can inadvertently use label information from the holdout set if not properly managed.",
+            "used_path": "The 'segment_rate' for the test set is calculated using a mapping derived from the full training data, which does not use holdout labels directly.",
+            "evidence": [
+              {
+                "claim": "The encoding process for 'segment_rate' is correctly implemented using out-of-fold means for training data and a separate mapping for test data, ensuring no leakage from test labels.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 20",
+                  "snippet": "X_test['segment_rate'] = X_test['commerce_segment'].map(mapping).fillna(y_train.mean())"
+                }
+              }
+            ],
+            "why_it_matters": "The encoding process for 'segment_rate' is correctly implemented using out-of-fold means for training data and a separate mapping for test data, ensuring no leakage from test labels.",
+            "fix_recommendation": [
+              "Ensure that the mapping for test data does not inadvertently use any information from test labels."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Target Encoding Leakage",
+            "flagged_object": "segment_rate",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "aggregation_lookahead",
+            "severity": "medium",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The segment_rate for X_test is calculated using a mapping derived from the full X_train, which includes information from y_train that should not be available for X_test.",
+            "used_path": "The mapping for segment_rate is created from the full X_train and applied to X_test, potentially using information from y_train that should not be available for X_test.",
+            "evidence": [
+              {
+                "claim": "The mapping for segment_rate is derived from the full X_train, which includes y_train, and applied to X_test. This can introduce information from the training labels into the test set, which is a form of leakage.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 20",
+                  "snippet": "X_test['segment_rate'] = X_test['commerce_segment'].map(mapping).fillna(y_train.mean())"
+                }
+              }
+            ],
+            "why_it_matters": "The mapping for segment_rate is derived from the full X_train, which includes y_train, and applied to X_test. This can introduce information from the training labels into the test set, which is a form of leakage.",
+            "fix_recommendation": [
+              "Use a separate holdout set or cross-validation to create the mapping for segment_rate applied to X_test, ensuring it does not use information from y_train."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "retract"
+            },
+            "result_summary": "The target encoding for 'segment_rate' is correctly implemented using out-of-fold means for training data and a separate mapping for test data, ensuring no leakage from test labels. The mapping for test data does not use any information from test labels, and thus, there is no leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "retract"
+            },
+            "result_summary": "The mapping for 'segment_rate' applied to X_test is derived from the full X_train without using test labels, ensuring no leakage. The use of y_train.mean() as a fallback does not introduce leakage as it does not use test labels."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "no_risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1560,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 2946,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 3289,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 1849,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:59:02.743Z",
+          "duration_ms": 5139,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 5278
+    },
+    {
+      "case_id": "010_commerce_target_aggregation_leaky",
+      "family": "target_aggregation",
+      "expected_leakage": true,
+      "started_at": "2026-09-23T04:59:14.836Z",
+      "complete": true,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "high",
+        "summary": "Audit checks completed: 4 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 4 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 4 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### Full-data aggregate before splitting\nSeverity: high; confidence: medium.\nAn aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.\n- Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data.\n\n### Target Leakage via Segment Rate Calculation\nSeverity: high; confidence: high.\nThe 'segment_rate' uses the target variable 'purchase_next_week' from the entire dataset, which includes future test data, leading to target leakage.\n- Calculate 'segment_rate' using only the training data, then apply the same mapping to the test data.\n\n### Target Leakage in Segment Rate Calculation\nSeverity: high; confidence: high.\nThe calculation of 'segment_rate' uses the target variable 'purchase_next_week' across the entire dataset, including the test set, before splitting, which introduces future information into the training data.\n- Calculate 'segment_rate' using only the training data, then apply the same mapping to the test data without recalculating.\n\n### Target Leakage in Segment Rate Encoding\nSeverity: high; confidence: high.\nThe 'segment_rate' is derived from the target 'purchase_next_week' using all data, including the test set, before the train-test split, leading to target leakage.\n- Compute 'segment_rate' using only the training data, then apply the same transformation to the test data without using its target values.\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- pipeline-lookahead-groupby-mean: keep. The 'segment_rate' feature is computed using the mean of 'purchase_next_week' across the entire dataset before splitting, which allows future information from the test set to influence the training set. This is a clear case of aggregation lookahead. Evidence: preprocessing_code: df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')\n\n- proxy-0: keep. The 'segment_rate' feature is calculated using the target variable 'purchase_next_week' from the entire dataset, including future test data, leading to target leakage. This is a valid concern of proxy leakage. Evidence: preprocessing_code: df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')\n\n- temporal-0: keep. The calculation of 'segment_rate' uses the target variable 'purchase_next_week' across the entire dataset, including the test set, before splitting, which introduces future information into the training data. This is a valid concern of temporal leakage. Evidence: preprocessing_code: df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')\n\n- code-0: keep. The 'segment_rate' is derived from the target 'purchase_next_week' using all data, including the test set, before the train-test split, leading to target leakage. This is a valid concern of aggregation lookahead. Evidence: preprocessing_code: df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- proxy: done\n\n- temporal: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "pipeline-lookahead-groupby-mean",
+            "title": "Full-data aggregate before splitting",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "aggregation_lookahead",
+            "severity": "high",
+            "confidence": "medium",
+            "flagged_object": "group aggregate",
+            "evidence": [
+              {
+                "claim": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')"
+                }
+              }
+            ],
+            "rule_cited": "pipeline-lookahead-groupby-mean",
+            "why_it_matters": "An aggregate is computed before splitting. Check target dependencies and time windows; held-out rows may affect the feature.",
+            "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+            "fix_recommendation": [
+              "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "proxy-0",
+            "title": "Target Leakage via Segment Rate Calculation",
+            "flagged_object": "segment_rate",
+            "macro_bucket": "Feature / proxy leakage",
+            "fine_grained_type": "proxy",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The 'segment_rate' feature is calculated using the mean of 'purchase_next_week' within each 'commerce_segment' across the entire dataset, including the test set.",
+            "used_path": "The 'segment_rate' is calculated before the train-test split, using the target 'purchase_next_week' from all data, including future test data.",
+            "evidence": [
+              {
+                "claim": "The 'segment_rate' uses the target variable 'purchase_next_week' from the entire dataset, which includes future test data, leading to target leakage.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')"
+                }
+              }
+            ],
+            "why_it_matters": "The 'segment_rate' uses the target variable 'purchase_next_week' from the entire dataset, which includes future test data, leading to target leakage.",
+            "fix_recommendation": [
+              "Calculate 'segment_rate' using only the training data, then apply the same mapping to the test data."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "temporal-0",
+            "title": "Target Leakage in Segment Rate Calculation",
+            "flagged_object": "segment_rate",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "aggregation_lookahead",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The 'segment_rate' feature is calculated using the mean of 'purchase_next_week' across all data, including the holdout set, leading to target leakage.",
+            "used_path": "The 'segment_rate' is derived from 'purchase_next_week' using groupby and transform before the train-test split, allowing future information to influence the training data.",
+            "evidence": [
+              {
+                "claim": "The calculation of 'segment_rate' uses the target variable 'purchase_next_week' across the entire dataset, including the test set, before splitting, which introduces future information into the training data.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')"
+                }
+              }
+            ],
+            "why_it_matters": "The calculation of 'segment_rate' uses the target variable 'purchase_next_week' across the entire dataset, including the test set, before splitting, which introduces future information into the training data.",
+            "fix_recommendation": [
+              "Calculate 'segment_rate' using only the training data, then apply the same mapping to the test data without recalculating."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Target Leakage in Segment Rate Encoding",
+            "flagged_object": "segment_rate",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "aggregation_lookahead",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The 'segment_rate' feature is computed using the mean of 'purchase_next_week' across 'commerce_segment', including future information from the test set.",
+            "used_path": "The 'segment_rate' is calculated on the entire dataset before splitting, allowing test set target information to influence the training set.",
+            "evidence": [
+              {
+                "claim": "The 'segment_rate' is derived from the target 'purchase_next_week' using all data, including the test set, before the train-test split, leading to target leakage.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')"
+                }
+              }
+            ],
+            "why_it_matters": "The 'segment_rate' is derived from the target 'purchase_next_week' using all data, including the test set, before the train-test split, leading to target leakage.",
+            "fix_recommendation": [
+              "Compute 'segment_rate' using only the training data, then apply the same transformation to the test data without using its target values."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 1,
+          "Structure / pipeline leakage": 3
+        },
+        "review_decisions": [
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The 'segment_rate' feature is computed using the mean of 'purchase_next_week' across the entire dataset before splitting, which allows future information from the test set to influence the training set. This is a clear case of aggregation lookahead.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "high",
+            "confidence": "medium",
+            "finding_id": "pipeline-lookahead-groupby-mean",
+            "source": "preprocessing_code",
+            "quote": "df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The 'segment_rate' feature is calculated using the target variable 'purchase_next_week' from the entire dataset, including future test data, leading to target leakage. This is a valid concern of proxy leakage.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "preprocessing_code",
+            "quote": "df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The calculation of 'segment_rate' uses the target variable 'purchase_next_week' across the entire dataset, including the test set, before splitting, which introduces future information into the training data. This is a valid concern of temporal leakage.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "temporal-0",
+            "source": "preprocessing_code",
+            "quote": "df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The 'segment_rate' is derived from the target 'purchase_next_week' using all data, including the test set, before the train-test split, leading to target leakage. This is a valid concern of aggregation lookahead.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "preprocessing_code",
+            "quote": "df['segment_rate'] = df.groupby('commerce_segment')['purchase_next_week'].transform('mean')"
+          }
+        ],
+        "retracted_findings": [],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "pipeline-lookahead-groupby-mean",
+              "action": "keep"
+            },
+            "result_summary": "The 'segment_rate' feature is computed using the mean of 'purchase_next_week' across the entire dataset before splitting, which allows future information from the test set to influence the training set. This is a clear case of aggregation lookahead."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "keep"
+            },
+            "result_summary": "The 'segment_rate' feature is calculated using the target variable 'purchase_next_week' from the entire dataset, including future test data, leading to target leakage. This is a valid concern of proxy leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "temporal-0",
+              "action": "keep"
+            },
+            "result_summary": "The calculation of 'segment_rate' uses the target variable 'purchase_next_week' across the entire dataset, including the test set, before splitting, which introduces future information into the training data. This is a valid concern of temporal leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "keep"
+            },
+            "result_summary": "The 'segment_rate' is derived from the target 'purchase_next_week' using all data, including the test set, before the train-test split, leading to target leakage. This is a valid concern of aggregation lookahead."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 2179,
+              "attempts": 1
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 2267,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 3948,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 3130,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:59:15.201Z",
+          "duration_ms": 7078,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 7165
+    },
+    {
+      "case_id": "011_subscription_temporal_clean",
+      "family": "temporal",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T04:59:27.337Z",
+      "complete": true,
+      "predicted_leakage": false,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- proxy: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "complete",
+          "assessment": "no_risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1049,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 1766,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 2098,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:59:27.712Z",
+          "duration_ms": 2099,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 2198
+    },
+    {
+      "case_id": "012_subscription_temporal_leaky",
+      "family": "temporal",
+      "expected_leakage": true,
+      "started_at": "2026-09-23T04:59:39.839Z",
+      "complete": true,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "high",
+        "summary": "Audit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### Use of Future Information in Model Inputs\nSeverity: high; confidence: high.\nThe feature 'subscription_activity_after_t0' is explicitly stated to be unavailable at t0, yet it is included in the model inputs, leading to temporal leakage.\n- Remove 'subscription_activity_after_t0' from the feature set used for training and evaluation.\n\n### Use of future information in model features\nSeverity: high; confidence: high.\nThe feature 'subscription_activity_after_t0' is explicitly selected and used in the model, despite being unavailable at the decision time t0, leading to leakage of future information into the model.\n- Remove 'subscription_activity_after_t0' from the feature set used in the model to ensure only information available at t0 is used.\n\n### Usage of unavailable future information\nSeverity: high; confidence: high.\nThe feature 'subscription_activity_after_t0' is explicitly stated to be unavailable at decision time t0, yet it is included in the training features, leading to a temporal leakage.\n- Remove 'subscription_activity_after_t0' from the feature set X before splitting the data.\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- proxy-0: keep. The feature 'subscription_activity_after_t0' is included in the model inputs, despite being unavailable at the decision time t0, leading to temporal leakage. Evidence: preprocessing_code: X = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()\n\n- temporal-0: keep. The feature 'subscription_activity_after_t0' is selected and used in the model, despite being unavailable at the decision time t0, leading to leakage of future information into the model. Evidence: preprocessing_code: X = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()\n\n- code-0: keep. The feature 'subscription_activity_after_t0' is included in the training features, despite being unavailable at decision time t0, leading to a temporal leakage. Evidence: preprocessing_code: X = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- proxy: done\n\n- temporal: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "proxy-0",
+            "title": "Use of Future Information in Model Inputs",
+            "flagged_object": "subscription_activity_after_t0",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The feature 'subscription_activity_after_t0' includes information from after the decision point t0, which is unavailable at prediction time.",
+            "used_path": "The feature 'subscription_activity_after_t0' is included in X_train and used for model training and evaluation.",
+            "evidence": [
+              {
+                "claim": "The feature 'subscription_activity_after_t0' is explicitly stated to be unavailable at t0, yet it is included in the model inputs, leading to temporal leakage.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "X = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'subscription_activity_after_t0' is explicitly stated to be unavailable at t0, yet it is included in the model inputs, leading to temporal leakage.",
+            "fix_recommendation": [
+              "Remove 'subscription_activity_after_t0' from the feature set used for training and evaluation."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "temporal-0",
+            "title": "Use of future information in model features",
+            "flagged_object": "subscription_activity_after_t0",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "'subscription_activity_after_t0' is included as a feature, but it contains information from after t0, which is unavailable at the decision time.",
+            "used_path": "The feature 'subscription_activity_after_t0' is selected in X and used in train_test_split, allowing future information to influence model training and evaluation.",
+            "evidence": [
+              {
+                "claim": "The feature 'subscription_activity_after_t0' is explicitly selected and used in the model, despite being unavailable at the decision time t0, leading to leakage of future information into the model.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "X = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'subscription_activity_after_t0' is explicitly selected and used in the model, despite being unavailable at the decision time t0, leading to leakage of future information into the model.",
+            "fix_recommendation": [
+              "Remove 'subscription_activity_after_t0' from the feature set used in the model to ensure only information available at t0 is used."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Usage of unavailable future information",
+            "flagged_object": "subscription_activity_after_t0",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "'subscription_activity_after_t0' is included in the feature set X, but it represents data from after the decision time t0, which is unavailable at prediction time.",
+            "used_path": "The feature 'subscription_activity_after_t0' is selected and used in X_train for model training, despite being unavailable at t0.",
+            "evidence": [
+              {
+                "claim": "The feature 'subscription_activity_after_t0' is explicitly stated to be unavailable at decision time t0, yet it is included in the training features, leading to a temporal leakage.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "X = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'subscription_activity_after_t0' is explicitly stated to be unavailable at decision time t0, yet it is included in the training features, leading to a temporal leakage.",
+            "fix_recommendation": [
+              "Remove 'subscription_activity_after_t0' from the feature set X before splitting the data."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 3,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The feature 'subscription_activity_after_t0' is included in the model inputs, despite being unavailable at the decision time t0, leading to temporal leakage.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The feature 'subscription_activity_after_t0' is selected and used in the model, despite being unavailable at the decision time t0, leading to leakage of future information into the model.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "temporal-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The feature 'subscription_activity_after_t0' is included in the training features, despite being unavailable at decision time t0, leading to a temporal leakage.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['active_days_prior_month', 'tenure_days', 'subscription_activity_after_t0']].copy()"
+          }
+        ],
+        "retracted_findings": [],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'subscription_activity_after_t0' is included in the model inputs, despite being unavailable at the decision time t0, leading to temporal leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "temporal-0",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'subscription_activity_after_t0' is selected and used in the model, despite being unavailable at the decision time t0, leading to leakage of future information into the model."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'subscription_activity_after_t0' is included in the training features, despite being unavailable at decision time t0, leading to a temporal leakage."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 2065,
+              "attempts": 1
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 2346,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 2410,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 1873,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:59:40.206Z",
+          "duration_ms": 4284,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 4396
+    },
+    {
+      "case_id": "013_subscription_target_proxy_clean",
+      "family": "target_proxy",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T04:59:52.348Z",
+      "complete": true,
+      "predicted_leakage": false,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- code: done\n\n- temporal: done\n\n- proxy: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "complete",
+          "assessment": "no_risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 1184,
+              "attempts": 1
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1354,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 1602,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T04:59:52.746Z",
+          "duration_ms": 1602,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 1850
+    },
+    {
+      "case_id": "014_subscription_target_proxy_leaky",
+      "family": "target_proxy",
+      "expected_leakage": true,
+      "started_at": "2026-09-23T05:00:04.852Z",
+      "complete": true,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "critical",
+        "summary": "Audit checks completed: 4 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 4 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 4 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### Target or direct target copy may reach the model\nSeverity: critical; confidence: medium.\nThe selected input outcome is the target or a direct copy of it.\n- Keep only inputs available at prediction time; verify the feature lineage.\n\n### Outcome Proxy Leakage\nSeverity: high; confidence: high.\nIncluding 'outcome', a post-resolution copy of the target, in the feature set allows the model to learn from the target label itself, leading to leakage.\n- Remove 'outcome' from the feature set used for training the model.\n\n### Outcome Leakage\nSeverity: high; confidence: high.\nThe 'outcome' column is a direct copy of the target label 'churn_next_month', which is resolved after the decision time t0, leading to leakage.\n- Remove the 'outcome' column from the features used in the model.\n\n### Inclusion of Resolved Outcome in Features\nSeverity: high; confidence: high.\nThe 'outcome' column is derived from 'churn_next_month' after it resolves, which means it contains future information that should not be available at decision time t0. Including it in the feature set violates the temporal boundary of the prediction task.\n- Remove the 'outcome' column from the feature set X before splitting the data into training and test sets.\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- metadata-target-copy-outcome: keep. The 'outcome' column is a direct copy of the target 'churn_next_month', which is resolved after the decision time t0, leading to leakage. Evidence: preprocessing_code: df['outcome'] = df['churn_next_month'].astype(int)\n\n- proxy-0: keep. The 'outcome' column is included in the features used for training the model, which directly reflects the target label, leading to leakage. Evidence: preprocessing_code: X = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()\n\n- temporal-0: keep. The 'outcome' column is a direct copy of the target label 'churn_next_month', which is resolved after the decision time t0, leading to leakage. Evidence: preprocessing_code: X = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()\n\n- code-0: keep. The 'outcome' column is derived from 'churn_next_month' after it resolves, which means it contains future information that should not be available at decision time t0. Including it in the feature set violates the temporal boundary of the prediction task. Evidence: preprocessing_code: X = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- proxy: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "metadata-target-copy-outcome",
+            "title": "Target or direct target copy may reach the model",
+            "macro_bucket": "Feature / proxy leakage",
+            "fine_grained_type": "proxy",
+            "severity": "critical",
+            "confidence": "medium",
+            "flagged_object": "outcome",
+            "evidence": [
+              {
+                "claim": "The selected input outcome is the target or a direct copy of it.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 6",
+                  "snippet": "df['outcome'] = df['churn_next_month'].astype(int)"
+                }
+              }
+            ],
+            "rule_cited": "metadata-target-copy-outcome",
+            "why_it_matters": "The selected input outcome is the target or a direct copy of it.",
+            "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+            "fix_recommendation": [
+              "Keep only inputs available at prediction time; verify the feature lineage."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "proxy-0",
+            "title": "Outcome Proxy Leakage",
+            "flagged_object": "outcome",
+            "macro_bucket": "Feature / proxy leakage",
+            "fine_grained_type": "proxy",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The 'outcome' feature is a direct copy of the target 'churn_next_month', created after the target is resolved.",
+            "used_path": "The 'outcome' column is included in the features used for training the model, which directly reflects the target label.",
+            "evidence": [
+              {
+                "claim": "Including 'outcome', a post-resolution copy of the target, in the feature set allows the model to learn from the target label itself, leading to leakage.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 7",
+                  "snippet": "X = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "Including 'outcome', a post-resolution copy of the target, in the feature set allows the model to learn from the target label itself, leading to leakage.",
+            "fix_recommendation": [
+              "Remove 'outcome' from the feature set used for training the model."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "temporal-0",
+            "title": "Outcome Leakage",
+            "flagged_object": "outcome",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The 'outcome' feature is derived from 'churn_next_month', which is the target label resolved after t0, and is included in the model's features.",
+            "used_path": "The 'outcome' column is created from 'churn_next_month' and included in X, which is then split into X_train and X_test.",
+            "evidence": [
+              {
+                "claim": "The 'outcome' column is a direct copy of the target label 'churn_next_month', which is resolved after the decision time t0, leading to leakage.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 7",
+                  "snippet": "X = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The 'outcome' column is a direct copy of the target label 'churn_next_month', which is resolved after the decision time t0, leading to leakage.",
+            "fix_recommendation": [
+              "Remove the 'outcome' column from the features used in the model."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Inclusion of Resolved Outcome in Features",
+            "flagged_object": "outcome",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "aggregation_lookahead",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The 'outcome' column is a numeric copy of 'churn_next_month' created after it resolves, and it is included in the feature set X.",
+            "used_path": "The 'outcome' column is included in X_train and X_test, which are used for model training and evaluation.",
+            "evidence": [
+              {
+                "claim": "The 'outcome' column is derived from 'churn_next_month' after it resolves, which means it contains future information that should not be available at decision time t0. Including it in the feature set violates the temporal boundary of the prediction task.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 7",
+                  "snippet": "X = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()"
+                }
+              }
+            ],
+            "why_it_matters": "The 'outcome' column is derived from 'churn_next_month' after it resolves, which means it contains future information that should not be available at decision time t0. Including it in the feature set violates the temporal boundary of the prediction task.",
+            "fix_recommendation": [
+              "Remove the 'outcome' column from the feature set X before splitting the data into training and test sets."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 1,
+          "Feature / proxy leakage": 2,
+          "Structure / pipeline leakage": 1
+        },
+        "review_decisions": [
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The 'outcome' column is a direct copy of the target 'churn_next_month', which is resolved after the decision time t0, leading to leakage.",
+            "evidence_id": "preprocessing_code:6",
+            "severity": "critical",
+            "confidence": "medium",
+            "finding_id": "metadata-target-copy-outcome",
+            "source": "preprocessing_code",
+            "quote": "df['outcome'] = df['churn_next_month'].astype(int)"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The 'outcome' column is included in the features used for training the model, which directly reflects the target label, leading to leakage.",
+            "evidence_id": "preprocessing_code:7",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The 'outcome' column is a direct copy of the target label 'churn_next_month', which is resolved after the decision time t0, leading to leakage.",
+            "evidence_id": "preprocessing_code:7",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "temporal-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The 'outcome' column is derived from 'churn_next_month' after it resolves, which means it contains future information that should not be available at decision time t0. Including it in the feature set violates the temporal boundary of the prediction task.",
+            "evidence_id": "preprocessing_code:7",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "preprocessing_code",
+            "quote": "X = df[['active_days_prior_month', 'tenure_days', 'outcome']].copy()"
+          }
+        ],
+        "retracted_findings": [],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "metadata-target-copy-outcome",
+              "action": "keep"
+            },
+            "result_summary": "The 'outcome' column is a direct copy of the target 'churn_next_month', which is resolved after the decision time t0, leading to leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "keep"
+            },
+            "result_summary": "The 'outcome' column is included in the features used for training the model, which directly reflects the target label, leading to leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "temporal-0",
+              "action": "keep"
+            },
+            "result_summary": "The 'outcome' column is a direct copy of the target label 'churn_next_month', which is resolved after the decision time t0, leading to leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "keep"
+            },
+            "result_summary": "The 'outcome' column is derived from 'churn_next_month' after it resolves, which means it contains future information that should not be available at decision time t0. Including it in the feature set violates the temporal boundary of the prediction task."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 3386,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 3796,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 4232,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 2389,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T05:00:05.228Z",
+          "duration_ms": 6622,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 6719
+    },
+    {
+      "case_id": "015_subscription_preprocessing_clean",
+      "family": "preprocessing",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T05:00:17.352Z",
+      "complete": true,
+      "predicted_leakage": false,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- proxy: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "complete",
+          "assessment": "no_risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1219,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 1623,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 1720,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T05:00:17.711Z",
+          "duration_ms": 1721,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 1802
+    },
+    {
+      "case_id": "016_subscription_preprocessing_leaky",
+      "family": "preprocessing",
+      "expected_leakage": true,
+      "started_at": "2026-09-23T05:00:29.854Z",
+      "complete": true,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "medium",
+        "summary": "Audit checks completed: 1 active concern(s); 3 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 1 active concern(s); 3 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 1 active concern(s); 3 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### A learned transform may see holdout rows\nSeverity: medium; confidence: low.\nA fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.\n- Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data.\n\n## Context to verify\n\n- Confirm exactly which columns reach the model.\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- pipeline-global-preprocessing: keep. The MinMaxScaler is fitted on the entire dataset before the train-test split, which allows test data to influence the scaling parameters, leading to potential evaluation leakage. Evidence: preprocessing_code: X = preprocessor.fit_transform(X)\n\n- proxy-0: retract. This finding duplicates the concern about fitting the MinMaxScaler on the entire dataset before splitting, which is already addressed by another finding. Evidence: preprocessing_code: X = preprocessor.fit_transform(X)\n\n- temporal-0: retract. This finding duplicates the concern about fitting the MinMaxScaler on the entire dataset before splitting, which is already addressed by another finding. Evidence: preprocessing_code: X = preprocessor.fit_transform(X)\n\n- code-0: retract. This finding duplicates the concern about fitting the MinMaxScaler on the entire dataset before splitting, which is already addressed by another finding. Evidence: preprocessing_code: X = preprocessor.fit_transform(X)\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- proxy: done\n\n- temporal: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "pipeline-global-preprocessing",
+            "title": "A learned transform may see holdout rows",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "evaluation",
+            "severity": "medium",
+            "confidence": "low",
+            "flagged_object": "preprocessor",
+            "evidence": [
+              {
+                "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "rule_cited": "pipeline-global-preprocessing",
+            "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+            "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+            "fix_recommendation": [
+              "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm exactly which columns reach the model.",
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm exactly which columns reach the model.",
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 1
+        },
+        "review_decisions": [
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The MinMaxScaler is fitted on the entire dataset before the train-test split, which allows test data to influence the scaling parameters, leading to potential evaluation leakage.",
+            "evidence_id": "preprocessing_code:9",
+            "severity": "medium",
+            "confidence": "low",
+            "finding_id": "pipeline-global-preprocessing",
+            "source": "preprocessing_code",
+            "quote": "X = preprocessor.fit_transform(X)"
+          },
+          {
+            "action": "retract",
+            "basis": "duplicate",
+            "reason": "This finding duplicates the concern about fitting the MinMaxScaler on the entire dataset before splitting, which is already addressed by another finding.",
+            "evidence_id": "preprocessing_code:9",
+            "severity": "medium",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "preprocessing_code",
+            "quote": "X = preprocessor.fit_transform(X)"
+          },
+          {
+            "action": "retract",
+            "basis": "duplicate",
+            "reason": "This finding duplicates the concern about fitting the MinMaxScaler on the entire dataset before splitting, which is already addressed by another finding.",
+            "evidence_id": "preprocessing_code:9",
+            "severity": "medium",
+            "confidence": "high",
+            "finding_id": "temporal-0",
+            "source": "preprocessing_code",
+            "quote": "X = preprocessor.fit_transform(X)"
+          },
+          {
+            "action": "retract",
+            "basis": "duplicate",
+            "reason": "This finding duplicates the concern about fitting the MinMaxScaler on the entire dataset before splitting, which is already addressed by another finding.",
+            "evidence_id": "preprocessing_code:9",
+            "severity": "medium",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "preprocessing_code",
+            "quote": "X = preprocessor.fit_transform(X)"
+          }
+        ],
+        "retracted_findings": [
+          {
+            "id": "proxy-0",
+            "title": "Evaluation leakage due to pre-split scaling",
+            "flagged_object": "active_days_prior_month",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "evaluation",
+            "severity": "medium",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "MinMaxScaler is fitted on the entire dataset before the train-test split, allowing test data to influence the scaling parameters.",
+            "used_path": "The MinMaxScaler is fitted on the full dataset (X) before train_test_split is called.",
+            "evidence": [
+              {
+                "claim": "Fitting the MinMaxScaler on the entire dataset before splitting allows information from the test set to influence the scaling parameters, which can lead to biased evaluation results.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "why_it_matters": "Fitting the MinMaxScaler on the entire dataset before splitting allows information from the test set to influence the scaling parameters, which can lead to biased evaluation results.",
+            "fix_recommendation": [
+              "Fit the MinMaxScaler on the training data only and apply the same transformation to the test data."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "temporal-0",
+            "title": "Evaluation Leakage due to Preprocessing",
+            "flagged_object": "active_days_prior_month",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "evaluation",
+            "severity": "medium",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The MinMaxScaler is fitted on the entire dataset before splitting into training and test sets, allowing information from the test set to influence the scaling parameters.",
+            "used_path": "The MinMaxScaler is fitted on the full dataset (X) before the train-test split, as shown in preprocessing_code:9 and preprocessing_code:10.",
+            "evidence": [
+              {
+                "claim": "Fitting the MinMaxScaler on the entire dataset before splitting allows test data to influence the scaling parameters, which can lead to biased evaluation results.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "why_it_matters": "Fitting the MinMaxScaler on the entire dataset before splitting allows test data to influence the scaling parameters, which can lead to biased evaluation results.",
+            "fix_recommendation": [
+              "Fit the MinMaxScaler only on the training data after the train-test split and apply the same transformation to the test data."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Evaluation Leakage due to Preprocessing",
+            "flagged_object": "pipeline",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "evaluation",
+            "severity": "medium",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "MinMaxScaler is fitted on the entire dataset before splitting, allowing test set information to influence scaling parameters.",
+            "used_path": "The MinMaxScaler is fitted on the entire dataset (X) before the train_test_split operation, which means the scaling parameters are influenced by the entire dataset, including the test set.",
+            "evidence": [
+              {
+                "claim": "The MinMaxScaler is fitted on the entire dataset before the train_test_split, which is a clear case of evaluation leakage as it allows test set information to influence the scaling parameters.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "why_it_matters": "The MinMaxScaler is fitted on the entire dataset before the train_test_split, which is a clear case of evaluation leakage as it allows test set information to influence the scaling parameters.",
+            "fix_recommendation": [
+              "Fit the MinMaxScaler on the training data only after the train_test_split operation, and then apply the same fitted scaler to the test data."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "pipeline-global-preprocessing",
+              "action": "keep"
+            },
+            "result_summary": "The MinMaxScaler is fitted on the entire dataset before the train-test split, which allows test data to influence the scaling parameters, leading to potential evaluation leakage."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "retract"
+            },
+            "result_summary": "This finding duplicates the concern about fitting the MinMaxScaler on the entire dataset before splitting, which is already addressed by another finding."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "temporal-0",
+              "action": "retract"
+            },
+            "result_summary": "This finding duplicates the concern about fitting the MinMaxScaler on the entire dataset before splitting, which is already addressed by another finding."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "retract"
+            },
+            "result_summary": "This finding duplicates the concern about fitting the MinMaxScaler on the entire dataset before splitting, which is already addressed by another finding."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 2432,
+              "attempts": 1
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 3032,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 3595,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 2542,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T05:00:30.238Z",
+          "duration_ms": 6138,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 6294
+    },
+    {
+      "case_id": "017_subscription_entity_split_clean",
+      "family": "entity_split",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T05:00:42.354Z",
+      "complete": true,
+      "predicted_leakage": false,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 0 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- proxy: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "complete",
+          "assessment": "no_risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1087,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 1621,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 1960,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 0,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T05:00:42.715Z",
+          "duration_ms": 1960,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 2042
+    },
+    {
+      "case_id": "018_subscription_entity_split_leaky",
+      "family": "entity_split",
+      "expected_leakage": true,
+      "started_at": "2026-09-23T05:00:54.858Z",
+      "complete": true,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "high",
+        "summary": "Audit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 3 active concern(s); 0 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### Random split may overlap repeated entities\nSeverity: high; confidence: medium.\nContext declares repeated entities and code uses a row split. Verify overlap and intended generalization.\n- Verify entity overlap; use a group split when evaluating unseen entities.\n\n### Entity Overlap in Train-Test Split\nSeverity: high; confidence: high.\nThe task context specifies that each subscription_entity_id has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. The current split method does not ensure this, risking leakage of entity-specific information across the boundary.\n- Use GroupKFold or GroupShuffleSplit with subscription_entity_id to ensure that all observations of an entity are held out together.\n\n### Entity Overlap in Evaluation\nSeverity: high; confidence: high.\nThe task context specifies that each 'subscription_entity_id' has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. However, the current split method does not ensure this, leading to potential leakage.\n- Use GroupKFold or GroupShuffleSplit with 'subscription_entity_id' as the group identifier to ensure that all observations of a single entity are contained within either the training or test set, but not both.\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- structural-entity-leakage: keep. The use of train_test_split without considering subscription_entity_id allows for potential overlap of repeated entities between training and test sets, which violates the requirement to hold out entire entities for evaluation. Evidence: preprocessing_code: X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n- proxy-0: keep. The task context specifies that each subscription_entity_id has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. The current split method does not ensure this, risking leakage of entity-specific information across the boundary. Evidence: preprocessing_code: X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n- code-0: keep. The train_test_split function is used without considering the subscription_entity_id, which means that repeated observations of the same entity may be present in both training and test sets, leading to potential leakage. Evidence: prediction_goal: Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each subscription_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. \n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- code: done\n\n- proxy: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "structural-entity-leakage",
+            "title": "Random split may overlap repeated entities",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "join_entity",
+            "severity": "high",
+            "confidence": "medium",
+            "flagged_object": "subscription_entity_id",
+            "evidence": [
+              {
+                "claim": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 8",
+                  "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+                }
+              }
+            ],
+            "rule_cited": "structural-entity-leakage",
+            "why_it_matters": "Context declares repeated entities and code uses a row split. Verify overlap and intended generalization.",
+            "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+            "fix_recommendation": [
+              "Verify entity overlap; use a group split when evaluating unseen entities."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "proxy-0",
+            "title": "Entity Overlap in Train-Test Split",
+            "flagged_object": "active_days_prior_month",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "boundary",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The train-test split does not ensure that all observations of a single subscription_entity_id are held out together, potentially allowing information from the same entity to appear in both training and test sets.",
+            "used_path": "The train_test_split function is used without considering subscription_entity_id, leading to potential overlap of entities between training and test sets.",
+            "evidence": [
+              {
+                "claim": "The task context specifies that each subscription_entity_id has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. The current split method does not ensure this, risking leakage of entity-specific information across the boundary.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 8",
+                  "snippet": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+                }
+              }
+            ],
+            "why_it_matters": "The task context specifies that each subscription_entity_id has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. The current split method does not ensure this, risking leakage of entity-specific information across the boundary.",
+            "fix_recommendation": [
+              "Use GroupKFold or GroupShuffleSplit with subscription_entity_id to ensure that all observations of an entity are held out together."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "code-0",
+            "title": "Entity Overlap in Evaluation",
+            "flagged_object": "subscription_entity_id",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "join_entity",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "Repeated observations of 'subscription_entity_id' are not properly handled in the train-test split, leading to potential leakage of entity-specific information across the evaluation boundary.",
+            "used_path": "The train_test_split function is used without considering the 'subscription_entity_id', which means that repeated observations of the same entity may be present in both training and test sets.",
+            "evidence": [
+              {
+                "claim": "The task context specifies that each 'subscription_entity_id' has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. However, the current split method does not ensure this, leading to potential leakage.",
+                "source": {
+                  "filename": "task description",
+                  "location": "line 1",
+                  "snippet": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each subscription_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. "
+                }
+              }
+            ],
+            "why_it_matters": "The task context specifies that each 'subscription_entity_id' has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. However, the current split method does not ensure this, leading to potential leakage.",
+            "fix_recommendation": [
+              "Use GroupKFold or GroupShuffleSplit with 'subscription_entity_id' as the group identifier to ensure that all observations of a single entity are contained within either the training or test set, but not both."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 3
+        },
+        "review_decisions": [
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The use of train_test_split without considering subscription_entity_id allows for potential overlap of repeated entities between training and test sets, which violates the requirement to hold out entire entities for evaluation.",
+            "evidence_id": "preprocessing_code:8",
+            "severity": "high",
+            "confidence": "medium",
+            "finding_id": "structural-entity-leakage",
+            "source": "preprocessing_code",
+            "quote": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The task context specifies that each subscription_entity_id has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. The current split method does not ensure this, risking leakage of entity-specific information across the boundary.",
+            "evidence_id": "preprocessing_code:8",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "proxy-0",
+            "source": "preprocessing_code",
+            "quote": "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)"
+          },
+          {
+            "action": "keep",
+            "basis": "none",
+            "reason": "The train_test_split function is used without considering the subscription_entity_id, which means that repeated observations of the same entity may be present in both training and test sets, leading to potential leakage.",
+            "evidence_id": "prediction_goal:1",
+            "severity": "high",
+            "confidence": "high",
+            "finding_id": "code-0",
+            "source": "prediction_goal",
+            "quote": "Business context: 会员流失 (subscription). Predict churn_next_month at a defined decision time t0; the binary outcome is resolved strictly after t0. active_days_prior_month and tenure_days are numeric measurements available before t0. The target is a label, not an input predictor. The model uses exactly X_train produced below. Unless explicitly stated otherwise, rows are independent, no persons/items repeat, there are no duplicates, and evaluation targets new independent records from the same stationary population. Exception to row independence: each subscription_entity_id has 10 repeated observations with shared latent traits. Deployment targets completely unseen entities; evaluation must also hold out entire entities. "
+          }
+        ],
+        "retracted_findings": [],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "structural-entity-leakage",
+              "action": "keep"
+            },
+            "result_summary": "The use of train_test_split without considering subscription_entity_id allows for potential overlap of repeated entities between training and test sets, which violates the requirement to hold out entire entities for evaluation."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "keep"
+            },
+            "result_summary": "The task context specifies that each subscription_entity_id has 10 repeated observations with shared latent traits, and evaluation must hold out entire entities. The current split method does not ensure this, risking leakage of entity-specific information across the boundary."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "keep"
+            },
+            "result_summary": "The train_test_split function is used without considering the subscription_entity_id, which means that repeated observations of the same entity may be present in both training and test sets, leading to potential leakage."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1742,
+              "attempts": 1
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 2938,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 3088,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 2629,
+              "attempts": 1
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T05:00:55.257Z",
+          "duration_ms": 5718,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 5897
+    },
+    {
+      "case_id": "019_subscription_target_aggregation_clean",
+      "family": "target_aggregation",
+      "expected_leakage": false,
+      "started_at": "2026-09-23T05:01:07.358Z",
+      "complete": false,
+      "predicted_leakage": true,
+      "http_status": 200,
+      "report": {
+        "overall_risk": "medium",
+        "summary": "Partial audit: 2 active concern(s); 0 retracted after review. Some checks failed; safety cannot be established.",
+        "executive_summary": "Partial audit: 2 active concern(s); 0 retracted after review. Some checks failed; safety cannot be established.",
+        "narrative_report": "# Olarion audit\n\nPartial audit: 2 active concern(s); 0 retracted after review. Some checks failed; safety cannot be established.\n\n**Incomplete coverage. Failed checks are not evidence that the pipeline is safe.**\n\n## Findings\n\n### Target Encoding with Holdout Labels\nSeverity: medium; confidence: high.\nThe target encoding is correctly applied using out-of-fold means for training data and a precomputed mapping for test data, avoiding direct leakage from test labels. However, the use of target encoding itself introduces a proxy for the target variable.\n- Consider using alternative encoding methods that do not rely on the target variable, or ensure robust validation to account for potential proxy effects.\n\n### Target Encoding with Holdout Mapping\nSeverity: low; confidence: high.\nThe test set 'segment_rate' is calculated using a mapping from the full training set, which is a standard approach but relies on the assumption that the test set distribution is similar to the training set.\n- Ensure that the mapping for test set encoding is strictly derived from training data without any influence from test data.\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- code: done\n\n- proxy: done\n\n- temporal: done\n\n- review: failed (rate_limited)\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "proxy-0",
+            "title": "Target Encoding with Holdout Labels",
+            "flagged_object": "subscription_segment",
+            "macro_bucket": "Feature / proxy leakage",
+            "fine_grained_type": "proxy",
+            "severity": "medium",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The 'segment_rate' feature is derived using target encoding based on 'subscription_segment', which uses the mean label value for each segment from the training data.",
+            "used_path": "The 'segment_rate' is calculated using out-of-fold means for training data and applied to test data using a mapping derived from the full training set.",
+            "evidence": [
+              {
+                "claim": "The target encoding is correctly applied using out-of-fold means for training data and a precomputed mapping for test data, avoiding direct leakage from test labels. However, the use of target encoding itself introduces a proxy for the target variable.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 14",
+                  "snippet": "    mapping = fold.groupby('segment')['label'].mean()"
+                }
+              }
+            ],
+            "why_it_matters": "The target encoding is correctly applied using out-of-fold means for training data and a precomputed mapping for test data, avoiding direct leakage from test labels. However, the use of target encoding itself introduces a proxy for the target variable.",
+            "fix_recommendation": [
+              "Consider using alternative encoding methods that do not rely on the target variable, or ensure robust validation to account for potential proxy effects."
+            ],
+            "needs_human_review": true
+          },
+          {
+            "id": "temporal-0",
+            "title": "Target Encoding with Holdout Mapping",
+            "flagged_object": "subscription_segment",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "aggregation_lookahead",
+            "severity": "low",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the mechanism; confidence is reported separately.",
+            "mechanism": "The 'segment_rate' feature for the test set is computed using a mapping derived from the entire training set, which includes information from all training labels.",
+            "used_path": "The mapping for 'segment_rate' in the test set is created using the full training data labels, which could indirectly include information about the test set distribution if not properly handled.",
+            "evidence": [
+              {
+                "claim": "The test set 'segment_rate' is calculated using a mapping from the full training set, which is a standard approach but relies on the assumption that the test set distribution is similar to the training set.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 20",
+                  "snippet": "X_test['segment_rate'] = X_test['subscription_segment'].map(mapping).fillna(y_train.mean())"
+                }
+              }
+            ],
+            "why_it_matters": "The test set 'segment_rate' is calculated using a mapping from the full training set, which is a standard approach but relies on the assumption that the test set distribution is similar to the training set.",
+            "fix_recommendation": [
+              "Ensure that the mapping for test set encoding is strictly derived from training data without any influence from test data."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 1,
+          "Structure / pipeline leakage": 1
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "degraded",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1,
+              "attempts": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 1843,
+              "attempts": 1
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 3778,
+              "attempts": 1
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 4272,
+              "attempts": 1
+            },
+            {
+              "id": "review",
+              "status": "failed",
+              "duration_ms": 7143,
+              "error_code": "rate_limited",
+              "attempts": 2,
+              "recovered_errors": [
+                "rate_limited"
+              ]
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.1.2",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T05:01:07.742Z",
+          "duration_ms": 11416,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      },
+      "duration_ms": 11554
+    }
+  ],
+  "finished_at": "2026-09-23T05:01:18.923Z"
+}
