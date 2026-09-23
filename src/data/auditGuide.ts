@@ -91,7 +91,7 @@ export const AUDIT_GUIDE = {
     ],
     derivedTitle: "Code-generated fields need an explanation",
     derived:
-      "The form’s feature lists currently accept CSV column names only. Describe new fields, their source columns and creation logic in the task description and code. Leave the explicit feature list blank if it cannot represent all actual inputs; an incomplete list can mislead the audit. Do not invent CSV headers just to pass validation.",
+      "Feature lists accept CSV names and derived fields recognized from Python column assignments or assign() calls. This limited name recognition does not prove data flow. Describe each new field, its sources and creation logic. Leave the explicit feature list blank if it cannot represent all actual inputs; an incomplete list can mislead the audit. Do not invent CSV headers just to pass validation.",
     templateTitle: "An example of useful task context",
     templateIntro:
       "Adapt the fields, timing and evaluation setup to your own project. This example is not a certification that a pipeline is safe.",
@@ -203,7 +203,7 @@ export const AUDIT_GUIDE = {
     ],
     derivedTitle: "代码生成的新字段，需要说明来源",
     derived:
-      "目前表单的特征列表只接受 CSV 中已有的列。请在任务描述和代码中说明派生字段的来源与生成逻辑。如果列表无法表达全部实际输入，请留空并详细描述，避免不完整的声明误导审计。无需为通过校验而编造 CSV 表头。",
+      "特征列表支持 CSV 列名，以及从 Python 列赋值或 assign() 调用中识别出的派生字段。名称识别不等于完整的数据流分析，请在任务描述和代码中说明来源、生成逻辑和可用时点。如果列表无法表达全部实际输入，请留空并详细描述，避免不完整的声明误导审计。无需为通过校验而编造 CSV 表头。",
     templateTitle: "一份有用的任务描述示例",
     templateIntro:
       "请根据实际项目调整字段、时点和评估设置。该示例不代表流程已经被证明安全。",

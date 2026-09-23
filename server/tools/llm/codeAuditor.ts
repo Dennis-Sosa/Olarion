@@ -8,9 +8,10 @@ export interface CodeAuditResult {
 export async function auditPreprocessingCode(
   request: AuditRequest,
   signal?: AbortSignal,
+  repair?: string,
 ): Promise<CodeAuditResult> {
   return {
-    findings: await analyze(request, "code", signal),
+    findings: await analyze(request, "code", signal, repair),
     split_method: null,
     detected_entity_keys: [],
   };

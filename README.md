@@ -46,7 +46,7 @@ npm run dev:full
 
 Open `http://localhost:5173/setup`. Use a Quick Fill example or provide a CSV, prediction goal, target column and preprocessing code. Inspect the selected code before running. Training code and structured context are optional. Without a valid key, rule checks still run and the result is visibly partial.
 
-CSV headers are checked on upload (UTF-8, nonempty and unique names, at most 300 columns and a 64 KB header). A header-only file is sufficient for static review. ZIP uploads support exactly one CSV and 1–10 Python files, at most 10 MB compressed. For multiple scripts, explicitly choose preprocessing and optional training roles, then review/edit the code. Other scripts are not automatically audited. Each code input is limited to 60,000 characters and is never silently truncated. The explicit feature lists currently accept only raw CSV column names; describe derived fields in the code/task, leaving the list blank when it cannot represent the full input set.
+CSV headers are checked on upload (UTF-8, nonempty and unique names, at most 300 columns and a 64 KB header). A header-only file is sufficient for static review. ZIP uploads support exactly one CSV and 1–10 Python files, at most 10 MB compressed. For multiple scripts, explicitly choose preprocessing and optional training roles, then review/edit the code. Other scripts are not automatically audited. Each code input is limited to 60,000 characters and is never silently truncated. Feature lists accept CSV names and derived fields recognized from Python column assignments or assign() calls; describe their sources in the code/task. Recognition is lexical, not full data-flow analysis. Leave the list blank when it cannot represent the full input set.
 
 `OPENAI_MODEL` defaults to `gpt-4o`. A replacement must support Chat Completions JSON mode and the configured sampling parameters. Model compatibility and quality must be retested before changing the default.
 
@@ -77,7 +77,7 @@ Model requests have a 15-second timeout and no implicit retries; the audit deadl
 
 ## Deploy
 
-The existing Vercel entry point is `api/index.ts`; `vercel.json` builds the frontend and routes API requests. Set `OPENAI_API_KEY` in Vercel's environment settings and redeploy. Never put secrets in `VITE_*` variables. Confirm `/api/health` identifies `audit-2.0.1`, then run both a clean and leaky example and inspect coverage.
+The existing Vercel entry point is `api/index.ts`; `vercel.json` builds the frontend and routes API requests. Set `OPENAI_API_KEY` in Vercel's environment settings and redeploy. Never put secrets in `VITE_*` variables. Confirm `/api/health` identifies `audit-2.1.0`, then run both a clean and leaky example and inspect coverage.
 
 This personal repository is published under **Dennis-Sosa/Olarion** and deployed at **[olarion-zeta.vercel.app](https://olarion-zeta.vercel.app/)** in the `sosadennis39-debugs-projects` Vercel workspace. The project imports this repository's `main` branch. See the [deployment guide](docs/deployment.md).
 

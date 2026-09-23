@@ -4,18 +4,11 @@ export const RULES_VERSION = "2.0.0";
 export function escapeRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-/** Lightweight Python lexical scan; never executes submitted code. Not a data-flow parser. */
-export function executableCode(raw: string): string {
-  return raw
-    .replace(/"""[\s\S]*?"""|'''[\s\S]*?'''/g, (m) => m.replace(/[^\n]/g, " "))
-    .split("\n")
-    .map((line) =>
-      line.replace(/(['"])(?:\\.|(?!\1).)*?\1|#[^\n]*/g, (token) =>
-        token.startsWith("#") ? " ".repeat(token.length) : token,
-      ),
-    )
-    .join("\n");
-}
+export { executableCode } from "../../../src/lib/featureCatalog.js";
+import {
+  executableCode,
+  knownColumns,
+} from "../../../src/lib/featureCatalog.js";
 export function featureScope(request: AuditRequest): {
   columns: string[];
   known: boolean;
@@ -54,7 +47,7 @@ export function featureScope(request: AuditRequest): {
     }
   }
   return {
-    columns: request.csv_columns.filter((c) => c !== request.target_column),
+    columns: knownColumns(request).filter((c) => c !== request.target_column),
     known: false,
     source: "raw headers; feature use is unresolved",
   };

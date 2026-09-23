@@ -1,0 +1,308 @@
+[
+  {
+    "id": "challenge_001_shift_boundary_clean",
+    "family": "shift_boundary",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Forecast next-hour demand y at timestamp stamp. Only earlier observed volume is available. Each row is a different chronological hour. The final block is held out; training labels end before its start.",
+      "target_column": "y",
+      "csv_columns": [
+        "stamp",
+        "volume",
+        "y"
+      ],
+      "preprocessing_code": "df = df.sort_values('stamp')\ndf['window_value'] = df['volume'].shift(1)\nX = df[['window_value']]\nX_train, X_test = X.iloc[:800], X.iloc[800:]"
+    }
+  },
+  {
+    "id": "challenge_002_shift_boundary_leaky",
+    "family": "shift_boundary",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Forecast next-hour demand y at timestamp stamp. Only earlier observed volume is available. Each row is a different chronological hour. The final block is held out; training labels end before its start.",
+      "target_column": "y",
+      "csv_columns": [
+        "stamp",
+        "volume",
+        "y"
+      ],
+      "preprocessing_code": "df = df.sort_values('stamp')\ndf['window_value'] = df['volume'].shift(-1)\nX = df[['window_value']]\nX_train, X_test = X.iloc[:800], X.iloc[800:]"
+    }
+  },
+  {
+    "id": "challenge_003_asof_boundary_clean",
+    "family": "asof_boundary",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Predict y at each event timestamp. Sensor readings are published at their timestamp, not earlier. An earlier/later time block is used for train/test; labels do not overlap the cutoff.",
+      "target_column": "y",
+      "csv_columns": [
+        "stamp",
+        "sensor",
+        "y"
+      ],
+      "preprocessing_code": "merged = pd.merge_asof(events.sort_values('stamp'), readings.sort_values('stamp'), on='stamp', direction='backward')\nX = merged[['sensor']]\nX_train, X_test = X.iloc[:800], X.iloc[800:]"
+    }
+  },
+  {
+    "id": "challenge_004_asof_boundary_leaky",
+    "family": "asof_boundary",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Predict y at each event timestamp. Sensor readings are published at their timestamp, not earlier. An earlier/later time block is used for train/test; labels do not overlap the cutoff.",
+      "target_column": "y",
+      "csv_columns": [
+        "stamp",
+        "sensor",
+        "y"
+      ],
+      "preprocessing_code": "merged = pd.merge_asof(events.sort_values('stamp'), readings.sort_values('stamp'), on='stamp', direction='forward')\nX = merged[['sensor']]\nX_train, X_test = X.iloc[:800], X.iloc[800:]"
+    }
+  },
+  {
+    "id": "challenge_005_derived_copy_clean",
+    "family": "derived_copy",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Predict future y using prior_total, a numerical total recorded before prediction. Rows are independent; one row per entity. No y values exist at prediction time.",
+      "target_column": "y",
+      "csv_columns": [
+        "prior_total",
+        "y"
+      ],
+      "preprocessing_code": "df = df.assign(score=lambda d: d['prior_total'] * 0.5)\nX = df[['score']]\nX_train, X_test, y_train, y_test = train_test_split(X, df['y'])"
+    }
+  },
+  {
+    "id": "challenge_006_derived_copy_leaky",
+    "family": "derived_copy",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Predict future y using prior_total, a numerical total recorded before prediction. Rows are independent; one row per entity. No y values exist at prediction time.",
+      "target_column": "y",
+      "csv_columns": [
+        "prior_total",
+        "y"
+      ],
+      "preprocessing_code": "df = df.assign(score=lambda d: d['y'] * 0.5)\nX = df[['score']]\nX_train, X_test, y_train, y_test = train_test_split(X, df['y'])"
+    }
+  },
+  {
+    "id": "challenge_007_imputation_scope_clean",
+    "family": "imputation_scope",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Predict next-month y using historical visits. One row per entity and independent rows. Evaluate generalization to new independent rows.",
+      "target_column": "y",
+      "csv_columns": [
+        "visits",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['visits']]\nX_train, X_test, y_train, y_test = train_test_split(X, df['y'])\nfill_value = X_train['visits'].median()\nX_train = X_train.fillna(fill_value)\nX_test = X_test.fillna(fill_value)"
+    }
+  },
+  {
+    "id": "challenge_008_imputation_scope_leaky",
+    "family": "imputation_scope",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Predict next-month y using historical visits. One row per entity and independent rows. Evaluate generalization to new independent rows.",
+      "target_column": "y",
+      "csv_columns": [
+        "visits",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['visits']]\nfill_value = X['visits'].median()\nX = X.fillna(fill_value)\nX_train, X_test, y_train, y_test = train_test_split(X, df['y'])"
+    }
+  },
+  {
+    "id": "challenge_009_model_selection_clean",
+    "family": "model_selection",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Predict future y from prior visits. Rows are independent with one row per entity. Report final generalization on untouched test data. Validation is separate from training and final test.",
+      "target_column": "y",
+      "csv_columns": [
+        "visits",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['visits']]\nX_train, X_hold, y_train, y_hold = train_test_split(X, df['y'])\nX_valid, X_test, y_valid, y_test = train_test_split(X_hold, y_hold)",
+      "model_training_code": "candidates = [model_a.fit(X_train,y_train), model_b.fit(X_train,y_train)]\nbest = max(candidates, key=lambda m: m.score(X_valid,y_valid))\nfinal_score = best.score(X_test,y_test)"
+    }
+  },
+  {
+    "id": "challenge_010_model_selection_leaky",
+    "family": "model_selection",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Predict future y from prior visits. Rows are independent with one row per entity. Report final generalization on untouched test data. Validation is separate from training and final test.",
+      "target_column": "y",
+      "csv_columns": [
+        "visits",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['visits']]\nX_train, X_hold, y_train, y_hold = train_test_split(X, df['y'])\nX_valid, X_test, y_valid, y_test = train_test_split(X_hold, y_hold)",
+      "model_training_code": "candidates = [model_a.fit(X_train,y_train), model_b.fit(X_train,y_train)]\nbest = max(candidates, key=lambda m: m.score(X_test,y_test))\nfinal_score = best.score(X_test,y_test)"
+    }
+  },
+  {
+    "id": "challenge_011_cv_preprocessing_clean",
+    "family": "cv_preprocessing",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Predict future y from prior numeric x1 and x2. One row per entity; rows are independent. Cross-validation estimates generalization to independent new rows.",
+      "target_column": "y",
+      "csv_columns": [
+        "x1",
+        "x2",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['x1','x2']]\ny = df['y']",
+      "model_training_code": "estimator = make_pipeline(StandardScaler(), LogisticRegression())\nscores = cross_val_score(estimator, X, y, cv=5)"
+    }
+  },
+  {
+    "id": "challenge_012_cv_preprocessing_leaky",
+    "family": "cv_preprocessing",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Predict future y from prior numeric x1 and x2. One row per entity; rows are independent. Cross-validation estimates generalization to independent new rows.",
+      "target_column": "y",
+      "csv_columns": [
+        "x1",
+        "x2",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['x1','x2']]\ny = df['y']",
+      "model_training_code": "scaled = StandardScaler().fit_transform(X)\nscores = cross_val_score(LogisticRegression(), scaled, y, cv=5)"
+    }
+  },
+  {
+    "id": "challenge_013_feature_selection_clean",
+    "family": "feature_selection",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Predict future y from prior x1 and x2. One row per entity; independent records. Final test labels must not influence training or selection.",
+      "target_column": "y",
+      "csv_columns": [
+        "x1",
+        "x2",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['x1','x2']]\nX_train, X_test, y_train, y_test = train_test_split(X, df['y'])\nselector = SelectKBest(k=1).fit(X_train, y_train)\nX_train = selector.transform(X_train)\nX_test = selector.transform(X_test)"
+    }
+  },
+  {
+    "id": "challenge_014_feature_selection_leaky",
+    "family": "feature_selection",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Predict future y from prior x1 and x2. One row per entity; independent records. Final test labels must not influence training or selection.",
+      "target_column": "y",
+      "csv_columns": [
+        "x1",
+        "x2",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['x1','x2']]\nselector = SelectKBest(k=1).fit(X, df['y'])\nX = selector.transform(X)\nX_train, X_test, y_train, y_test = train_test_split(X, df['y'])"
+    }
+  },
+  {
+    "id": "challenge_015_resampling_clean",
+    "family": "resampling",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Predict future y from prior x1 and x2. Rows initially independent, one row per entity. Evaluate on an untouched holdout from the original population.",
+      "target_column": "y",
+      "csv_columns": [
+        "x1",
+        "x2",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['x1','x2']]\nX_train, X_test, y_train, y_test = train_test_split(X, df['y'])\nX_train, y_train = SMOTE().fit_resample(X_train, y_train)"
+    }
+  },
+  {
+    "id": "challenge_016_resampling_leaky",
+    "family": "resampling",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Predict future y from prior x1 and x2. Rows initially independent, one row per entity. Evaluate on an untouched holdout from the original population.",
+      "target_column": "y",
+      "csv_columns": [
+        "x1",
+        "x2",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['x1','x2']]\nX_resampled, y_resampled = SMOTE().fit_resample(X, df['y'])\nX_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled)"
+    }
+  },
+  {
+    "id": "challenge_017_entity_generalization_clean",
+    "family": "entity_generalization",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Predict future y using prior_spend, which is observed before prediction and is a legitimate historical predictor. Each account has repeated observations. Deployment targets accounts never observed in training; evaluation must hold out whole accounts.",
+      "target_column": "y",
+      "csv_columns": [
+        "account",
+        "prior_spend",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['prior_spend']]\nsplitter = GroupShuffleSplit(n_splits=1)\ntrain_idx, test_idx = next(splitter.split(X, df['y'], groups=df['account']))\nX_train, X_test = X.iloc[train_idx], X.iloc[test_idx]",
+      "context": {
+        "entity_column": "account",
+        "entity_repetition": "repeated"
+      }
+    }
+  },
+  {
+    "id": "challenge_018_entity_generalization_leaky",
+    "family": "entity_generalization",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Predict future y using prior_spend, which is observed before prediction and is a legitimate historical predictor. Each account has repeated observations. Deployment targets accounts never observed in training; evaluation must hold out whole accounts.",
+      "target_column": "y",
+      "csv_columns": [
+        "account",
+        "prior_spend",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['prior_spend']]\nX_train, X_test, y_train, y_test = train_test_split(X, df['y'], shuffle=True)",
+      "context": {
+        "entity_column": "account",
+        "entity_repetition": "repeated"
+      }
+    }
+  },
+  {
+    "id": "challenge_019_test_feedback_clean",
+    "family": "test_feedback",
+    "expected_leakage": false,
+    "request": {
+      "prediction_goal": "Predict future binary y using prior x1. One row per entity; independent records. Tune decision thresholds only on validation and evaluate final performance on a separate untouched test.",
+      "target_column": "y",
+      "csv_columns": [
+        "x1",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['x1']]\nX_train, X_hold, y_train, y_hold = train_test_split(X, df['y'])\nX_valid, X_test, y_valid, y_test = train_test_split(X_hold, y_hold)",
+      "model_training_code": "model.fit(X_train,y_train)\nvalid_p = model.predict_proba(X_valid)[:,1]\nthreshold = max([.2,.5,.8], key=lambda t: f1_score(y_valid, valid_p > t))\nfinal_score = f1_score(y_test, model.predict_proba(X_test)[:,1] > threshold)"
+    }
+  },
+  {
+    "id": "challenge_020_test_feedback_leaky",
+    "family": "test_feedback",
+    "expected_leakage": true,
+    "request": {
+      "prediction_goal": "Predict future binary y using prior x1. One row per entity; independent records. Tune decision thresholds only on validation and evaluate final performance on a separate untouched test.",
+      "target_column": "y",
+      "csv_columns": [
+        "x1",
+        "y"
+      ],
+      "preprocessing_code": "X = df[['x1']]\nX_train, X_hold, y_train, y_hold = train_test_split(X, df['y'])\nX_valid, X_test, y_valid, y_test = train_test_split(X_hold, y_hold)",
+      "model_training_code": "model.fit(X_train,y_train)\ntest_p = model.predict_proba(X_test)[:,1]\nthreshold = max([.2,.5,.8], key=lambda t: f1_score(y_test, test_p > t))\nfinal_score = f1_score(y_test, test_p > threshold)"
+    }
+  }
+]

@@ -3,4 +3,5 @@ import { analyze } from "./analysis.js";
 export const auditModelTrainingCode = (
   request: AuditRequest,
   signal?: AbortSignal,
-) => analyze(request, "model", signal);
+  repair?: string,
+) => analyze(request, "model", signal, repair);

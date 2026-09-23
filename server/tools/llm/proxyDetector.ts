@@ -3,4 +3,5 @@ import { analyze } from "./analysis.js";
 export const detectProxyLeakage = (
   request: AuditRequest,
   signal?: AbortSignal,
-) => analyze(request, "proxy", signal);
+  repair?: string,
+) => analyze(request, "proxy", signal, repair);

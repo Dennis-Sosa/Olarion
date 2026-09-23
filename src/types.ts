@@ -58,6 +58,8 @@ export interface AuditFinding {
   fine_grained_type: FineGrainedLeakageType;
   severity: Severity;
   severity_rationale?: string;
+  mechanism?: string;
+  used_path?: string;
   confidence: Confidence;
   flagged_object: string;
   evidence: EvidenceItem[];
@@ -110,8 +112,11 @@ export interface AuditStage {
   status: "done" | "failed" | "skipped";
   duration_ms: number;
   error_code?: string;
+  attempts?: number;
+  recovered_errors?: string[];
 }
 export interface ReviewDecision {
+  basis?: string;
   finding_id: string;
   action: "keep" | "update" | "retract";
   reason: string;

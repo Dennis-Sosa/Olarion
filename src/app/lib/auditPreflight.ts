@@ -1,4 +1,5 @@
 import type { AuditRequest } from "../../types";
+import { knownColumns } from "../../lib/featureCatalog";
 import { AUDIT_LIMITS } from "../../auditLimits";
 
 export function auditPreflight(request: AuditRequest): string[] {
@@ -35,11 +36,20 @@ export function auditPreflight(request: AuditRequest): string[] {
     ...(context?.entity_column ? [context.entity_column] : []),
   ];
   const unknown = [
-    ...new Set(declared.filter((c) => !request.csv_columns.includes(c))),
+    ...new Set(
+      declared.filter(
+        (c) =>
+          !(
+            c === context?.entity_column
+              ? request.csv_columns
+              : knownColumns(request)
+          ).includes(c),
+      ),
+    ),
   ];
   if (unknown.length)
     errors.push(
-      `These context fields are not in the CSV: ${unknown.join(", ")}. Describe derived fields and their generation in the task description and code; this form currently accepts raw CSV names only.`,
+      `These context fields are not recognized: ${unknown.join(", ")}. Describe derived fields and include their assignments in the code. Feature lists accept CSV columns and recognized df['name'] assignments; entity IDs must be in the CSV.`,
     );
   if ((context?.used_features?.length ?? 0) > AUDIT_LIMITS.columns)
     errors.push("Use at most 300 feature names.");

@@ -46,14 +46,50 @@ export async function runAudit(
   async function stage<T>(
     id: string,
     title: string,
-    task: () => Promise<T>,
+    task: (repair?: string) => Promise<T>,
   ): Promise<T | null> {
     const at = Date.now();
     progress({ type: "step", id, title, status: "running" });
+    let attempts = 0;
+    const recovered_errors: string[] = [];
     try {
-      signal.throwIfAborted();
-      const result = await task();
-      stages.push({ id, status: "done", duration_ms: Date.now() - at });
+      let result: T;
+      for (;;) {
+        signal.throwIfAborted();
+        attempts++;
+        try {
+          result = await task(recovered_errors.at(-1));
+          break;
+        } catch (error) {
+          const code = modelErrorCode(error);
+          const repairable =
+            /^(invalid_|incomplete_|unknown_feature|unused_or_unknown_feature|retraction_|stateful_transform_|stateless_retraction_)/.test(
+              code,
+            ) || code === "provider_unavailable";
+          if (
+            !repairable ||
+            attempts >= 2 ||
+            signal.aborted ||
+            Date.now() - started > 30_000
+          )
+            throw error;
+          recovered_errors.push(code);
+          progress({
+            type: "step",
+            id,
+            title,
+            status: "running",
+            detail: `Repairing invalid result (${code}); one bounded retry`,
+          });
+        }
+      }
+      stages.push({
+        id,
+        status: "done",
+        duration_ms: Date.now() - at,
+        attempts,
+        ...(recovered_errors.length ? { recovered_errors } : {}),
+      });
       progress({
         type: "step",
         id,
@@ -69,6 +105,8 @@ export async function runAudit(
         status: "failed",
         duration_ms: Date.now() - at,
         error_code,
+        attempts,
+        ...(recovered_errors.length ? { recovered_errors } : {}),
       });
       progress({
         type: "step",
@@ -86,22 +124,23 @@ export async function runAudit(
         runRules(request),
       )) ?? [];
     const tasks = [
-      stage("proxy", "Checking target proxies", () =>
-        detectProxyLeakage(request, signal),
+      stage("proxy", "Checking target proxies", (repair) =>
+        detectProxyLeakage(request, signal, repair),
       ),
-      stage("temporal", "Checking feature availability", () =>
-        detectTemporalLeakage(request, signal),
+      stage("temporal", "Checking feature availability", (repair) =>
+        detectTemporalLeakage(request, signal, repair),
       ),
       stage(
         "code",
         "Auditing preprocessing",
-        async () => (await auditPreprocessingCode(request, signal)).findings,
+        async (repair) =>
+          (await auditPreprocessingCode(request, signal, repair)).findings,
       ),
     ];
     if (request.model_training_code?.trim())
       tasks.push(
-        stage("model", "Auditing model training", () =>
-          auditModelTrainingCode(request, signal),
+        stage("model", "Auditing model training", (repair) =>
+          auditModelTrainingCode(request, signal, repair),
         ),
       );
     else {
@@ -119,7 +158,7 @@ export async function runAudit(
     const review = await stage(
       "review",
       "Reviewing and challenging findings",
-      () => reviewAgent(request, findings, signal),
+      (repair) => reviewAgent(request, findings, signal, repair),
     );
     if (review) findings = review.findings;
     const degraded = stages.some((s) => s.status === "failed");

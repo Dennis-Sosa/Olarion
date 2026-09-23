@@ -4,6 +4,19 @@ import type {
   ReviewDecision,
 } from "../../../src/types.js";
 import { callOpenAIJson, ModelFailure } from "../../openaiClient.js";
+import {
+  knownColumns,
+  derivedColumns,
+} from "../../../src/lib/featureCatalog.js";
+import {
+  evidenceCatalog,
+  resolveEvidence,
+  objectSchema,
+  enumSchema,
+  textSchema,
+  LEAKAGE_STANDARD,
+} from "./contracts.js";
+import { validateRetraction } from "./retraction.js";
 import { featureScope } from "../rules/context.js";
 export const severities = ["low", "medium", "high", "critical"];
 const confidences = ["low", "medium", "high"];
@@ -42,63 +55,102 @@ export function evidenceValid(
     !!request[item.source as (typeof sources)[number]]?.includes(item.quote)
   );
 }
-export const INPUT_SCHEMA = `Return one JSON object with a findings array. Include ONLY supported leakage concerns, never rows describing safe features, successful checks, a summary, or the absence of leakage. When this specialist has no supported concern, the entire response is {"findings":[]}.
-Every finding must have these exact keys:
-{"title": string, "feature": string, "type": "temporal"|"proxy"|"evaluation"|"boundary"|"join_entity"|"duplicate"|"aggregation_lookahead"|"label_definition"|"missing_metadata", "severity": "low"|"medium"|"high"|"critical", "confidence": "low"|"medium"|"high", "reason": string, "fix": string, "source": "prediction_goal"|"preprocessing_code"|"model_training_code", "quote": string}.
-All string fields must be nonempty. feature MUST be an exact member of allowed_features; do not invent values such as none, N/A, all, or a comma-separated list. Pick one feature per concern.
-The quote MUST be copied verbatim as a contiguous substring of at least 8 characters from input[source]. Use the raw field content after decoding JSON: no JSON escape characters, line-number prefixes, ellipses, paraphrasing, or added backticks. source is the input field name, not a filename. Limit to 8 findings. Uncertainty needs low confidence and real evidence; missing evidence is not permission to manufacture a finding.`;
 export async function analyze(
   request: AuditRequest,
   focus: "proxy" | "temporal" | "code" | "model",
   signal?: AbortSignal,
+  repair?: string,
 ): Promise<AuditFinding[]> {
   const instructions = {
     proxy:
-      "Inspect target proxies among actual model inputs. Historical outcomes and out-of-fold predictions can be valid. A feature excluded from X is not a leak.",
+      "Inspect label copies and outcome-derived target proxies among actual inputs. Historical predictors are valid; correlation alone never establishes target leakage.",
     temporal:
-      "Inspect feature availability at prediction time. Post-outcome inputs and forward-looking windows can leak. Prior-only windows are valid; do not flag an unused future column.",
-    code: "Inspect learned preprocessing fit scope, target aggregates, split boundaries and repeated entities. Normalizer and encoding class names of y alone are not distribution leakage. Mere column-name suspicion is insufficient. Inspect code and declared context together.",
+      "Inspect information availability at the prediction boundary, forward windows and future joins. Prior-only observations available then are valid.",
+    code: "Inspect preprocessing fit scope, target aggregates and encodings, split boundaries, joins and entity overlap. Trace data usage rather than just method names or textual order.",
     model:
-      "Inspect the training code for selection/tuning on held-out test data, target leakage and evaluation boundary misuse.",
+      "Inspect training, cross-validation, model selection, threshold tuning and final evaluation. Test-set-driven hyperparameter/model selection contaminates final test evaluation; tuning on a separate validation set followed by one untouched test is valid.",
   };
   const scope = featureScope(request);
   const featureCheck = focus === "proxy" || focus === "temporal";
-  const allowedFeatures = featureCheck
-    ? scope.columns.filter((column) => request.csv_columns.includes(column))
-    : [...request.csv_columns, "pipeline"];
+  const known = knownColumns(request);
+  const allowedFeatures = [
+    ...new Set(
+      featureCheck
+        ? scope.columns.filter((column) => known.includes(column))
+        : [...known, "pipeline"],
+    ),
+  ];
+  if (!allowedFeatures.length) return [];
+  const refs = evidenceCatalog(request);
+  if (!refs.length) throw new ModelFailure("insufficient_source_text");
+  const itemSchema = objectSchema({
+    title: textSchema,
+    feature: enumSchema(allowedFeatures),
+    type: enumSchema(types),
+    mechanism: textSchema,
+    used_path: textSchema,
+    severity: enumSchema(severities),
+    confidence: enumSchema(confidences),
+    reason: textSchema,
+    fix: textSchema,
+    evidence_id: enumSchema(refs.map((r) => r.id)),
+  });
   const boundary = featureCheck
-    ? `You are a feature-level ${focus} specialist. Only inspect allowed_features. Do not return pipeline findings, preprocessing/split issues, or unused raw columns: the separate code specialist checks those. A future/outcome column merely present in the raw table is not a finding when excluded from X. Prefer type ${focus === "proxy" ? '"proxy"' : '"temporal"'} for concerns within your scope.`
-    : "Inspect pipeline-level concerns as feature=\"pipeline\", or use one exact supplied column for a column-specific concern.";
+    ? `Only report ${focus} mechanisms tied to allowed_features. Pipeline fit/split concerns are covered by the code specialist. For derived fields, inspect their definitions in source evidence.`
+    : 'Use feature="pipeline" for pipeline-level concerns, or one supplied name for a column-specific concern.';
   const result = await callOpenAIJson(
-    instructions[focus] + "\n" + boundary + "\n" + INPUT_SCHEMA,
-    JSON.stringify({ input: request, feature_scope: scope, allowed_features: allowedFeatures }),
+    LEAKAGE_STANDARD +
+      "\n" +
+      instructions[focus] +
+      "\n" +
+      boundary +
+      `
+Return {"findings":[]} when this specialist has no supported risk. Limit to 8 distinct concerns. For each finding, mechanism must identify the forbidden information, and used_path must explain how it reaches the evaluated workflow. reason must justify that claim using the supplied facts, including counterevidence. Keep fields concise. Choose evidence_id from the source catalog; the server will attach that exact source text. Do not write safe-check rows or missing-metadata findings. Review unknowns without inventing a positive finding.
+${repair ? `The previous attempt failed validation (${repair}). Recheck all enum values, source references, and required fields. Return the full corrected object.` : ""}`,
+    JSON.stringify({
+      task: request.prediction_goal,
+      target_column: request.target_column,
+      csv_columns: request.csv_columns,
+      context: request.context,
+      feature_scope: scope,
+      recognized_derived_columns: derivedColumns(request),
+      allowed_features: allowedFeatures,
+      sources: refs,
+    }),
     signal,
+    {
+      name: `audit_${focus}`,
+      schema: objectSchema({
+        findings: { type: "array", items: itemSchema, maxItems: 8 },
+      }),
+      maxTokens: 4000,
+    },
   );
   if (!Array.isArray(result.findings) || result.findings.length > 8)
     throw new ModelFailure("invalid_schema");
   return result.findings.map((raw, index) => {
     const item = object(raw);
+    const feature = String(item.feature);
+    if (!known.includes(feature) && feature !== "pipeline")
+      throw new ModelFailure("unknown_feature");
+    if (!allowedFeatures.includes(feature))
+      throw new ModelFailure("unused_or_unknown_feature");
     if (
-      ![item.title, item.reason, item.feature, item.fix].every(nonempty) ||
+      ![
+        item.title,
+        item.reason,
+        item.fix,
+        item.mechanism,
+        item.used_path,
+      ].every(nonempty) ||
       !types.includes(String(item.type)) ||
       !severities.includes(String(item.severity)) ||
-      !confidences.includes(String(item.confidence)) ||
-      !evidenceValid(item, request)
+      !confidences.includes(String(item.confidence))
     )
       throw new ModelFailure("invalid_evidence_or_schema");
-    const feature = String(item.feature);
-    if (feature !== "pipeline" && !request.csv_columns.includes(feature))
-      throw new ModelFailure("unknown_feature");
-    if (
-      (focus === "proxy" || focus === "temporal") &&
-      (feature === "pipeline" ||
-        (scope.known && !scope.columns.includes(feature)))
-    )
-      throw new ModelFailure("unused_or_unknown_feature");
+    const ref = resolveEvidence(item.evidence_id, refs);
     const type = item.type as AuditFinding["fine_grained_type"];
-    const source = item.source as (typeof sources)[number];
-    const text = request[source] ?? "",
-      at = text.indexOf(String(item.quote));
+    const text = request[ref.source] ?? "";
     return {
       id: `${focus}-${index}`,
       title: String(item.title),
@@ -113,16 +165,18 @@ export async function analyze(
       severity: item.severity as AuditFinding["severity"],
       confidence: item.confidence as AuditFinding["confidence"],
       severity_rationale:
-        "Potential impact of the described mechanism; confidence is reported separately.",
+        "Potential impact of the mechanism; confidence is reported separately.",
+      mechanism: String(item.mechanism),
+      used_path: String(item.used_path),
       evidence: [
         {
           claim: String(item.reason),
           source: {
-            filename: source.endsWith("code")
-              ? source + ".py"
+            filename: ref.source.endsWith("code")
+              ? ref.source + ".py"
               : "task description",
-            location: `line ${text.slice(0, at).split("\n").length}`,
-            snippet: String(item.quote),
+            location: `line ${text.slice(0, text.indexOf(ref.quote)).split("\n").length}`,
+            snippet: ref.quote,
           },
         },
       ],
@@ -161,6 +215,8 @@ export function applyReview(
         !confidences.includes(String(d.confidence)))
     )
       throw new ModelFailure("invalid_review_update");
+    if (d.action === "retract")
+      validateRetraction(findings.find((f) => f.id === id)!, d, request);
     seen.add(id);
     return d as unknown as ReviewDecision;
   });

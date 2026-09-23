@@ -3,4 +3,5 @@ import { analyze } from "./analysis.js";
 export const detectTemporalLeakage = (
   request: AuditRequest,
   signal?: AbortSignal,
-) => analyze(request, "temporal", signal);
+  repair?: string,
+) => analyze(request, "temporal", signal, repair);

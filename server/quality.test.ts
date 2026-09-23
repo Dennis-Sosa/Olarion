@@ -194,6 +194,7 @@ describe("evidence and review", () => {
     finding_id: finding.id,
     action: "retract",
     reason: "Reviewed declaration",
+    basis: "unsupported_mechanism",
     source: "prediction_goal",
     quote: leaky.prediction_goal,
   };

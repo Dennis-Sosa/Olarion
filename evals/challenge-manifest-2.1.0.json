@@ -1,0 +1,7 @@
+{
+  "cases_sha256": "1170217fd52ba9e7d50d684f002123c65fb867dffd18ffccd2e42d96c88fd019",
+  "cases": 20,
+  "positive": 10,
+  "negative": 10,
+  "design": "20 supplementary synthetic challenge cases, labeled and frozen before the first 2.1.0 live run. Authored by the same implementation assistant; not an independent blind benchmark. Includes training/selection, CV, resampling, time joins, derived fields and entity boundaries."
+}

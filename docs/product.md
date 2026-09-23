@@ -67,3 +67,13 @@ CSV 行留在浏览器；代码、表头、任务上下文和问答上下文会�
 部署配置已迁移为 Vite preset、显式 build/output 配置和 `/api/index` rewrite，移除与 functions 冲突的旧版 builds。依据 [Vercel 配置说明](https://vercel.com/docs/project-configuration/vercel-json)，两者不能混用。
 
 后端使用显式 `.js` ESM import 路径；构建分别检查浏览器与 NodeNext 解析模式。`npm run test:runtime` 会编译服务端、以原生 Node 导入 API 入口、请求健康接口并清理临时文件，防止仅在 serverless 启动时才暴露模块解析问题。
+
+## Agent reliability iteration — audit-2.1.0
+
+Specialists must describe a concrete forbidden information path and actual usage. Structured Outputs constrain field names and evidence IDs; the server resolves IDs to exact submitted text. Lexical recognition of Python column assignments and `assign()` extends the allowed feature catalog to derived fields. It does not execute Python or prove full lineage.
+
+Review decisions require a retraction basis and cited counterevidence. Narrow validation guards reject treating known stateful transforms as stateless or using entity independence to dismiss fit-scope concerns. Contract/validation errors and temporary provider failures receive at most one stage retry within the audit deadline. Failed repairs remain failed coverage; successful recovery records attempts and error codes. No retry on authentication/quota errors.
+
+Keep the audit-2.0.1 baseline. Evaluate the frozen 100 cases and the separately labeled 20 supplemental challenge cases before claiming measured improvement. The supplemental cases are authored by the implementation assistant, not an independent blind benchmark.
+
+API implementation reference: [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs). Schema conformance does not establish factual correctness; evidence validation and empirical evaluation are still required.

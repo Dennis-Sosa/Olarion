@@ -734,11 +734,11 @@ export function AuditSetup() {
                     />
                   </label>
                   <p className="text-xs text-slate-500 leading-6">
-                    List all actual inputs using CSV names. For code-generated
-                    fields, explain their sources in the task description and
-                    code. Leave this list blank if it cannot express the
-                    complete input set; do not list only part of the model
-                    inputs.
+                    List all actual inputs using CSV names or fields recognized
+                    from Python column assignments and assign() calls. Explain
+                    derived fields and their availability in the task and code.
+                    Leave this list blank if it cannot express the complete
+                    input set; do not list only part of the model inputs.
                   </p>
                   <label className="block text-sm">
                     Columns known only after prediction (comma-separated)

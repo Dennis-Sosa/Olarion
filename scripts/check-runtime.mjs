@@ -6,11 +6,12 @@ const directory = mkdtempSync(join(process.cwd(), ".runtime-check-"));
 let server;
 try {
   execFileSync(join(process.cwd(), "node_modules/.bin/tsc"), ["-p", "tsconfig.server.json", "--noEmit", "false", "--outDir", directory], {stdio: "inherit"});
+  const { PROMPT_VERSION } = await import(pathToFileURL(join(directory, "server/openaiClient.js")).href);
   const {default: app} = await import(pathToFileURL(join(directory, "api/index.js")).href);
   await new Promise(resolve => { server = app.listen(0, "127.0.0.1", resolve); });
   const response = await fetch(`http://127.0.0.1:${server.address().port}/api/health`);
   const payload = await response.json();
-  if (response.status !== 200 || payload.prompt_version !== "audit-2.0.1") throw new Error("Compiled API smoke test failed");
+  if (response.status !== 200 || payload.prompt_version !== PROMPT_VERSION) throw new Error("Compiled API smoke test failed");
   console.log("Compiled Node ESM entry point and health endpoint passed.");
 } finally {
   if (server) await new Promise(resolve => server.close(resolve));

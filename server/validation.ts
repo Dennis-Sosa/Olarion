@@ -1,4 +1,5 @@
 import type { AuditRequest, AuditReport, AgentMessage } from "../src/types.js";
+import { knownColumns } from "../src/lib/featureCatalog.js";
 import { AUDIT_LIMITS } from "../src/auditLimits.js";
 function record(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object" && !Array.isArray(v);
@@ -22,7 +23,7 @@ export function validateRequest(v: unknown): v is AuditRequest {
       !text(v.model_training_code, AUDIT_LIMITS.code, true))
   )
     return false;
-  const columns = v.csv_columns;
+  const columns = knownColumns(v as unknown as AuditRequest);
   if (v.context === undefined) return true;
   const c = v.context;
   if (!record(c)) return false;

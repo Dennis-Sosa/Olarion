@@ -35,7 +35,7 @@ function loadLocalEnvIfPresent() {
 loadLocalEnvIfPresent();
 
 export const MODEL = process.env.OPENAI_MODEL?.trim() || "gpt-4o";
-export const PROMPT_VERSION = "audit-2.0.1";
+export const PROMPT_VERSION = "audit-2.1.0";
 export class ModelFailure extends Error {
   constructor(public code: string) {
     super(code);
@@ -66,6 +66,11 @@ export async function callOpenAIJson(
   system: string,
   user: string,
   signal?: AbortSignal,
+  contract?: {
+    name: string;
+    schema: Record<string, unknown>;
+    maxTokens?: number;
+  },
 ): Promise<Record<string, unknown>> {
   if (!process.env.OPENAI_API_KEY?.trim())
     throw new ModelFailure("not_configured");
@@ -73,8 +78,17 @@ export async function callOpenAIJson(
     {
       model: MODEL,
       temperature: 0.1,
-      max_completion_tokens: 2400,
-      response_format: { type: "json_object" },
+      max_completion_tokens: contract?.maxTokens ?? 2400,
+      response_format: contract
+        ? {
+            type: "json_schema",
+            json_schema: {
+              name: contract.name,
+              strict: true,
+              schema: contract.schema,
+            },
+          }
+        : { type: "json_object" },
       messages: [
         { role: "system", content: SAFETY + "\n" + system },
         { role: "user", content: user },

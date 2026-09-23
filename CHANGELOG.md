@@ -1,5 +1,15 @@
 # Changelog
 
+## Agent reliability — audit-2.1.0
+
+- Require explicit leakage mechanisms and actual use paths; distinguish historical predictors from label proxies.
+- Use strict JSON schemas with source-reference IDs and deterministic verbatim citations.
+- Recognize assigned derived field names without executing uploaded code.
+- Require retraction bases and reject specific invalid fit-scope arguments.
+- Allow one bounded repair of invalid stage results and expose recovery attempts; preserve incomplete coverage on failure.
+- Freeze 20 additional challenge cases, including training and selection code, for a separate live evaluation.
+
+
 ## Upload guidance and preflight
 
 - Add an English/Chinese upload guide at `/guide`, with required materials, task examples, context guidance, coverage interpretation and the recorded 100-case baseline.

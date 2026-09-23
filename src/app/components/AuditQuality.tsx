@@ -36,6 +36,10 @@ export function AuditQuality({ report }: { report: AuditReport }) {
               >
                 {s.id}: {s.status}
                 {s.error_code ? ` (${s.error_code})` : ""}
+                {(s.attempts ?? 1) > 1 ? ` · ${s.attempts} attempts` : ""}
+                {s.status === "done" && s.recovered_errors?.length
+                  ? " · recovered"
+                  : ""}
               </span>
             ))}
           </div>

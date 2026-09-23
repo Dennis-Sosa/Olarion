@@ -35,7 +35,7 @@ GitHub 存放代码，Vercel 托管运行中的网站。把代码发布到个人
 ## 验收
 
 - 打开新域名的 `/setup`，确认页面正常加载。
-- 打开 `/api/health`，确认 `prompt_version` 为 `audit-2.0.1`，且 `model_configured` 为 `true`。这只证明配置存在，不能证明凭证有效。
+- 打开 `/api/health`，确认 `prompt_version` 为 `audit-2.1.0`，且 `model_configured` 为 `true`。这只证明配置存在，不能证明凭证有效。
 - 分别运行一个 clean 和一个 leaky 示例，检查报告中的各阶段状态、证据和覆盖提示。HTTP 200 不等于所有 AI 检查成功。
 - 本地有有效模型凭证时执行 `npm run eval:live`；也可使用 [远程评测脚本](../evals/README.md) 调用已部署 API，无须把 Vercel 密钥下载到本地。保留逐例原始结果；已有 100 例规则回归不能替代真实模型评测。
 
