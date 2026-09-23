@@ -1,4 +1,5 @@
 import type { AuditRequest, AuditReport, AgentMessage } from "../src/types.js";
+import { AUDIT_LIMITS } from "../src/auditLimits.js";
 function record(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object" && !Array.isArray(v);
 }
@@ -8,30 +9,33 @@ function text(v: unknown, max: number, empty = false): v is string {
 export function validateRequest(v: unknown): v is AuditRequest {
   if (
     !record(v) ||
-    !text(v.prediction_goal, 12000) ||
-    !text(v.preprocessing_code, 60000) ||
+    !text(v.prediction_goal, AUDIT_LIMITS.goal) ||
+    !text(v.preprocessing_code, AUDIT_LIMITS.code) ||
     !Array.isArray(v.csv_columns) ||
     !v.csv_columns.length ||
-    v.csv_columns.length > 300 ||
-    !v.csv_columns.every((c) => text(c, 200)) ||
+    v.csv_columns.length > AUDIT_LIMITS.columns ||
+    !v.csv_columns.every((c) => text(c, AUDIT_LIMITS.columnName)) ||
     new Set(v.csv_columns).size !== v.csv_columns.length ||
-    !text(v.target_column, 200) ||
+    !text(v.target_column, AUDIT_LIMITS.columnName) ||
     !v.csv_columns.includes(v.target_column) ||
     (v.model_training_code !== undefined &&
-      !text(v.model_training_code, 60000, true))
+      !text(v.model_training_code, AUDIT_LIMITS.code, true))
   )
     return false;
   const columns = v.csv_columns;
   if (v.context === undefined) return true;
   const c = v.context;
   if (!record(c)) return false;
-  if (c.prediction_time !== undefined && !text(c.prediction_time, 2000, true))
+  if (
+    c.prediction_time !== undefined &&
+    !text(c.prediction_time, AUDIT_LIMITS.predictionTime, true)
+  )
     return false;
   if (
     c.used_features !== undefined &&
     (!Array.isArray(c.used_features) ||
       !c.used_features.length ||
-      c.used_features.length > 300 ||
+      c.used_features.length > AUDIT_LIMITS.columns ||
       !c.used_features.every(
         (f) => typeof f === "string" && columns.includes(f),
       ))
@@ -60,9 +64,7 @@ export function validateRequest(v: unknown): v is AuditRequest {
     return false;
   return true;
 }
-export function validateChat(
-  v: unknown,
-): v is {
+export function validateChat(v: unknown): v is {
   request: AuditRequest;
   report: AuditReport;
   question: string;

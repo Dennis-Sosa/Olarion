@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   ArrowRight,
   Upload,
@@ -21,6 +21,9 @@ import { Footer } from "../components/Footer";
 import { FloatingChat } from "../components/FloatingChat";
 import { AmbientBackground } from "../components/AmbientBackground";
 import { extractCsvColumns } from "../lib/csv";
+import { auditPreflight } from "../lib/auditPreflight";
+import { AUDIT_LIMITS } from "../../auditLimits";
+import { AUDIT_TASK_TEMPLATE } from "../../data/auditGuide";
 import type { AuditRequest } from "../../types";
 import {
   LEGAL_CLEAN_CSV,
@@ -50,88 +53,105 @@ export function AuditSetup() {
   const [zipProcessing, setZipProcessing] = useState(false);
   const [zipStatus, setZipStatus] = useState<string | null>(null);
 
+  const [csvColumns, setCsvColumns] = useState<string[]>([]);
+  const [csvError, setCsvError] = useState<string | null>(null);
+  const [csvChecking, setCsvChecking] = useState(false);
+  const [zipFiles, setZipFiles] = useState<
+    Array<{ filename: string; content: string }>
+  >([]);
+  const [preprocessingFile, setPreprocessingFile] = useState("");
+  const [trainingFile, setTrainingFile] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setCsvColumns([]);
+    setCsvError(null);
+    setCsvChecking(!!datasetFile);
+    if (datasetFile) {
+      extractCsvColumns(datasetFile)
+        .then((columns) => {
+          if (active) setCsvColumns(columns);
+        })
+        .catch((error: unknown) => {
+          if (active)
+            setCsvError(
+              error instanceof Error
+                ? error.message
+                : "Could not read the CSV header.",
+            );
+        })
+        .finally(() => {
+          if (active) setCsvChecking(false);
+        });
+    }
+    return () => {
+      active = false;
+    };
+  }, [datasetFile]);
+
   const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setZipProcessing(true);
     setZipStatus("Reading ZIP file…");
     setSubmitError(null);
-
     try {
-      if (file.size > 10 * 1024 * 1024)
-        throw new Error("ZIP files must be smaller than 10 MB.");
+      if (file.size > AUDIT_LIMITS.zipBytes)
+        throw new Error("ZIP files must be at most 10 MB.");
       const zip = await JSZip.loadAsync(file);
-      const csvFiles: { name: string; file: JSZip.JSZipObject }[] = [];
-      const pyFiles: { name: string; file: JSZip.JSZipObject }[] = [];
-
-      zip.forEach((relativePath, zipEntry) => {
-        if (zipEntry.dir) return;
-        const name = relativePath.split("/").pop() ?? relativePath;
-        if (name.startsWith(".") || name.startsWith("__")) return;
-        if (name.endsWith(".csv")) csvFiles.push({ name, file: zipEntry });
-        if (name.endsWith(".py")) pyFiles.push({ name, file: zipEntry });
+      const csvFiles: Array<{ name: string; file: JSZip.JSZipObject }> = [];
+      const pyFiles: Array<{ name: string; file: JSZip.JSZipObject }> = [];
+      zip.forEach((relativePath, entry) => {
+        if (
+          entry.dir ||
+          relativePath
+            .split("/")
+            .some((part) => part.startsWith(".") || part === "__MACOSX")
+        )
+          return;
+        if (relativePath.toLowerCase().endsWith(".csv"))
+          csvFiles.push({ name: relativePath, file: entry });
+        if (relativePath.toLowerCase().endsWith(".py"))
+          pyFiles.push({ name: relativePath, file: entry });
       });
-
-      if (csvFiles.length === 0) {
-        setSubmitError("No .csv file found in the ZIP.");
-        setZipProcessing(false);
-        setZipStatus(null);
-        return;
-      }
-      if (pyFiles.length === 0) {
-        setSubmitError("No .py file found in the ZIP.");
-        setZipProcessing(false);
-        setZipStatus(null);
-        return;
-      }
-
       if (csvFiles.length !== 1)
         throw new Error(
-          "Use a ZIP with exactly one CSV so the dataset is unambiguous.",
+          "Use a ZIP with exactly one CSV. Select the dataset for this audit before uploading.",
         );
-      if (pyFiles.length > 10)
-        throw new Error("Use at most 10 Python files per ZIP.");
-      setZipStatus("Extracting CSV…");
-      const csvContent = await csvFiles[0].file.async("blob");
-      const csvFileObj = new File([csvContent], csvFiles[0].name, {
-        type: "text/csv",
-      });
-      setDatasetFile(csvFileObj);
-
-      setZipStatus("Reading Python files…");
-      const pyContents = await Promise.all(
-        pyFiles.map(async (pf) => ({
-          filename: pf.name,
-          content: await pf.file.async("string"),
-        })),
+      if (!pyFiles.length || pyFiles.length > AUDIT_LIMITS.pythonFiles)
+        throw new Error("Use 1–10 Python files per ZIP.");
+      const csvFile = new File(
+        [await csvFiles[0].file.async("blob")],
+        csvFiles[0].name.split("/").pop()!,
+        { type: "text/csv" },
       );
-
-      if (pyContents.length === 1) {
-        setPreprocessingCode(pyContents[0].content);
-        setTrainingCode("");
-        setZipStatus(null);
-      } else {
-        setZipStatus("Classifying code files with LLM…");
-        const resp = await fetch("/api/classify-code", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ files: pyContents }),
-        });
-        if (!resp.ok) throw new Error("Code classification API failed");
-        const result = await resp.json();
-        setPreprocessingCode(result.preprocessing_code ?? "");
-        setTrainingCode(result.model_training_code ?? "");
-        setZipStatus(null);
-      }
-
+      await extractCsvColumns(csvFile);
+      const codeFiles = await Promise.all(
+        pyFiles.map(async (item) => {
+          const content = await item.file.async("string");
+          if (content.length > AUDIT_LIMITS.code)
+            throw new Error(
+              `${item.name} exceeds 60,000 characters. Include the relevant complete workflow in a smaller file.`,
+            );
+          return { filename: item.name, content };
+        }),
+      );
+      // Apply only after all inputs validate. The user chooses the code roles;
+      // no scripts are silently selected or sent to a model for classification.
+      setDatasetFile(csvFile);
+      setZipFiles(codeFiles);
+      setPreprocessingFile(codeFiles.length === 1 ? codeFiles[0].filename : "");
+      setPreprocessingCode(codeFiles.length === 1 ? codeFiles[0].content : "");
+      setTrainingFile("");
+      setTrainingCode("");
       setZipStatus(
-        `Done — extracted ${csvFiles[0].name} + ${pyFiles.length} code file(s)`,
+        `Loaded ${csvFile.name} and ${codeFiles.length} Python file(s). Review the selected code below.`,
       );
-      setTimeout(() => setZipStatus(null), 4000);
-    } catch (err) {
+    } catch (error) {
       setSubmitError(
-        err instanceof Error ? err.message : "Failed to process ZIP file.",
+        error instanceof Error
+          ? error.message
+          : "Could not read the ZIP. Check the upload guide.",
       );
       setZipStatus(null);
     } finally {
@@ -167,15 +187,6 @@ export function AuditSetup() {
         .split(",")
         .map((c) => c.trim())
         .filter(Boolean);
-      if (
-        [...explicit, ...after].some((c) => !csv_columns.includes(c)) ||
-        (entityColumn.trim() && !csv_columns.includes(entityColumn.trim()))
-      ) {
-        setSubmitError(
-          "Used features and entity column must appear in the CSV headers.",
-        );
-        return;
-      }
       const request: AuditRequest = {
         prediction_goal: taskDescription.trim(),
         target_column: target,
@@ -184,12 +195,7 @@ export function AuditSetup() {
         model_training_code: trainingCode.trim() || undefined,
         context: {
           prediction_time: predictionTime.trim() || undefined,
-          used_features: usedFeatures.trim()
-            ? usedFeatures
-                .split(",")
-                .map((c) => c.trim())
-                .filter(Boolean)
-            : undefined,
+          used_features: explicit.length ? explicit : undefined,
           entity_column: entityColumn.trim() || undefined,
           entity_repetition: entityRepetition,
           feature_availability: after.length
@@ -198,6 +204,11 @@ export function AuditSetup() {
         },
       };
 
+      const errors = auditPreflight(request);
+      if (errors.length) {
+        setSubmitError(errors.join(" "));
+        return;
+      }
       navigate("/results", { state: { request } });
     } catch (err) {
       setSubmitError(
@@ -214,7 +225,9 @@ export function AuditSetup() {
     datasetFile !== null &&
     preprocessingCode.trim() !== "" &&
     !isSubmitting &&
-    !zipProcessing;
+    !zipProcessing &&
+    !csvChecking &&
+    !csvError;
 
   // Keyboard quick-fill: matches `test dataset/*/Prediction task description.txt` + `Target column name.txt`
   // (health-clean vs health-leaky share the same txts; legal-clean/leaky and finance-clean/leaky each share the same txts.)
@@ -257,6 +270,10 @@ export function AuditSetup() {
     const blob = new Blob([csv], { type: "text/csv" });
     const file = new File([blob], config.csv_filename, { type: "text/csv" });
     setDatasetFile(file);
+    setZipFiles([]);
+    setPreprocessingFile("");
+    setTrainingFile("");
+    setZipStatus(null);
     setTaskDescription(config.prediction_goal);
     setTargetColumn(config.target_column);
     setPreprocessingCode(preprocessing);
@@ -304,7 +321,7 @@ export function AuditSetup() {
       <div className="h-20" />
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-8 py-12 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-8 py-12 relative z-10">
         <motion.div
           initial="hidden"
           animate="visible"
@@ -318,8 +335,29 @@ export function AuditSetup() {
               Audit Setup
             </h1>
             <p className="text-base text-[var(--muted-foreground)] max-w-2xl">
-              Provide your prediction task details and data artifacts.
+              Review an ML workflow using CSV headers, Python code and a clear
+              prediction boundary.
             </p>
+            <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/70 p-4 text-sm leading-6 text-blue-950">
+              <p>
+                Only headers are read from your CSV. Row values are not analyzed
+                and Python is not executed. More rows do not increase this
+                version’s accuracy.
+              </p>
+              <Link
+                to="/guide"
+                className="inline-flex items-center gap-1 mt-2 font-medium text-blue-700 hover:underline"
+              >
+                Upload requirements &amp; examples <ArrowRight size={14} />
+              </Link>
+              <span className="mx-3 text-blue-200">|</span>
+              <Link
+                to="/guide?lang=zh"
+                className="text-blue-700 hover:underline"
+              >
+                中文上传指南
+              </Link>
+            </div>
             <div className="mt-4 flex flex-wrap gap-3">
               <button
                 type="button"
@@ -342,7 +380,7 @@ export function AuditSetup() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Form - Left Column (2 cols) */}
-            <div className="col-span-2 space-y-8">
+            <div className="min-w-0 lg:col-span-2 space-y-8">
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Step 1 — ZIP Upload */}
                 <motion.div variants={fadeUpVariants}>
@@ -351,14 +389,15 @@ export function AuditSetup() {
                       Upload your project
                     </h2>
                     <p className="text-sm text-[var(--muted-foreground)]">
-                      Drop a ZIP with your CSV dataset and Python code. The
-                      agent parses it automatically.
+                      Upload a ZIP, or add a CSV and paste code below. Review
+                      which files are included before running the audit.
                     </p>
                   </div>
                   <div className="relative">
                     <input
                       type="file"
                       accept=".zip"
+                      aria-label="Upload project ZIP"
                       onChange={handleZipUpload}
                       disabled={zipProcessing}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -400,12 +439,85 @@ export function AuditSetup() {
                           </div>
                         ) : (
                           <p className="text-xs text-[var(--muted-foreground)]">
-                            Must contain at least one .csv and one .py file
+                            One CSV · 1–10 Python files · ZIP at most 10 MB
                           </p>
                         )}
                       </div>
                     </div>
                   </div>
+                  {zipStatus && !zipProcessing && (
+                    <p role="status" className="mt-3 text-sm text-slate-600">
+                      {zipStatus}
+                    </p>
+                  )}
+                  {zipFiles.length > 0 && (
+                    <div className="mt-4 rounded-xl border border-slate-200 bg-white/70 p-5 space-y-4">
+                      <h3 className="text-sm font-medium">Choose code roles</h3>
+                      <p className="text-xs text-slate-600 leading-6">
+                        Only the code in the two inputs below is audited. Other
+                        scripts are not included automatically; paste any
+                        relevant helper logic into those inputs.
+                      </p>
+                      <label className="block text-sm">
+                        Preprocessing file
+                        <select
+                          aria-label="Preprocessing file"
+                          value={preprocessingFile}
+                          onChange={(e) => {
+                            const name = e.target.value;
+                            setPreprocessingFile(name);
+                            setPreprocessingCode(
+                              zipFiles.find((f) => f.filename === name)
+                                ?.content ?? "",
+                            );
+                          }}
+                          className="mt-2 w-full min-w-0 rounded-lg border border-slate-200 bg-white p-2 text-sm"
+                        >
+                          <option value="">
+                            Choose a file, or paste code below
+                          </option>
+                          {zipFiles.map((file) => (
+                            <option
+                              key={file.filename}
+                              value={file.filename}
+                              disabled={file.filename === trainingFile}
+                            >
+                              {file.filename}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="block text-sm">
+                        Training file (optional)
+                        <select
+                          aria-label="Training file"
+                          value={trainingFile}
+                          onChange={(e) => {
+                            const name = e.target.value;
+                            setTrainingFile(name);
+                            setTrainingCode(
+                              zipFiles.find((f) => f.filename === name)
+                                ?.content ?? "",
+                            );
+                          }}
+                          className="mt-2 w-full min-w-0 rounded-lg border border-slate-200 bg-white p-2 text-sm"
+                        >
+                          <option value="">
+                            Not supplied — training checks will be skipped
+                          </option>
+                          {zipFiles.map((file) => (
+                            <option
+                              key={file.filename}
+                              value={file.filename}
+                              disabled={file.filename === preprocessingFile}
+                            >
+                              {file.filename}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  )}
                 </motion.div>
 
                 {/* Step 2 — Task Details (always manual) */}
@@ -427,6 +539,7 @@ export function AuditSetup() {
                         </span>
                       </label>
                       <textarea
+                        aria-label="Prediction task description"
                         value={taskDescription}
                         onChange={(e) => setTaskDescription(e.target.value)}
                         placeholder="Example: Predict 30-day hospital readmission for heart failure patients at discharge time"
@@ -435,10 +548,22 @@ export function AuditSetup() {
                         required
                       />
                       <p className="text-xs text-[var(--muted-foreground)] mt-1.5">
-                        Describe what you're predicting and when the prediction
-                        is made
+                        Include the outcome window, prediction time and
+                        evaluation population. Up to 12,000 characters.
                       </p>
                     </div>
+                    <details className="rounded-lg border border-slate-200 bg-white/60 p-4 text-sm">
+                      <summary className="cursor-pointer font-medium">
+                        View a task description example
+                      </summary>
+                      <p className="mt-3 text-xs text-slate-500">
+                        Adapt this example to your own data; it is not a
+                        verified safe pipeline.
+                      </p>
+                      <pre className="mt-3 whitespace-pre-wrap break-words text-xs leading-6 text-slate-600">
+                        {AUDIT_TASK_TEMPLATE.en}
+                      </pre>
+                    </details>
                     <div>
                       <label className="block text-sm text-[var(--foreground)] mb-2">
                         Target column name
@@ -448,6 +573,7 @@ export function AuditSetup() {
                       </label>
                       <input
                         type="text"
+                        aria-label="Target column name"
                         value={targetColumn}
                         onChange={(e) => setTargetColumn(e.target.value)}
                         placeholder="Must match the CSV header exactly (e.g. readmitted_30d)"
@@ -455,7 +581,11 @@ export function AuditSetup() {
                         required
                       />
                       <p className="text-xs text-[var(--muted-foreground)] mt-1.5">
-                        Same spelling as the outcome column in your uploaded CSV
+                        {targetColumn.trim() && csvColumns.length
+                          ? csvColumns.includes(targetColumn.trim())
+                            ? "Target matched to the CSV header."
+                            : "This target is not in the CSV header; check its spelling."
+                          : "Use the exact name of the outcome column in your CSV."}
                       </p>
                     </div>
                   </div>
@@ -486,8 +616,33 @@ export function AuditSetup() {
                           placeholder="Upload CSV file or drag and drop"
                         />
                         <p className="text-xs text-[var(--muted-foreground)] mt-1.5">
-                          Your training data with features and target variable
+                          UTF-8 CSV, comma-separated. Up to 300 unique, nonempty
+                          column names. A header-only CSV is sufficient.
                         </p>
+                        {csvChecking && (
+                          <p
+                            role="status"
+                            className="mt-2 text-xs text-blue-700"
+                          >
+                            Checking CSV headers…
+                          </p>
+                        )}
+                        {csvError && (
+                          <p role="alert" className="mt-2 text-sm text-red-700">
+                            {csvError}
+                          </p>
+                        )}
+                        {!!csvColumns.length && (
+                          <details className="mt-3 text-xs text-slate-600">
+                            <summary className="cursor-pointer">
+                              {csvColumns.length} valid columns — inspect
+                              headers
+                            </summary>
+                            <p className="mt-2 break-words leading-6">
+                              {csvColumns.join(", ")}
+                            </p>
+                          </details>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm text-[var(--foreground)] mb-2">
@@ -497,6 +652,7 @@ export function AuditSetup() {
                           </span>
                         </label>
                         <CodeInput
+                          label="Preprocessing code"
                           value={preprocessingCode}
                           onChange={setPreprocessingCode}
                           placeholder="# Paste your feature engineering and preprocessing code here
@@ -505,8 +661,9 @@ export function AuditSetup() {
 # df['readmission_flag'] = df['readmission_date'].notna()"
                         />
                         <p className="text-xs text-[var(--muted-foreground)] mt-1.5">
-                          Feature engineering, transformations, and data
-                          cleaning steps
+                          Include feature creation, joins, splitting and when
+                          transforms are fitted. Keep the real workflow,
+                          including suspicious steps.
                         </p>
                       </div>
                     </div>
@@ -529,6 +686,7 @@ export function AuditSetup() {
                       Model training code
                     </label>
                     <CodeInput
+                      label="Model training code"
                       value={trainingCode}
                       onChange={setTrainingCode}
                       placeholder="# Optional: paste your model training and evaluation code
@@ -539,18 +697,20 @@ export function AuditSetup() {
                       rows={6}
                     />
                     <p className="text-xs text-[var(--muted-foreground)] mt-1.5">
-                      Train/test split logic, model fitting, and evaluation code
+                      Train/test split logic, model fitting and evaluation.
+                      Without this input, training-code checks are skipped.
                     </p>
                   </div>
                 </motion.div>
 
                 <fieldset className="rounded-xl border border-slate-200 p-5 space-y-4">
                   <legend className="text-sm font-medium px-2">
-                    Analysis context (optional)
+                    Analysis context — recommended
                   </legend>
                   <p className="text-xs text-slate-500">
-                    Explicit context helps distinguish an actual leak from a
-                    suspicious column name.
+                    These fields are optional. Accurate context helps
+                    distinguish actual leakage from a valid predictor, but
+                    cannot guarantee a correct conclusion.
                   </p>
                   <label className="block text-sm">
                     When is the prediction made?
@@ -558,7 +718,7 @@ export function AuditSetup() {
                       aria-label="Prediction time"
                       value={predictionTime}
                       onChange={(e) => setPredictionTime(e.target.value)}
-                      maxLength={2000}
+                      maxLength={AUDIT_LIMITS.predictionTime}
                       placeholder="e.g. At application submission, before approval"
                       className="mt-1 w-full border rounded p-2 bg-white"
                     />
@@ -573,6 +733,13 @@ export function AuditSetup() {
                       className="mt-1 w-full border rounded p-2 bg-white"
                     />
                   </label>
+                  <p className="text-xs text-slate-500 leading-6">
+                    List all actual inputs using CSV names. For code-generated
+                    fields, explain their sources in the task description and
+                    code. Leave this list blank if it cannot express the
+                    complete input set; do not list only part of the model
+                    inputs.
+                  </p>
                   <label className="block text-sm">
                     Columns known only after prediction (comma-separated)
                     <input
@@ -612,6 +779,12 @@ export function AuditSetup() {
                       <option value="repeated">Multiple rows per entity</option>
                     </select>
                   </label>
+                  <p className="text-xs text-slate-500 leading-6">
+                    Describe the split method in your task and code. State
+                    whether evaluation should represent new entities or
+                    returning ones; repeated entities alone do not decide the
+                    correct split.
+                  </p>
                 </fieldset>
                 <p className="text-xs text-slate-500">
                   Only CSV headers are submitted. Code, headers and context are
@@ -646,7 +819,13 @@ export function AuditSetup() {
                     <p className="text-xs text-[var(--muted-foreground)] text-center mt-3">
                       {!datasetFile
                         ? "Upload a ZIP or provide a CSV dataset"
-                        : "Fill in task description and target column to continue"}
+                        : csvError
+                          ? "Fix the CSV header issue above to continue"
+                          : csvChecking
+                            ? "Checking CSV headers…"
+                            : !preprocessingCode.trim()
+                              ? "Choose a preprocessing file or paste its code"
+                              : "Fill in task description and target column to continue"}
                     </p>
                   )}
                 </motion.div>
@@ -657,7 +836,51 @@ export function AuditSetup() {
             <motion.div variants={fadeUpVariants} className="col-span-1">
               <div className="bg-white/60 backdrop-blur-sm rounded-xl border border-[var(--border)]/60 p-6 sticky top-28">
                 <h3 className="text-base text-[var(--foreground)] mb-4">
-                  What the agent audits
+                  Before you run
+                </h3>
+                <ul className="space-y-3 mb-6 pb-6 border-b border-slate-200 text-sm">
+                  {[
+                    {
+                      ready: csvColumns.length > 0 && !csvError && !csvChecking,
+                      label: "CSV headers validated",
+                    },
+                    {
+                      ready:
+                        !!taskDescription.trim() &&
+                        csvColumns.includes(targetColumn.trim()),
+                      label: "Task and matching target",
+                    },
+                    {
+                      ready:
+                        !!preprocessingCode.trim() &&
+                        preprocessingCode.length <= AUDIT_LIMITS.code,
+                      label: "Preprocessing code supplied",
+                    },
+                  ].map((item) => (
+                    <li key={item.label} className="flex items-center gap-2">
+                      <CheckCircle2
+                        size={16}
+                        className={
+                          item.ready ? "text-emerald-600" : "text-slate-300"
+                        }
+                      />
+                      <span>{item.label}</span>
+                      <span className="sr-only">
+                        {item.ready ? "Ready" : "Needed"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-slate-600 leading-6 mb-5">
+                  {trainingCode.trim()
+                    ? "Training code is included in this audit."
+                    : "No training code yet: training checks will be skipped."}{" "}
+                  {predictionTime.trim()
+                    ? "Prediction time is declared."
+                    : "Add prediction time to clarify feature availability."}
+                </p>
+                <h3 className="text-base text-[var(--foreground)] mb-4">
+                  What the agent reviews
                 </h3>
 
                 <div className="space-y-4">
@@ -683,8 +906,15 @@ export function AuditSetup() {
                     <AlertCircle className="w-5 h-5 text-[var(--accent-primary)] flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                        Olarion checks headers and code, not full dataset
-                        values. Unavailable checks are reported explicitly.
+                        A completed report still needs review. Check evidence
+                        and withdrawn findings; an incomplete audit cannot
+                        establish safety.
+                        <Link
+                          to="/guide#results"
+                          className="block mt-2 text-blue-700 hover:underline"
+                        >
+                          How to read coverage and findings
+                        </Link>
                       </p>
                     </div>
                   </div>
@@ -726,6 +956,7 @@ function FileUploadArea({
       <input
         type="file"
         accept={accept}
+        aria-label="Upload CSV"
         onChange={handleFileChange}
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         required={!file}
@@ -762,11 +993,13 @@ function FileUploadArea({
 
 // Code Input Component
 function CodeInput({
+  label,
   value,
   onChange,
   placeholder,
   rows = 8,
 }: {
+  label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
@@ -778,6 +1011,8 @@ function CodeInput({
         <Code className="w-4 h-4 text-[var(--muted-foreground)]" />
       </div>
       <textarea
+        aria-label={label}
+        aria-invalid={value.length > AUDIT_LIMITS.code}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -785,6 +1020,16 @@ function CodeInput({
         rows={rows}
         style={{ fontFamily: "ui-monospace, monospace" }}
       />
+      <p
+        className={`mt-1 text-xs ${value.length > AUDIT_LIMITS.code ? "text-red-700" : "text-slate-500"}`}
+        role={value.length > AUDIT_LIMITS.code ? "alert" : undefined}
+      >
+        {value.length.toLocaleString()} / {AUDIT_LIMITS.code.toLocaleString()}{" "}
+        characters
+        {value.length > AUDIT_LIMITS.code
+          ? " — shorten this input while preserving the relevant workflow. Code has not been truncated."
+          : ""}
+      </p>
     </div>
   );
 }

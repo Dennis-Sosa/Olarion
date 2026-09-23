@@ -6,6 +6,8 @@ Originally built for EmpireHacks 2026, Track 2: The Auditor. Original teammates:
 
 [Live app](https://olarion-zeta.vercel.app/) · [Personal repository](https://github.com/Dennis-Sosa/Olarion) · [部署指南](docs/deployment.md) · [产品说明与能力边界](docs/product.md) · [Evaluation](evals/README.md) · [Release notes](CHANGELOG.md)
 
+**Preparing an audit:** read the [upload guide](https://olarion-zeta.vercel.app/guide) or [中文上传指南](https://olarion-zeta.vercel.app/guide?lang=zh). The site explains file requirements, useful prediction context, current evaluation results and remaining model-quality work. Downloadable task examples are included.
+
 > This is a code/context audit prototype. It does not execute submitted Python, inspect CSV rows, measure feature correlations, retrain models or quantify business impact. Check the coverage banner on every report. A partial audit is not a clean bill of health.
 
 ## What changed in v0.2
@@ -43,6 +45,8 @@ npm run dev:full
 ```
 
 Open `http://localhost:5173/setup`. Use a Quick Fill example or provide a CSV, prediction goal, target column and preprocessing code. Inspect the selected code before running. Training code and structured context are optional. Without a valid key, rule checks still run and the result is visibly partial.
+
+CSV headers are checked on upload (UTF-8, nonempty and unique names, at most 300 columns and a 64 KB header). A header-only file is sufficient for static review. ZIP uploads support exactly one CSV and 1–10 Python files, at most 10 MB compressed. For multiple scripts, explicitly choose preprocessing and optional training roles, then review/edit the code. Other scripts are not automatically audited. Each code input is limited to 60,000 characters and is never silently truncated. The explicit feature lists currently accept only raw CSV column names; describe derived fields in the code/task, leaving the list blank when it cannot represent the full input set.
 
 `OPENAI_MODEL` defaults to `gpt-4o`. A replacement must support Chat Completions JSON mode and the configured sampling parameters. Model compatibility and quality must be retested before changing the default.
 

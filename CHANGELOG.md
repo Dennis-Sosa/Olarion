@@ -1,5 +1,13 @@
 # Changelog
 
+## Upload guidance and preflight
+
+- Add an English/Chinese upload guide at `/guide`, with required materials, task examples, context guidance, coverage interpretation and the recorded 100-case baseline.
+- Link the guide from the homepage, setup, navigation, footer and report coverage panel. Clearly label model-quality improvements as work still to validate.
+- Validate CSV encoding, empty/duplicate headers, header size and column limits before submission. Preserve all pasted code and show actionable length errors rather than truncating it.
+- Replace automatic ZIP code classification in the UI with explicit file-role selection. Only the selected preprocessing and training inputs are audited; other scripts are clearly out of scope.
+- Share input limits with the API and add upload/preflight boundary tests. Audit prompts and model behavior are unchanged; no new accuracy improvement is claimed.
+
 ## Prompt audit-2.0.1
 
 - Give feature specialists an explicit list of allowed columns and separate their scope from preprocessing/split checks.

@@ -1,4 +1,5 @@
 import type { AuditReport } from "../../types";
+import { Link } from "react-router";
 export function AuditQuality({ report }: { report: AuditReport }) {
   const q = report.quality,
     partial = !q || q.status === "degraded";
@@ -16,9 +17,15 @@ export function AuditQuality({ report }: { report: AuditReport }) {
       </h2>
       <p className="text-sm">
         {partial
-          ? "Do not interpret a low score or an empty findings list as a clean audit. Review the unavailable checks and rerun when the service is available."
+          ? "Do not interpret a low score or an empty findings list as a clean audit. Review the failed checks and supplied context; resolve the issue before relying on a rerun."
           : "Checks returned validated responses. Findings still need verification against actual data and deployment context."}
       </p>
+      <Link
+        to="/guide#results"
+        className="inline-block mt-2 text-sm text-blue-700 underline underline-offset-2"
+      >
+        How to interpret coverage and review findings
+      </Link>
       {q && (
         <>
           <div className="flex flex-wrap gap-2 mt-3">
