@@ -126,7 +126,7 @@ ${repair ? `The previous attempt failed validation (${repair}). Recheck all enum
         counterevidence: textSchema,
         findings: { type: "array", items: itemSchema, maxItems: 8 },
       }),
-      maxTokens: 4000,
+      maxTokens: 2400,
     },
   );
   if (!Array.isArray(result.findings) || result.findings.length > 8)

@@ -57,7 +57,7 @@ ${repair ? `Previous response failed validation: ${repair}. Fix the specific rea
         }),
         $defs: { decision: decisionSchema },
       },
-      maxTokens: 6000,
+      maxTokens: 3600,
     },
   );
   const decisions = object(result.decisions);

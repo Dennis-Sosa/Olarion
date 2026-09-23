@@ -14,7 +14,13 @@ import { auditPreprocessingCode } from "./tools/llm/codeAuditor.js";
 import { auditModelTrainingCode } from "./tools/llm/modelCodeAuditor.js";
 import { reviewAgent } from "./tools/llm/reviewAgent.js";
 import { renderNarrative } from "./tools/llm/reportGenerator.js";
-import { MODEL, PROMPT_VERSION, modelErrorCode } from "./openaiClient.js";
+import {
+  MODEL,
+  PROMPT_VERSION,
+  modelErrorCode,
+  rateLimitDelay,
+  abortableDelay,
+} from "./openaiClient.js";
 import { dedupeFindings, computeOverallRisk } from "./utils.js";
 export interface ProgressEvent {
   type: "step";
@@ -65,7 +71,9 @@ export async function runAudit(
           const repairable =
             /^(invalid_|incomplete_|unknown_feature|unused_or_unknown_feature|retraction_|stateful_transform_|stateless_retraction_)/.test(
               code,
-            ) || code === "provider_unavailable";
+            ) ||
+            code === "provider_unavailable" ||
+            code === "rate_limited";
           if (
             !repairable ||
             attempts >= 2 ||
@@ -73,6 +81,12 @@ export async function runAudit(
             Date.now() - started > 30_000
           )
             throw error;
+          if (code === "rate_limited") {
+            const delay = rateLimitDelay(error);
+            if (delay > 10_000 || Date.now() - started + delay > 30_000)
+              throw error;
+            await abortableDelay(delay, signal);
+          }
           recovered_errors.push(code);
           progress({
             type: "step",

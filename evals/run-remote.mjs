@@ -9,6 +9,7 @@ const { values } = parseArgs({
   options: {
     url: { type: "string" },
     output: { type: "string" },
+    interval: { type: "string" },
     cases: { type: "string" },
     manifest: { type: "string" },
     commit: { type: "string" },
@@ -52,6 +53,9 @@ const manifest = JSON.parse(
 const hash = crypto.createHash("sha256").update(bytes).digest("hex");
 if (hash !== manifest.cases_sha256) throw new Error("Frozen case set changed");
 const cases = JSON.parse(bytes);
+const interval = Number(values.interval ?? 12500);
+if (!Number.isFinite(interval) || interval < 10100)
+  throw new Error("Interval must be at least 10100 ms");
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const healthResponse = await fetch(new URL("/api/health", base), {
   signal: AbortSignal.timeout(20000),
@@ -96,8 +100,7 @@ const result = {
     health,
   },
   scope: manifest.design,
-  protocol:
-    "One sequential request per frozen case; at least 10.1 seconds between starts. One retry only for the app's HTTP 429 cooldown. No runner-level model retries or cherry-picked reruns. Server repair attempts are preserved in each stage. Detection metrics include only complete audits; degraded audits remain in raw evidence. Stop after three consecutive degraded/error audits or an authentication/quota error. Training-code checks are out of scope where no training code is supplied.",
+  protocol: `One sequential request per frozen case; at least ${interval / 1000} seconds between starts. One retry only for the app's HTTP 429 cooldown. No runner-level model retries or cherry-picked reruns. Server repair attempts are preserved in each stage. Detection metrics include only complete audits; degraded audits remain in raw evidence. Stop after three consecutive degraded/error audits or an authentication/quota error. Training-code checks are out of scope where no training code is supplied.`,
   total: cases.length,
   attempted: 0,
   completed: 0,
@@ -130,7 +133,7 @@ save();
 let lastStart = 0,
   failedInRow = 0;
 for (const c of cases) {
-  await delay(Math.max(0, lastStart + 10100 - Date.now()));
+  await delay(Math.max(0, lastStart + interval - Date.now()));
   const row = {
     case_id: c.id,
     family: c.family,
@@ -186,9 +189,16 @@ for (const c of cases) {
       .filter((s) => s.status === "failed")
       .map((s) => s.error_code) ?? [];
   const credentialError = errors.some((e) =>
-    ["authentication", "rate_or_quota_limit", "not_configured"].includes(e),
+    [
+      "authentication",
+      "rate_or_quota_limit",
+      "quota_exhausted",
+      "not_configured",
+    ].includes(e),
   );
   if (credentialError) result.status = "stopped_provider_configuration";
+  else if (errors.includes("rate_limited"))
+    result.status = "stopped_rate_limit";
   else if (row.error === "deployment_version_changed")
     result.status = "stopped_deployment_changed";
   else if (failedInRow >= 3)

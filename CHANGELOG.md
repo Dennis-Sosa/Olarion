@@ -1,6 +1,8 @@
 # Changelog
 
-## Agent reliability — audit-2.1.1
+## Agent reliability — audit-2.1.2
+
+- Distinguish provider rate limits from exhausted quota; reduce output reservations and permit bounded, cancellable rate-limit backoff.
 
 - Preserve the interrupted 2.1.0 pilot and address import-only evidence and reversed fit/split reasoning before a fresh full run.
 

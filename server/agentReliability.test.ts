@@ -205,9 +205,9 @@ describe("bounded recovery with honest coverage", () => {
     expect(r.quality?.stages.find((s) => s.id === "proxy")?.attempts).toBe(2);
     expect(callOpenAIJson).toHaveBeenCalledTimes(6);
   });
-  it("never retries authentication failures", async () => {
+  it.each(["authentication", "quota_exhausted"])("never retries %s failures", async (code) => {
     vi.mocked(callOpenAIJson).mockRejectedValue(
-      new ModelFailure("authentication"),
+      new ModelFailure(code),
     );
     const r = await runAudit(clean);
     expect(r.quality?.status).toBe("degraded");
