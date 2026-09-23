@@ -30,8 +30,28 @@ The CI gate (`TP >= 40`, `FP <= 5`) catches known regressions. It is not a produ
 
 ## Full Agent status
 
-`live-results.json` records an actual preflight failure: **authentication**. Zero of the 100 full Agent cases completed; full Agent accuracy/precision/recall are unavailable. Offline tests exercise mocked valid/malformed model responses, failure handling, review transactions and SSE handling; they are not live model evaluations.
+The personal production run has now attempted all 100 frozen cases with `gpt-4o` and prompt `audit-2.0.1`: **85 complete, 15 degraded**. Of the complete cases, TP/FP/TN/FN = **32/16/33/4** (76.5% accuracy, 66.7% precision, 88.9% recall, 32.7% false-positive rate). There were **65 complete and correct reports out of 100 planned cases**. Only 36/50 positive cases completed versus 49/50 negative cases, so completed-case recall is not overall recall. All training-code stages were skipped because the frozen requests contain no training code.
 
-To finish validation, configure a valid server-side `OPENAI_API_KEY`, rerun `npm run eval:live` and inspect completion coverage separately from completed-case detection metrics. A 200 response or a rules-only partial report must never be counted as successful AI evaluation. Even after 100 cases complete, add independently authored unseen cases and multiple runs before claiming reliability.
+[Readable report, matched rule comparison and failure analysis](remote-report-2.0.1.md) · [All 100 original responses](remote-live-results-2.0.1.json). The run used commit `41840f3a56add001d8092e489f94c1b7807bd797` throughout; its 100 rows, fixture hash, labels, versions and reported metrics were independently recomputed and verified before publication. No failed case was replaced with a favorable rerun.
 
-Production smoke verification (`production-smoke.json`): both synthetic requests completed at the HTTP/API level, but remained degraded because production has no model key configured. A clean rule result is shown as inconclusive, and a positive rule result is preserved with an incomplete-coverage warning. These two checks are excluded from model detection metrics.
+`live-results.json` records the historical local preflight failure: **authentication**. Zero of the 100 cases completed in that attempt. Production credentials have since been configured separately; they are not downloaded for remote evaluation. Offline tests exercise mocked valid/malformed model responses, failure handling, review transactions and SSE handling; they are not live model evaluations.
+
+A 200 response or a rules-only partial report must never be counted as successful AI evaluation. Inspect completion coverage separately from completed-case detection metrics. Even after 100 cases complete, add independently authored unseen cases and multiple runs before claiming reliability.
+
+Historical smoke evidence: `production-smoke.json` and `personal-production-smoke.json` recorded the respective deployments before model keys were available. `personal-model-smoke.json` recorded successful authentication but degraded specialist output validation with prompt `audit-2.0.0`.
+
+After explicit specialist scopes and output requirements were added, `personal-model-smoke-2.0.1.json` recorded two complete audits. All applicable checks and review completed; training-code checks were skipped because no training code was supplied. The clean temporal example produced a proxy false positive: the model treated a potentially predictive historical feature as suspicious without establishing a prohibited information path. Exact quote validation alone cannot establish sound reasoning. These smoke checks are excluded from the 100-case run and retained rather than replaced by more favorable reruns.
+
+## Evaluate the deployed API
+
+Verify the deployment's commit in Vercel/GitHub, then run:
+
+```bash
+node evals/run-remote.mjs \
+  --url https://olarion-zeta.vercel.app \
+  --commit TESTED_FULL_COMMIT_SHA \
+  --deployment https://vercel.com/WORKSPACE/PROJECT/DEPLOYMENT_ID \
+  --output evals/remote-live-UNIQUE_RUN.json
+```
+
+This incurs real provider usage through the server and does not read the Vercel secret. Keep the deployment unchanged during the run. The runner checks the frozen fixture hash and model/prompt versions, respects the endpoint cooldown, checkpoints every response and refuses to overwrite earlier evidence. It retries only an HTTP 429 cooldown once, never a model result. Authentication/quota errors or three consecutive degraded audits stop the run. Detection metrics include only complete audits; coverage uses all 100 planned cases as its denominator. Read failed stages and individual findings before interpreting aggregate numbers.

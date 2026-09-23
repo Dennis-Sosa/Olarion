@@ -25,7 +25,9 @@ Originally built for EmpireHacks 2026, Track 2: The Auditor. Original teammates:
 | Recall | 35/50 (70%) | 40/50 (80%) |
 | False-positive rate | 10/50 (20%) | 0/50 (0%) |
 
-These are **source-informed synthetic regression results**, not real-world accuracy. The remaining 10 misses are temporal cases expressed in natural language. No live Agent accuracy is claimed: the current environment's model connection failed authentication during preflight. See [raw results and methodology](evals/README.md).
+These are **source-informed synthetic regression results**, not real-world accuracy. The remaining 10 rule-layer misses are temporal cases expressed in natural language.
+
+**Live Agent run (`audit-2.0.1`):** all 100 cases were requested from the personal production deployment; 85 returned complete audits and 15 were degraded. Among the 85 complete audits, accuracy was 65/85 (76.5%), precision 32/48 (66.7%), recall 32/36 (88.9%) and false-positive rate 16/49 (32.7%). Thus 65 of all 100 cases were both complete and correctly classified. Failed audits were excluded from detection metrics, not treated as true negatives; the completed subset has selection bias. In the same subset, adding Agent checks/review improved recall but reduced precision and accuracy versus rules alone. See the [full report and failure analysis](evals/remote-report-2.0.1.md) and [raw results and methodology](evals/README.md).
 
 ## Run locally
 
@@ -71,13 +73,13 @@ Model requests have a 15-second timeout and no implicit retries; the audit deadl
 
 ## Deploy
 
-The existing Vercel entry point is `api/index.ts`; `vercel.json` builds the frontend and routes API requests. Set `OPENAI_API_KEY` in Vercel's environment settings and redeploy. Never put secrets in `VITE_*` variables. Confirm `/api/health` identifies `audit-2.0.0`, then run both a clean and leaky example and inspect coverage.
+The existing Vercel entry point is `api/index.ts`; `vercel.json` builds the frontend and routes API requests. Set `OPENAI_API_KEY` in Vercel's environment settings and redeploy. Never put secrets in `VITE_*` variables. Confirm `/api/health` identifies `audit-2.0.1`, then run both a clean and leaky example and inspect coverage.
 
 This personal repository is published under **Dennis-Sosa/Olarion** and deployed at **[olarion-zeta.vercel.app](https://olarion-zeta.vercel.app/)** in the `sosadennis39-debugs-projects` Vercel workspace. The project imports this repository's `main` branch. See the [deployment guide](docs/deployment.md).
 
-Initial personal-deployment verification passed for the setup page, health endpoint and two synthetic audit requests. **At this check, the new project had no `OPENAI_API_KEY`: AI stages correctly reported incomplete coverage.** Add a valid key to this project's Production environment and redeploy before evaluating model quality. [Personal deployment evidence](evals/personal-production-smoke.json) records the tested commit and raw API results.
+The personal deployment now has its Production model key configured and has been redeployed. [Authenticated smoke evidence](evals/personal-model-smoke-2.0.1.json) records two complete model-assisted audits at commit `41840f3`. Their training-code stage was skipped because those inputs contain no training code; all applicable checks and review completed. This is a connectivity/coverage check, not an accuracy benchmark.
 
-The [production smoke evidence](evals/production-smoke.json) records two historical synthetic API checks against the original team's deployment at `olarion.vercel.app`, where the model key was absent at the time of testing. It is not a deployment of this personal repository or a model-performance result. Local live preflight separately failed authentication; a valid key and a new live evaluation are still required.
+Historical evidence is preserved: [initial personal deployment](evals/personal-production-smoke.json) had no key; [first authenticated smoke](evals/personal-model-smoke.json) exposed invalid specialist outputs; [original team deployment](evals/production-smoke.json) had no key when tested. The local credential preflight also failed authentication. These earlier outcomes do not describe the current personal deployment and are not included in detection metrics.
 
 ## Demo data
 

@@ -1,0 +1,327 @@
+{
+  "mode": "personal_model_smoke_not_benchmark",
+  "url": "https://olarion-zeta.vercel.app",
+  "deployment_id": "dpl_4DpvQJmhia2h1FGu7AyyC3PcfNiQ",
+  "tested_commit": "41840f3a56add001d8092e489f94c1b7807bd797",
+  "executed_at": "2026-09-23T02:10:50.168421+00:00",
+  "rows": [
+    {
+      "case_id": "001_commerce_temporal_clean",
+      "http_status": 200,
+      "report": {
+        "overall_risk": "medium",
+        "summary": "Audit checks completed: 1 active concern(s); 1 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 1 active concern(s); 1 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 1 active concern(s); 1 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### Potential Proxy Feature\nSeverity: medium; confidence: medium.\nThe feature 'commerce_activity_before_t0' is an event count immediately preceding the decision time t0, which might closely correlate with the target 'purchase_next_week'. This could act as a proxy for the target, potentially leading to leakage if the feature captures patterns that are too predictive of the outcome.\n- Consider evaluating the correlation between 'commerce_activity_before_t0' and the target to ensure it does not overly predict the outcome. If necessary, adjust the feature to reduce its predictive power or remove it from the model.\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- code-0: retract. The feature 'commerce_activity_after_t0' is not included in the training or evaluation datasets as per the preprocessing code, which explicitly selects only 'visits_prior_week', 'spend_prior_month', and 'commerce_activity_before_t0'. Evidence: preprocessing_code: X = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_before_t0']].copy()\n\n- proxy-0: keep. The feature 'commerce_activity_before_t0' could potentially act as a proxy for the target 'purchase_next_week' due to its temporal proximity and nature as an event count, which might correlate with the target. Evidence: prediction_goal: commerce_activity_before_t0 is an event count over [t0-7 days,t0)\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- temporal: done\n\n- proxy: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "proxy-0",
+            "title": "Potential Proxy Feature",
+            "flagged_object": "commerce_activity_before_t0",
+            "macro_bucket": "Feature / proxy leakage",
+            "fine_grained_type": "proxy",
+            "severity": "medium",
+            "confidence": "medium",
+            "severity_rationale": "Potential impact of the described mechanism; confidence is reported separately.",
+            "evidence": [
+              {
+                "claim": "The feature 'commerce_activity_before_t0' is an event count immediately preceding the decision time t0, which might closely correlate with the target 'purchase_next_week'. This could act as a proxy for the target, potentially leading to leakage if the feature captures patterns that are too predictive of the outcome.",
+                "source": {
+                  "filename": "task description",
+                  "location": "line 1",
+                  "snippet": "commerce_activity_before_t0 is an event count over [t0-7 days,t0)"
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'commerce_activity_before_t0' is an event count immediately preceding the decision time t0, which might closely correlate with the target 'purchase_next_week'. This could act as a proxy for the target, potentially leading to leakage if the feature captures patterns that are too predictive of the outcome.",
+            "fix_recommendation": [
+              "Consider evaluating the correlation between 'commerce_activity_before_t0' and the target to ensure it does not overly predict the outcome. If necessary, adjust the feature to reduce its predictive power or remove it from the model."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 1,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [
+          {
+            "finding_id": "code-0",
+            "action": "retract",
+            "reason": "The feature 'commerce_activity_after_t0' is not included in the training or evaluation datasets as per the preprocessing code, which explicitly selects only 'visits_prior_week', 'spend_prior_month', and 'commerce_activity_before_t0'.",
+            "source": "preprocessing_code",
+            "quote": "X = df[['visits_prior_week', 'spend_prior_month', 'commerce_activity_before_t0']].copy()",
+            "severity": "low",
+            "confidence": "high"
+          },
+          {
+            "finding_id": "proxy-0",
+            "action": "keep",
+            "reason": "The feature 'commerce_activity_before_t0' could potentially act as a proxy for the target 'purchase_next_week' due to its temporal proximity and nature as an event count, which might correlate with the target.",
+            "source": "prediction_goal",
+            "quote": "commerce_activity_before_t0 is an event count over [t0-7 days,t0)",
+            "severity": "medium",
+            "confidence": "medium"
+          }
+        ],
+        "retracted_findings": [
+          {
+            "id": "code-0",
+            "title": "Potential leakage from commerce_activity_after_t0",
+            "flagged_object": "commerce_activity_after_t0",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "aggregation_lookahead",
+            "severity": "high",
+            "confidence": "high",
+            "severity_rationale": "Potential impact of the described mechanism; confidence is reported separately.",
+            "evidence": [
+              {
+                "claim": "The feature 'commerce_activity_after_t0' is mentioned in the context as being unavailable at decision time t0, yet it is present in the raw table for offline analysis. This suggests a risk of leakage if it were mistakenly used in model training or evaluation.",
+                "source": {
+                  "filename": "task description",
+                  "location": "line 1",
+                  "snippet": "commerce_activity_after_t0 is a count over [t0,t0+7 days), which is unavailable at t0."
+                }
+              }
+            ],
+            "why_it_matters": "The feature 'commerce_activity_after_t0' is mentioned in the context as being unavailable at decision time t0, yet it is present in the raw table for offline analysis. This suggests a risk of leakage if it were mistakenly used in model training or evaluation.",
+            "fix_recommendation": [
+              "Ensure that 'commerce_activity_after_t0' is not included in any form in the training or evaluation datasets."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "retract"
+            },
+            "result_summary": "The feature 'commerce_activity_after_t0' is not included in the training or evaluation datasets as per the preprocessing code, which explicitly selects only 'visits_prior_week', 'spend_prior_month', and 'commerce_activity_before_t0'."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "proxy-0",
+              "action": "keep"
+            },
+            "result_summary": "The feature 'commerce_activity_before_t0' could potentially act as a proxy for the target 'purchase_next_week' due to its temporal proximity and nature as an event count, which might correlate with the target."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 3
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 1039
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 2164
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 2556
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 2112
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.0.1",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T02:10:50.747Z",
+          "duration_ms": 4673,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      }
+    },
+    {
+      "case_id": "006_commerce_preprocessing_leaky",
+      "http_status": 200,
+      "report": {
+        "overall_risk": "medium",
+        "summary": "Audit checks completed: 1 active concern(s); 1 retracted after review. Results require verification against actual data and deployment context.",
+        "executive_summary": "Audit checks completed: 1 active concern(s); 1 retracted after review. Results require verification against actual data and deployment context.",
+        "narrative_report": "# Olarion audit\n\nAudit checks completed: 1 active concern(s); 1 retracted after review. Results require verification against actual data and deployment context.\n\nAll configured checks returned validated responses. This is not a guarantee of no leakage.\n\n## Findings\n\n### Potential temporal leakage in preprocessing\nSeverity: medium; confidence: medium.\nThe preprocessing code applies StandardScaler to the entire dataset before splitting into train and test sets, which can lead to information from the test set influencing the scaling parameters.\n- Apply the StandardScaler separately to the training and test sets after splitting the data.\n\n## Context to verify\n\n- Confirm exactly which columns reach the model.\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n- pipeline-global-preprocessing: retract. The preprocessing code applies StandardScaler to the entire dataset before splitting, but the context specifies that rows are independent and no persons/items repeat. This implies that the fit on the entire dataset does not necessarily lead to leakage in this context. Evidence: preprocessing_code: X = preprocessor.fit_transform(X)\n\n- code-0: keep. The preprocessing code applies StandardScaler to the entire dataset before splitting into train and test sets, which can lead to information from the test set influencing the scaling parameters. This is a valid concern for potential temporal leakage. Evidence: preprocessing_code: X = preprocessor.fit_transform(X)\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- proxy: done\n\n- temporal: done\n\n- code: done\n\n- review: done\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "code-0",
+            "title": "Potential temporal leakage in preprocessing",
+            "flagged_object": "pipeline",
+            "macro_bucket": "Time leakage",
+            "fine_grained_type": "temporal",
+            "severity": "medium",
+            "confidence": "medium",
+            "severity_rationale": "Potential impact of the described mechanism; confidence is reported separately.",
+            "evidence": [
+              {
+                "claim": "The preprocessing code applies StandardScaler to the entire dataset before splitting into train and test sets, which can lead to information from the test set influencing the scaling parameters.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "why_it_matters": "The preprocessing code applies StandardScaler to the entire dataset before splitting into train and test sets, which can lead to information from the test set influencing the scaling parameters.",
+            "fix_recommendation": [
+              "Apply the StandardScaler separately to the training and test sets after splitting the data."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm exactly which columns reach the model.",
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm exactly which columns reach the model.",
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 1,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [
+          {
+            "finding_id": "pipeline-global-preprocessing",
+            "action": "retract",
+            "reason": "The preprocessing code applies StandardScaler to the entire dataset before splitting, but the context specifies that rows are independent and no persons/items repeat. This implies that the fit on the entire dataset does not necessarily lead to leakage in this context.",
+            "source": "preprocessing_code",
+            "quote": "X = preprocessor.fit_transform(X)",
+            "severity": "medium",
+            "confidence": "low"
+          },
+          {
+            "finding_id": "code-0",
+            "action": "keep",
+            "reason": "The preprocessing code applies StandardScaler to the entire dataset before splitting into train and test sets, which can lead to information from the test set influencing the scaling parameters. This is a valid concern for potential temporal leakage.",
+            "source": "preprocessing_code",
+            "quote": "X = preprocessor.fit_transform(X)",
+            "severity": "medium",
+            "confidence": "medium"
+          }
+        ],
+        "retracted_findings": [
+          {
+            "id": "pipeline-global-preprocessing",
+            "title": "A learned transform may see holdout rows",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "evaluation",
+            "severity": "medium",
+            "confidence": "low",
+            "flagged_object": "preprocessor",
+            "evidence": [
+              {
+                "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "rule_cited": "pipeline-global-preprocessing",
+            "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+            "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+            "fix_recommendation": [
+              "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "agent_trace": [
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "pipeline-global-preprocessing",
+              "action": "retract"
+            },
+            "result_summary": "The preprocessing code applies StandardScaler to the entire dataset before splitting, but the context specifies that rows are independent and no persons/items repeat. This implies that the fit on the entire dataset does not necessarily lead to leakage in this context."
+          },
+          {
+            "round": 1,
+            "tool_called": "review_finding",
+            "arguments": {
+              "finding_id": "code-0",
+              "action": "keep"
+            },
+            "result_summary": "The preprocessing code applies StandardScaler to the entire dataset before splitting into train and test sets, which can lead to information from the test set influencing the scaling parameters. This is a valid concern for potential temporal leakage."
+          }
+        ],
+        "quality": {
+          "status": "complete",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "proxy",
+              "status": "done",
+              "duration_ms": 481
+            },
+            {
+              "id": "temporal",
+              "status": "done",
+              "duration_ms": 771
+            },
+            {
+              "id": "code",
+              "status": "done",
+              "duration_ms": 1816
+            },
+            {
+              "id": "review",
+              "status": "done",
+              "duration_ms": 1917
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.0.1",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T02:11:06.689Z",
+          "duration_ms": 3734,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      }
+    }
+  ],
+  "status": "complete"
+}

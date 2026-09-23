@@ -4,11 +4,13 @@
 
 当前个人网站：<https://olarion-zeta.vercel.app/>。
 
-管理后台：<https://vercel.com/sosadennis39-debugs-projects/olarion>。该项目已从个人仓库导入，构建、页面和 API 检查通过；首次验收时模型密钥尚未配置，审计报告会明确显示覆盖不完整。原始结果见 [个人部署验收记录](../evals/personal-production-smoke.json)。
+管理后台：<https://vercel.com/sosadennis39-debugs-projects/olarion>。该项目已从个人仓库导入，Production 密钥已配置并重新部署。Prompt `audit-2.0.1` 的两个真实模型请求已完成所有适用检查及复核，见 [模型连通与覆盖记录](../evals/personal-model-smoke-2.0.1.json)。其中正常案例出现误报，说明链路跑通不能替代准确性评测。首次缺密钥的 [个人部署验收记录](../evals/personal-production-smoke.json) 仅作为历史证据保留。
+
+随后完成 100 例真实部署评测：85 例报告完整，15 例覆盖不完整，65 例同时完整且判断正确。详见 [评测报告与剩余问题](../evals/remote-report-2.0.1.md)。密钥可用不等于模型结论可靠。
 
 ## 当前项目配置密钥
 
-打开[环境变量页面](https://vercel.com/sosadennis39-debugs-projects/olarion/settings/environment-variables)，添加 `OPENAI_API_KEY`，类型选 **Secret**，环境选 **Production**，填入有效密钥并保存。`OPENAI_MODEL=gpt-4o` 已配置。保存后，在 **Deployments** 对最新的 `main` 生产部署执行 **Redeploy**，再进行下面的验收。
+当前 Production 已配置 `OPENAI_API_KEY` 和 `OPENAI_MODEL=gpt-4o`。以后更换密钥时，打开[环境变量页面](https://vercel.com/sosadennis39-debugs-projects/olarion/settings/environment-variables)，更新 `OPENAI_API_KEY`，类型选 **Secret**，环境选 **Production**。保存后，在 **Deployments** 对最新的 `main` 生产部署执行 **Redeploy**，再进行下面的验收。Preview 需要另外配置对应环境的密钥。
 
 GitHub 存放代码，Vercel 托管运行中的网站。把代码发布到个人 GitHub，不会自动迁移原团队的 Vercel 项目、域名或环境变量。`olarion.vercel.app` 属于此前的团队部署；本仓库中的生产冒烟记录是历史证据。
 
@@ -33,8 +35,8 @@ GitHub 存放代码，Vercel 托管运行中的网站。把代码发布到个人
 ## 验收
 
 - 打开新域名的 `/setup`，确认页面正常加载。
-- 打开 `/api/health`，确认 `prompt_version` 为 `audit-2.0.0`，且 `model_configured` 为 `true`。这只证明配置存在，不能证明凭证有效。
+- 打开 `/api/health`，确认 `prompt_version` 为 `audit-2.0.1`，且 `model_configured` 为 `true`。这只证明配置存在，不能证明凭证有效。
 - 分别运行一个 clean 和一个 leaky 示例，检查报告中的各阶段状态、证据和覆盖提示。HTTP 200 不等于所有 AI 检查成功。
-- 使用有效模型凭证执行 `npm run eval:live`，保留逐例原始结果。已有 100 例规则回归不能替代真实模型评测。
+- 本地有有效模型凭证时执行 `npm run eval:live`；也可使用 [远程评测脚本](../evals/README.md) 调用已部署 API，无须把 Vercel 密钥下载到本地。保留逐例原始结果；已有 100 例规则回归不能替代真实模型评测。
 
 环境变量修改和重新部署规则参见 [Vercel 官方文档](https://vercel.com/docs/environment-variables/managing-environment-variables)。

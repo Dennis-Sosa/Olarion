@@ -5,6 +5,9 @@
 - Give feature specialists an explicit list of allowed columns and separate their scope from preprocessing/split checks.
 - Require an empty findings array for clean checks; clarify exact source quotes and reject safe-feature summaries masquerading as findings.
 - Preserve all existing evidence, feature-scope and review validation. The first authenticated production smoke run (`evals/personal-model-smoke.json`) exposed degraded proxy/temporal checks and is retained as regression evidence.
+- Redeploy the personal Vercel project with its Production model key. Two subsequent smoke audits completed all applicable checks and review; one clean case had a false positive, retained in `evals/personal-model-smoke-2.0.1.json`.
+- Add a sequential remote evaluator that uses the deployed API, preserves per-case evidence and separates completion coverage from detection quality without retrieving server secrets.
+- Publish all 100 production evaluation responses: 85 complete, 15 degraded; 65 complete and correctly classified. Retain false positives, false negatives and failed stages, and compare Agent output with rules on the same completed subset. See `evals/remote-report-2.0.1.md`.
 
 ## 0.2.0 — Audit quality and feedback
 
@@ -19,4 +22,4 @@
 - Use explicit ESM import extensions and compile/load the API under Node in CI to catch runtime-only module failures.
 - Extend type-checking to the backend and add offline tests and CI.
 
-Known limitation: live model preflight failed authentication in the evaluation environment. No completed live Agent benchmark is claimed. The deployed Vercel API and new UI are verified; production has no model key configured and correctly returns partial coverage. Configure a valid server-side key to enable full AI audits.
+Historical release status: local live preflight failed authentication, and the deployments initially had no model key configured, correctly returning partial coverage. The personal production configuration was subsequently completed in the `audit-2.0.1` follow-up above. Earlier smoke results remain historical evidence.
