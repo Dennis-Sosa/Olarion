@@ -101,6 +101,27 @@ describe("evidence references and reviews", () => {
     expect(refs.some((r) => r.quote.includes("value_999 = 999"))).toBe(true);
     expect(refs.length).toBeLessThan(130);
   });
+  it("rejects import-only citations as proof of execution", async () => {
+    const r = {
+      ...request,
+      preprocessing_code:
+        "from sklearn.preprocessing import StandardScaler\n" +
+        request.preprocessing_code,
+    };
+    vi.mocked(callOpenAIJson).mockResolvedValue({
+      findings: [
+        {
+          ...finding,
+          feature: "pipeline",
+          type: "evaluation",
+          evidence_id: "preprocessing_code:1",
+        },
+      ],
+    });
+    await expect(analyze(r, "code")).rejects.toThrow(
+      "invalid_import_only_evidence",
+    );
+  });
   it("rejects invented evidence IDs rather than silently accepting or dropping them", async () => {
     vi.mocked(callOpenAIJson).mockResolvedValue({
       findings: [{ ...finding, evidence_id: "fake:1" }],

@@ -105,7 +105,7 @@ export async function analyze(
       "\n" +
       boundary +
       `
-Return {"findings":[]} when this specialist has no supported risk. Limit to 8 distinct concerns. For each finding, mechanism must identify the forbidden information, and used_path must explain how it reaches the evaluated workflow. reason must justify that claim using the supplied facts, including counterevidence. Keep fields concise. Choose evidence_id from the source catalog; the server will attach that exact source text. Do not write safe-check rows or missing-metadata findings. Review unknowns without inventing a positive finding.
+First report concise factual observations in observed_usage (actual selected inputs), observed_boundaries (actual split/fit order and availability) and counterevidence (shown safeguards). These fields describe source facts, not speculation. Then return findings=[] when this specialist has no supported risk. Limit to 8 distinct concerns. For each finding, mechanism must identify the forbidden information, and used_path must explain how it reaches the evaluated workflow. reason must justify that claim using the supplied facts, including counterevidence. Keep fields concise. Choose evidence_id from the source catalog; the server will attach that exact source text. Do not write safe-check rows or missing-metadata findings. Review unknowns without inventing a positive finding.
 ${repair ? `The previous attempt failed validation (${repair}). Recheck all enum values, source references, and required fields. Return the full corrected object.` : ""}`,
     JSON.stringify({
       task: request.prediction_goal,
@@ -121,6 +121,9 @@ ${repair ? `The previous attempt failed validation (${repair}). Recheck all enum
     {
       name: `audit_${focus}`,
       schema: objectSchema({
+        observed_usage: textSchema,
+        observed_boundaries: textSchema,
+        counterevidence: textSchema,
         findings: { type: "array", items: itemSchema, maxItems: 8 },
       }),
       maxTokens: 4000,
@@ -149,6 +152,14 @@ ${repair ? `The previous attempt failed validation (${repair}). Recheck all enum
     )
       throw new ModelFailure("invalid_evidence_or_schema");
     const ref = resolveEvidence(item.evidence_id, refs);
+    if (
+      ref.source.endsWith("code") &&
+      ref.quote
+        .split("\n")
+        .filter((l) => l.trim())
+        .every((l) => /^\s*(?:from\s+\S+\s+import\b|import\s)/.test(l))
+    )
+      throw new ModelFailure("invalid_import_only_evidence");
     const type = item.type as AuditFinding["fine_grained_type"];
     const text = request[ref.source] ?? "";
     return {

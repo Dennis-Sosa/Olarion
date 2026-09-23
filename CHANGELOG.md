@@ -1,6 +1,8 @@
 # Changelog
 
-## Agent reliability — audit-2.1.0
+## Agent reliability — audit-2.1.1
+
+- Preserve the interrupted 2.1.0 pilot and address import-only evidence and reversed fit/split reasoning before a fresh full run.
 
 - Require explicit leakage mechanisms and actual use paths; distinguish historical predictors from label proxies.
 - Use strict JSON schemas with source-reference IDs and deterministic verbatim citations.
