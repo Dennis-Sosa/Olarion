@@ -1,0 +1,190 @@
+{
+  "mode": "personal_deployment_smoke_not_model_benchmark",
+  "url": "https://olarion-zeta.vercel.app",
+  "vercel_workspace": "sosadennis39-debugs-projects",
+  "github_repository": "Dennis-Sosa/Olarion",
+  "tested_commit": "0e9a419bd0095b8431c66d093c13897a4a196b29",
+  "executed_at": "2026-09-23T01:43:25.518035+00:00",
+  "rows": [
+    {
+      "case_id": "001_commerce_temporal_clean",
+      "http_status": 200,
+      "report": {
+        "overall_risk": "low",
+        "summary": "Partial audit: 0 active concern(s); 0 retracted after review. Some checks failed; safety cannot be established.",
+        "executive_summary": "Partial audit: 0 active concern(s); 0 retracted after review. Some checks failed; safety cannot be established.",
+        "narrative_report": "# Olarion audit\n\nPartial audit: 0 active concern(s); 0 retracted after review. Some checks failed; safety cannot be established.\n\n**Incomplete coverage. Failed checks are not evidence that the pipeline is safe.**\n\n## Findings\n\n## Context to verify\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- proxy: failed (not_configured)\n\n- temporal: failed (not_configured)\n\n- code: failed (not_configured)\n\n- review: failed (not_configured)\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [],
+        "missing_metadata": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 0
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "degraded",
+          "assessment": "inconclusive",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 3
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "proxy",
+              "status": "failed",
+              "duration_ms": 0,
+              "error_code": "not_configured"
+            },
+            {
+              "id": "temporal",
+              "status": "failed",
+              "duration_ms": 1,
+              "error_code": "not_configured"
+            },
+            {
+              "id": "code",
+              "status": "failed",
+              "duration_ms": 1,
+              "error_code": "not_configured"
+            },
+            {
+              "id": "review",
+              "status": "failed",
+              "duration_ms": 0,
+              "error_code": "not_configured"
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.0.0",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T01:43:26.295Z",
+          "duration_ms": 5,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      }
+    },
+    {
+      "case_id": "006_commerce_preprocessing_leaky",
+      "http_status": 200,
+      "report": {
+        "overall_risk": "medium",
+        "summary": "Partial audit: 1 active concern(s); 0 retracted after review. Some checks failed; safety cannot be established.",
+        "executive_summary": "Partial audit: 1 active concern(s); 0 retracted after review. Some checks failed; safety cannot be established.",
+        "narrative_report": "# Olarion audit\n\nPartial audit: 1 active concern(s); 0 retracted after review. Some checks failed; safety cannot be established.\n\n**Incomplete coverage. Failed checks are not evidence that the pipeline is safe.**\n\n## Findings\n\n### A learned transform may see holdout rows\nSeverity: medium; confidence: low.\nA fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.\n- Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data.\n\n## Context to verify\n\n- Confirm exactly which columns reach the model.\n\n- Confirm the prediction-time boundary and when each feature becomes available.\n\n## Review decisions\n\n## Coverage\n\n- rules: done\n\n- model: skipped\n\n- proxy: failed (not_configured)\n\n- temporal: failed (not_configured)\n\n- code: failed (not_configured)\n\n- review: failed (not_configured)\n\nScope: CSV headers, submitted Python text and user-declared context. No Python execution, model training, row-level statistics or measured business impact.",
+        "findings": [
+          {
+            "id": "pipeline-global-preprocessing",
+            "title": "A learned transform may see holdout rows",
+            "macro_bucket": "Structure / pipeline leakage",
+            "fine_grained_type": "evaluation",
+            "severity": "medium",
+            "confidence": "low",
+            "flagged_object": "preprocessor",
+            "evidence": [
+              {
+                "claim": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+                "source": {
+                  "filename": "preprocessing_code.py",
+                  "location": "line 9",
+                  "snippet": "X = preprocessor.fit_transform(X)"
+                }
+              }
+            ],
+            "rule_cited": "pipeline-global-preprocessing",
+            "why_it_matters": "A fit call appears before the first split. Verify that its input contains training rows only; static order alone cannot prove data flow.",
+            "severity_rationale": "Severity estimates potential evaluation impact; confidence reflects available evidence.",
+            "fix_recommendation": [
+              "Fit learned transforms and aggregates inside training folds; apply the fitted mapping to holdout data."
+            ],
+            "needs_human_review": true
+          }
+        ],
+        "missing_metadata": [
+          "Confirm exactly which columns reach the model.",
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "clarifying_questions": [
+          "Confirm exactly which columns reach the model.",
+          "Confirm the prediction-time boundary and when each feature becomes available."
+        ],
+        "bucket_summary": {
+          "Time leakage": 0,
+          "Feature / proxy leakage": 0,
+          "Structure / pipeline leakage": 1
+        },
+        "review_decisions": [],
+        "retracted_findings": [],
+        "agent_trace": [],
+        "quality": {
+          "status": "degraded",
+          "assessment": "risk_detected",
+          "stages": [
+            {
+              "id": "rules",
+              "status": "done",
+              "duration_ms": 1
+            },
+            {
+              "id": "model",
+              "status": "skipped",
+              "duration_ms": 0
+            },
+            {
+              "id": "proxy",
+              "status": "failed",
+              "duration_ms": 1,
+              "error_code": "not_configured"
+            },
+            {
+              "id": "temporal",
+              "status": "failed",
+              "duration_ms": 1,
+              "error_code": "not_configured"
+            },
+            {
+              "id": "code",
+              "status": "failed",
+              "duration_ms": 0,
+              "error_code": "not_configured"
+            },
+            {
+              "id": "review",
+              "status": "failed",
+              "duration_ms": 0,
+              "error_code": "not_configured"
+            }
+          ],
+          "model": "gpt-4o",
+          "prompt_version": "audit-2.0.0",
+          "rules_version": "2.0.0",
+          "created_at": "2026-09-23T01:43:37.659Z",
+          "duration_ms": 2,
+          "input_scope": "CSV headers, submitted Python text and user-declared context"
+        }
+      }
+    }
+  ],
+  "health": {
+    "http_status": 200,
+    "body": {
+      "service": "olarion",
+      "prompt_version": "audit-2.0.0",
+      "model": "gpt-4o",
+      "model_configured": false
+    }
+  }
+}

@@ -2,6 +2,14 @@
 
 个人代码仓库：<https://github.com/Dennis-Sosa/Olarion>，生产分支为 `main`。
 
+当前个人网站：<https://olarion-zeta.vercel.app/>。
+
+管理后台：<https://vercel.com/sosadennis39-debugs-projects/olarion>。该项目已从个人仓库导入，构建、页面和 API 检查通过；首次验收时模型密钥尚未配置，审计报告会明确显示覆盖不完整。原始结果见 [个人部署验收记录](../evals/personal-production-smoke.json)。
+
+## 当前项目配置密钥
+
+打开[环境变量页面](https://vercel.com/sosadennis39-debugs-projects/olarion/settings/environment-variables)，添加 `OPENAI_API_KEY`，类型选 **Secret**，环境选 **Production**，填入有效密钥并保存。`OPENAI_MODEL=gpt-4o` 已配置。保存后，在 **Deployments** 对最新的 `main` 生产部署执行 **Redeploy**，再进行下面的验收。
+
 GitHub 存放代码，Vercel 托管运行中的网站。把代码发布到个人 GitHub，不会自动迁移原团队的 Vercel 项目、域名或环境变量。`olarion.vercel.app` 属于此前的团队部署；本仓库中的生产冒烟记录是历史证据。
 
 ## 新建部署
