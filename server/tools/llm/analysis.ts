@@ -42,7 +42,11 @@ export function evidenceValid(
     !!request[item.source as (typeof sources)[number]]?.includes(item.quote)
   );
 }
-export const INPUT_SCHEMA = `Return JSON {"findings": [{"title": string, "feature": string, "type": "temporal"|"proxy"|"evaluation"|"boundary"|"join_entity"|"duplicate"|"aggregation_lookahead"|"label_definition"|"missing_metadata", "severity": "low"|"medium"|"high"|"critical", "confidence": "low"|"medium"|"high", "reason": string, "fix": string, "source": "prediction_goal"|"preprocessing_code"|"model_training_code", "quote": string}]}. Use an empty findings array when there is no supported concern. The quote MUST be an exact, nonempty substring (at least 8 characters) from the specified input source. Quotes cannot be invented; no row numbers or correlations. Feature must be a supplied column, or "pipeline" for a code issue. Limit to 8 findings. Uncertain concerns need low confidence, not fabricated evidence.`;
+export const INPUT_SCHEMA = `Return one JSON object with a findings array. Include ONLY supported leakage concerns, never rows describing safe features, successful checks, a summary, or the absence of leakage. When this specialist has no supported concern, the entire response is {"findings":[]}.
+Every finding must have these exact keys:
+{"title": string, "feature": string, "type": "temporal"|"proxy"|"evaluation"|"boundary"|"join_entity"|"duplicate"|"aggregation_lookahead"|"label_definition"|"missing_metadata", "severity": "low"|"medium"|"high"|"critical", "confidence": "low"|"medium"|"high", "reason": string, "fix": string, "source": "prediction_goal"|"preprocessing_code"|"model_training_code", "quote": string}.
+All string fields must be nonempty. feature MUST be an exact member of allowed_features; do not invent values such as none, N/A, all, or a comma-separated list. Pick one feature per concern.
+The quote MUST be copied verbatim as a contiguous substring of at least 8 characters from input[source]. Use the raw field content after decoding JSON: no JSON escape characters, line-number prefixes, ellipses, paraphrasing, or added backticks. source is the input field name, not a filename. Limit to 8 findings. Uncertainty needs low confidence and real evidence; missing evidence is not permission to manufacture a finding.`;
 export async function analyze(
   request: AuditRequest,
   focus: "proxy" | "temporal" | "code" | "model",
@@ -58,9 +62,16 @@ export async function analyze(
       "Inspect the training code for selection/tuning on held-out test data, target leakage and evaluation boundary misuse.",
   };
   const scope = featureScope(request);
+  const featureCheck = focus === "proxy" || focus === "temporal";
+  const allowedFeatures = featureCheck
+    ? scope.columns.filter((column) => request.csv_columns.includes(column))
+    : [...request.csv_columns, "pipeline"];
+  const boundary = featureCheck
+    ? `You are a feature-level ${focus} specialist. Only inspect allowed_features. Do not return pipeline findings, preprocessing/split issues, or unused raw columns: the separate code specialist checks those. A future/outcome column merely present in the raw table is not a finding when excluded from X. Prefer type ${focus === "proxy" ? '"proxy"' : '"temporal"'} for concerns within your scope.`
+    : "Inspect pipeline-level concerns as feature=\"pipeline\", or use one exact supplied column for a column-specific concern.";
   const result = await callOpenAIJson(
-    instructions[focus] + "\n" + INPUT_SCHEMA,
-    JSON.stringify({ input: request, feature_scope: scope }),
+    instructions[focus] + "\n" + boundary + "\n" + INPUT_SCHEMA,
+    JSON.stringify({ input: request, feature_scope: scope, allowed_features: allowedFeatures }),
     signal,
   );
   if (!Array.isArray(result.findings) || result.findings.length > 8)

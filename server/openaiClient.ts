@@ -35,7 +35,7 @@ function loadLocalEnvIfPresent() {
 loadLocalEnvIfPresent();
 
 export const MODEL = process.env.OPENAI_MODEL?.trim() || "gpt-4o";
-export const PROMPT_VERSION = "audit-2.0.0";
+export const PROMPT_VERSION = "audit-2.0.1";
 export class ModelFailure extends Error {
   constructor(public code: string) {
     super(code);

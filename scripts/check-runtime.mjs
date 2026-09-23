@@ -10,7 +10,7 @@ try {
   await new Promise(resolve => { server = app.listen(0, "127.0.0.1", resolve); });
   const response = await fetch(`http://127.0.0.1:${server.address().port}/api/health`);
   const payload = await response.json();
-  if (response.status !== 200 || payload.prompt_version !== "audit-2.0.0") throw new Error("Compiled API smoke test failed");
+  if (response.status !== 200 || payload.prompt_version !== "audit-2.0.1") throw new Error("Compiled API smoke test failed");
   console.log("Compiled Node ESM entry point and health endpoint passed.");
 } finally {
   if (server) await new Promise(resolve => server.close(resolve));

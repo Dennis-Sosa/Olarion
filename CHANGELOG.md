@@ -1,5 +1,11 @@
 # Changelog
 
+## Prompt audit-2.0.1
+
+- Give feature specialists an explicit list of allowed columns and separate their scope from preprocessing/split checks.
+- Require an empty findings array for clean checks; clarify exact source quotes and reject safe-feature summaries masquerading as findings.
+- Preserve all existing evidence, feature-scope and review validation. The first authenticated production smoke run (`evals/personal-model-smoke.json`) exposed degraded proxy/temporal checks and is retained as regression evidence.
+
 ## 0.2.0 — Audit quality and feedback
 
 - Use feature scope and declared prediction/entity context to reduce known false positives.
