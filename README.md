@@ -4,7 +4,7 @@ Olarion helps practitioners review whether an ML pipeline uses information unava
 
 Originally built for EmpireHacks 2026, Track 2: The Auditor. Original teammates: Youzhu Jin, Dennis Wang, Michael Meng, Weicong Hong. This repository preserves the original history and adds the v0.2 quality and feedback refactor.
 
-[Live app](https://olarion.vercel.app/) · [产品说明与能力边界](docs/product.md) · [Evaluation](evals/README.md) · [Release notes](CHANGELOG.md)
+[Personal repository](https://github.com/Dennis-Sosa/Olarion) · [部署指南](docs/deployment.md) · [产品说明与能力边界](docs/product.md) · [Evaluation](evals/README.md) · [Release notes](CHANGELOG.md)
 
 > This is a code/context audit prototype. It does not execute submitted Python, inspect CSV rows, measure feature correlations, retrain models or quantify business impact. Check the coverage banner on every report. A partial audit is not a clean bill of health.
 
@@ -32,7 +32,7 @@ These are **source-informed synthetic regression results**, not real-world accur
 Requires Node.js 22 and npm.
 
 ```bash
-git clone https://github.com/MichaelM7X/Olarion.git
+git clone https://github.com/Dennis-Sosa/Olarion.git
 cd Olarion
 npm ci
 cp .env.example .env
@@ -73,7 +73,9 @@ Model requests have a 15-second timeout and no implicit retries; the audit deadl
 
 The existing Vercel entry point is `api/index.ts`; `vercel.json` builds the frontend and routes API requests. Set `OPENAI_API_KEY` in Vercel's environment settings and redeploy. Never put secrets in `VITE_*` variables. Confirm `/api/health` identifies `audit-2.0.0`, then run both a clean and leaky example and inspect coverage.
 
-Production was verified after this refactor: the new setup page loads, `/api/health` returns `audit-2.0.0`, and the audit API returns explicit partial reports. **The deployed project currently has no `OPENAI_API_KEY` configured.** Add a valid key in Vercel's Production environment and redeploy to enable the LLM checks. Local live preflight separately failed authentication. [Production smoke evidence](evals/production-smoke.json) records two synthetic API checks, not model performance.
+This personal repository is published under **Dennis-Sosa/Olarion**. Its own Vercel deployment has not yet been configured. Import this repository into your own Vercel workspace using the [deployment guide](docs/deployment.md).
+
+The [production smoke evidence](evals/production-smoke.json) records two historical synthetic API checks against the original team's deployment at `olarion.vercel.app`, where the model key was absent at the time of testing. It is not a deployment of this personal repository or a model-performance result. Local live preflight separately failed authentication; a valid key and a new live evaluation are still required.
 
 ## Demo data
 
